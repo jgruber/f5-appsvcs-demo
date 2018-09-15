@@ -1,0 +1,39 @@
+{
+  "name": "f5-appsvcs-demo",
+  "version": "0.0.1",
+  "description": "Utilizing the F5 Application Services Demonstration",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon src/app.js --exec babel-node --presets env",
+    "build": "babel src -d dist --source-maps inline --copy-files",
+    "serve": "node dist/app.js"
+  },
+  "keywords": [
+    "iControlLX",
+    "iControl REST"
+  ],
+  "author": "John Gruber - F5 Networks",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "eslint": "^5.4.0",
+    "express": "^4.16.3",
+    "memory-cache": "^0.2.0",
+    "mongoose": "^5.2.10",
+    "mongoose-paginate": "^5.0.3",
+    "morgan": "^1.9.0",
+    "passport": "^0.4.0",
+    "passport-strategy": "^1.0.0",
+    "request": "^2.88.0",
+    "url": "^0.11.0",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "nodemon": "^1.17.3"
+  }
+}
