@@ -155,7 +155,7 @@ TODO: Sprint Demo the week of 9-24-2018
 
 ## Adding BIG-IP Device Access to the Gateway
 
-We can now add BIG-IP devices trusts through our application to the f5-api-service-gateway. Putting our web service application between the end user and the f5-api-services-gateway allow us define custom secutiry and access controls. The authentication framework the demo applicatoin uses is call [Express Middleware Passport](http://www.passportjs.org/). This framework has authentication modules which work with well over 100 different authentication sources including ldap, active directory, github, twitter, facebook, google, azure, aws, and others.
+We can now add BIG-IP devices trusts through our application to the f5-api-service-gateway. Putting our web service application between the end user and the f5-api-services-gateway allow us define custom secutiry and access controls. The authentication framework the demo applicatoin uses is call [Express Middleware Passport](http://www.passportjs.org/). This framework has authentication modules which work with over 300 different authentication sources including ldap, active directory, github, twitter, facebook, google, azure, aws, and others.
 
 To add a device trust through the application's ```/api/devices`` API endpoints, we simply post our BIG-IP device definition and credentials. 
 
