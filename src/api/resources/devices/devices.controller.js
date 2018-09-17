@@ -1,6 +1,8 @@
 import Device from './devices.model';
+const appconf = require('../../../config/app');
 
-const BIGIP_ADMIN_ROLE = 'F5 Administrator';
+const BIGIP_ADMIN_ROLE = appconf.f5_device_admin_role;
+const BIGIP_TENANT_ROLE = appconf.f5_tenant_role;
 const url = require('url');
 
 const validateRequest = (id, req) => {
@@ -10,7 +12,7 @@ const validateRequest = (id, req) => {
                 if (deviceInfo) {
                     try {
                         const r_url = new url.URL(req.url, 'http://localhost');
-                        const device_uri = r_url.pathname.substring(id.length+1) + r_url.search;
+                        const device_uri = r_url.pathname.substring(id.length + 1) + r_url.search;
                         const request = {
                             valid: true,
                             uri: device_uri,
@@ -77,7 +79,8 @@ export default {
     },
     async getTrusts(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
+                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
                 const devices = await Device.getTrusts();
                 return res.json(devices);
             } else {
@@ -109,7 +112,7 @@ export default {
                             device.bigipUsername,
                             device.bigipPassword
                         );
-                        bigip.removeTrust().then( () => {
+                        bigip.removeTrust().then(() => {
                             return res.status(200).json({});
                         });
                     } catch (ex) {
@@ -133,21 +136,29 @@ export default {
     },
     async get(req, res) {
         try {
-            const {
-                id
-            } = req.params;
-            validateRequest(id, req).then((request) => {
-                if (request.valid) {
-                    Device.get(id, request.uri, req.body)
-                        .then( (pres) => {
-                            return res.status(pres.resp.statusCode).json(pres.body);
-                        });
-                } else {
-                    return res.status(404).json({
-                        err: request.reason
-                    })
-                }
-            });
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
+                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+                const {
+                    id
+                } = req.params;
+                validateRequest(id, req).then((request) => {
+                    if (request.valid) {
+                        Device.get(id, request.uri, req.body)
+                            .then((pres) => {
+                                return res.status(pres.resp.statusCode).json(pres.body);
+                            });
+                    } else {
+                        return res.status(404).json({
+                            err: request.reason
+                        })
+                    }
+                });
+            } else {
+                return res.status(401)
+                    .json({
+                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                    });
+            }
         } catch (err) {
             console.log(err);
             return res.status(500).send(err);
@@ -155,21 +166,29 @@ export default {
     },
     async post(req, res) {
         try {
-            const {
-                id
-            } = req.params;
-            validateRequest(id, req).then((request) => {
-                if (request.valid) {
-                    Device.post(id, request.uri, req.body)
-                        .then( (pres) => {
-                            return res.status(pres.resp.statusCode).json(pres.body);
-                        });
-                } else {
-                    return res.status(404).json({
-                        err: request.reason
-                    })
-                }
-            });
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
+                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+                const {
+                    id
+                } = req.params;
+                validateRequest(id, req).then((request) => {
+                    if (request.valid) {
+                        Device.post(id, request.uri, req.body)
+                            .then((pres) => {
+                                return res.status(pres.resp.statusCode).json(pres.body);
+                            });
+                    } else {
+                        return res.status(404).json({
+                            err: request.reason
+                        })
+                    }
+                });
+            } else {
+                return res.status(401)
+                    .json({
+                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                    });
+            }
         } catch (err) {
             console.log(err);
             return res.status(500).send(err);
@@ -177,21 +196,29 @@ export default {
     },
     async put(req, res) {
         try {
-            const {
-                id
-            } = req.params;
-            validateRequest(id, req).then((request) => {
-                if (request.valid) {
-                    Device.put(id, request.uri, req.body)
-                        .then( (pres) => {
-                            return res.status(pres.resp.statusCode).json(pres.body);
-                        });
-                } else {
-                    return res.status(404).json({
-                        err: request.reason
-                    })
-                }
-            });
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
+                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+                const {
+                    id
+                } = req.params;
+                validateRequest(id, req).then((request) => {
+                    if (request.valid) {
+                        Device.put(id, request.uri, req.body)
+                            .then((pres) => {
+                                return res.status(pres.resp.statusCode).json(pres.body);
+                            });
+                    } else {
+                        return res.status(404).json({
+                            err: request.reason
+                        })
+                    }
+                });
+            } else {
+                return res.status(401)
+                    .json({
+                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                    });
+            }
         } catch (err) {
             console.log(err);
             return res.status(500).send(err);
@@ -199,21 +226,29 @@ export default {
     },
     async patch(req, res) {
         try {
-            const {
-                id
-            } = req.params;
-            validateRequest(id, req).then((request) => {
-                if (request.valid) {
-                    Device.patch(id, request.uri, req.body)
-                        .then( (pres) => {
-                            return res.status(pres.resp.statusCode).json(pres.body);
-                        });
-                } else {
-                    return res.status(404).json({
-                        err: request.reason
-                    })
-                }
-            });
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
+                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+                const {
+                    id
+                } = req.params;
+                validateRequest(id, req).then((request) => {
+                    if (request.valid) {
+                        Device.patch(id, request.uri, req.body)
+                            .then((pres) => {
+                                return res.status(pres.resp.statusCode).json(pres.body);
+                            });
+                    } else {
+                        return res.status(404).json({
+                            err: request.reason
+                        })
+                    }
+                });
+            } else {
+                return res.status(401)
+                    .json({
+                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                    });
+            }
         } catch (err) {
             console.log(err);
             return res.status(500).send(err);
@@ -221,21 +256,29 @@ export default {
     },
     async del(req, res) {
         try {
-            const {
-                id
-            } = req.params;
-            validateRequest(id, req).then((request) => {
-                if (request.valid) {
-                    Device.del(id, request.uri, req.body)
-                        .then( (pres) => {
-                            return res.status(pres.resp.statusCode).json(pres.body);
-                        });
-                } else {
-                    return res.status(404).json({
-                        err: request.reason
-                    })
-                }
-            });
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
+                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+                const {
+                    id
+                } = req.params;
+                validateRequest(id, req).then((request) => {
+                    if (request.valid) {
+                        Device.del(id, request.uri, req.body)
+                            .then((pres) => {
+                                return res.status(pres.resp.statusCode).json(pres.body);
+                            });
+                    } else {
+                        return res.status(404).json({
+                            err: request.reason
+                        })
+                    }
+                });
+            } else {
+                return res.status(401)
+                    .json({
+                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                    });
+            }
         } catch (err) {
             console.log(err);
             return res.status(500).send(err);
