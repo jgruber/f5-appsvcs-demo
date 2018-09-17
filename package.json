@@ -13,10 +13,14 @@
     "iControl REST"
   ],
   "author": "John Gruber - F5 Networks",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jgruber/f5-appsvcs-demo.git"
+  },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
-    "eslint": "^5.4.0",
+    "eslint": "^4.9.0",
     "express": "^4.16.3",
     "memory-cache": "^0.2.0",
     "mongoose": "^5.2.10",
