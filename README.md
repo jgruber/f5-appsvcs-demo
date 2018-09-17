@@ -174,7 +174,7 @@ Record your BIG-IP id. This will be used to place iControl REST calls to your de
 
 ## Testing iControl REST Trusted Access Through the Gateway
 
-Once trust has been established, the demo application can use the trust to make all iControl REST calls. The application's ```/api/devices`` API enpoint supports the syntax:
+Once trust has been established, the demo application can use the trust to make all iControl REST calls. The application's ```/api/devices``` API enpoint supports the syntax:
 
 ```
 GET /api/devices/[device id]/[iControl REST URI]
@@ -211,7 +211,7 @@ curl -u 'admin:F5RocksAPIs!' -H 'Content-Type: application/json' -X GET  http://
 
 
 
-## Creating a Deployment Container Multiple BIG-IPs
+## Creating a Deployment of Multiple BIG-IPs
 
 TODO: Sprint Demo the week of 9-24-2018
 
