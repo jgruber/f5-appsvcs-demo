@@ -1,4 +1,4 @@
-const f5_api_gw_host = process.env['F5_API_GW_HOST'] || 'f5apigateway';
+const f5_api_gw_host = process.env['F5_API_GW_HOST'] || 'localhost';
 const f5_api_gw_http_port = process.env['F5_API_GW_HTTP_PORT'] || 8080;
 const f5_api_gw_device_group = process.env['F5_API_GW_DEVICE_GROUP'] || 'app1';
 const f5_api_gw_base_uri = 'http://' + f5_api_gw_host + ':' + f5_api_gw_http_port;
