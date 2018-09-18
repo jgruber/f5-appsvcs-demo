@@ -10,8 +10,8 @@ const validateRequest = (id, req) => {
             .then((deviceInfo) => {
                 if (deviceInfo) {
                     try {
-                        const r_url = new url.URL(req.url, 'http://localhost');
-                        const device_uri = r_url.pathname.substring(id.length + 1) + r_url.search;
+                        const r_url = new url.URL(req.url, 'http://localhost');    
+                        const device_uri = r_url.pathname.substring(r_url.pathname.indexOf('/',2)) + r_url.search;
                         const request = {
                             valid: true,
                             uri: device_uri,
@@ -38,6 +38,7 @@ const validateRequest = (id, req) => {
 }
 
 export default {
+    validateRequest,
     async createTrust(req, res) {
         try {
             if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {

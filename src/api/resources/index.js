@@ -6,4 +6,4 @@ import { deploymentsRouter } from './deployments';
 export const restRouter = express.Router();
 restRouter.use('/users', usersRouter);
 restRouter.use('/devices', devicesRouter);
-restRouter.use('/deploments', deploymentsRouter);
+restRouter.use('/deployments', deploymentsRouter);
