@@ -96,7 +96,10 @@ BasicStrategy.prototype.authenticate = function (req) {
 
     function verified(err, user) {
         if (err) {
-            return self.error(err);
+            // don't leak information on user lookup failure
+            // just reprompt via 401 response.
+            // return self.error(err);
+            return self.fail(self._challenge());
         }
         if (!user) {
             return self.fail(self._challenge());
