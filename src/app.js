@@ -1,11 +1,11 @@
-
+const appconf = require('./config/app');
 import express from 'express';
 import logger from 'morgan';
 import { connect } from './config/db';
 import { restRouter } from './api/resources';
 
 const app = express();
-const PORT = 3000;
+const PORT = appconf.app_listening_port;
 
 connect();
 app.use(logger('dev'));

@@ -4,6 +4,11 @@ mongoose.Promise = global.Promise;
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
+const connectOptions = {
+    useNewUrlParser: true,
+    auto_reconnect: true
+};
+
 const mongodb_url = process.env['MONGODB_URL'] || "mongodb://localhost:27017/f5_appsvcs_demo";
 
 let isConnectedBefore = false;
@@ -37,5 +42,5 @@ process.on('SIGINT', function() {
     });
 });
 
-export const connect = () => mongoose.connect(mongodb_url, { useNewUrlParser: true, auto_reconnect: true });
+export const connect = () => mongoose.connect(mongodb_url, connectOptions);
 
