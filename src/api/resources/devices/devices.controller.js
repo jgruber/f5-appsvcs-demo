@@ -2,7 +2,6 @@ import Device from './devices.model';
 const appconf = require('../../../config/app');
 
 const BIGIP_ADMIN_ROLE = appconf.f5_device_admin_role;
-const BIGIP_TENANT_ROLE = appconf.f5_tenant_role;
 const url = require('url');
 
 const validateRequest = (id, req) => {
@@ -79,8 +78,7 @@ export default {
     },
     async getTrusts(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
-                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const devices = await Device.getTrusts();
                 return res.json(devices);
             } else {
@@ -136,8 +134,7 @@ export default {
     },
     async get(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
-                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const {
                     id
                 } = req.params;
@@ -148,7 +145,7 @@ export default {
                                 return res.status(pres.resp.statusCode).json(pres.body);
                             });
                     } else {
-                        return res.status(404).json({
+                        return res.status(400).json({
                             err: request.reason
                         })
                     }
@@ -156,7 +153,7 @@ export default {
             } else {
                 return res.status(401)
                     .json({
-                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
                     });
             }
         } catch (err) {
@@ -166,8 +163,7 @@ export default {
     },
     async post(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
-                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const {
                     id
                 } = req.params;
@@ -178,7 +174,7 @@ export default {
                                 return res.status(pres.resp.statusCode).json(pres.body);
                             });
                     } else {
-                        return res.status(404).json({
+                        return res.status(400).json({
                             err: request.reason
                         })
                     }
@@ -186,7 +182,7 @@ export default {
             } else {
                 return res.status(401)
                     .json({
-                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
                     });
             }
         } catch (err) {
@@ -196,8 +192,7 @@ export default {
     },
     async put(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
-                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const {
                     id
                 } = req.params;
@@ -208,7 +203,7 @@ export default {
                                 return res.status(pres.resp.statusCode).json(pres.body);
                             });
                     } else {
-                        return res.status(404).json({
+                        return res.status(400).json({
                             err: request.reason
                         })
                     }
@@ -216,7 +211,7 @@ export default {
             } else {
                 return res.status(401)
                     .json({
-                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
                     });
             }
         } catch (err) {
@@ -226,8 +221,7 @@ export default {
     },
     async patch(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
-                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const {
                     id
                 } = req.params;
@@ -238,7 +232,7 @@ export default {
                                 return res.status(pres.resp.statusCode).json(pres.body);
                             });
                     } else {
-                        return res.status(404).json({
+                        return res.status(400).json({
                             err: request.reason
                         })
                     }
@@ -246,7 +240,7 @@ export default {
             } else {
                 return res.status(401)
                     .json({
-                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
                     });
             }
         } catch (err) {
@@ -256,8 +250,7 @@ export default {
     },
     async del(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE) ||
-                req.user.roles.includes(BIGIP_TENANT_ROLE)) {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const {
                     id
                 } = req.params;
@@ -268,7 +261,7 @@ export default {
                                 return res.status(pres.resp.statusCode).json(pres.body);
                             });
                     } else {
-                        return res.status(404).json({
+                        return res.status(400).json({
                             err: request.reason
                         })
                     }
@@ -276,7 +269,7 @@ export default {
             } else {
                 return res.status(401)
                     .json({
-                        "err": "authenticated user must have " + BIGIP_TENANT_ROLE + " role"
+                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
                     });
             }
         } catch (err) {

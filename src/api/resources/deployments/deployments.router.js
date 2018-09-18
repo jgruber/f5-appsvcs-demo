@@ -1,9 +1,9 @@
 import express from 'express';
-import devicesController from './deployments.controller';
+import deploymentsController from './deployments.controller';
 import usersServices from '../users/users.services';
 export const deploymentsRouter = express.Router();
 
-devicesRouter
+deploymentsRouter
     .route('/:id/*')
     .get(usersServices.isAuthenticated, deploymentsController.get)
     .post(usersServices.isAuthenticated, deploymentsController.post)
@@ -11,8 +11,9 @@ devicesRouter
     .patch(usersServices.isAuthenticated, deploymentsController.patch)
     .delete(usersServices.isAuthenticated, deploymentsController.del)
 
-devicesRouter
+deploymentsRouter
     .route('/')
-    .post(usersServices.isAuthenticated, deploymentsController.createTrust)
-    .get(usersServices.isAuthenticated, deploymentsController.getTrusts)
-    .delete(usersServices.isAuthenticated, deploymentsController.removeTrust)
+    .post(usersServices.isAuthenticated, deploymentsController.createDeployments)
+    .put(usersServices.isAuthenticated, deploymentsController.updateDeployments)
+    .get(usersServices.isAuthenticated, deploymentsController.findAll)
+    .delete(usersServices.isAuthenticated, deploymentsController.removeDeployments)
