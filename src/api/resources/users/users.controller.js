@@ -7,10 +7,20 @@ export default {
         try {
             // If no users have been created yet, create and make User Administrator
             User.count({}, function (err, count) {
-                if (err) res.status(500).json(err);
+                if (err) res.status(500).json({"err": err});
                 var roles = [];
                 if (count == 0) {
                     roles.push(ADMINISTRATOR_ROLE);
+                } else {
+                    // require authentication and ROLE if more than 0 users exist
+                    if (!req.hasOwnProperty('user')){
+                        return res.status(401).json('Unauthorized');
+                    }
+                    if (!req.user.roles.includes(ADMINISTRATOR_ROLE)) {
+                        return res.status(403).json({
+                            err: 'updates to users required User Administrator role'
+                        })
+                    }
                 }
                 const user = new User({
                     username: req.body.username,
@@ -19,16 +29,15 @@ export default {
                 })
                 user.save(function (err) {
                     if (err) return res.status(400).json(err);
-                    return res.status(200).json(user);
+                    return res.status(201).json(user);
                 })
             })
         } catch (ex) {
-            return res.status(500).json(ex);
+            return res.status(500).json({"err":ex});
         }
     },
     async findAll(req, res) {
         try {
-            console.log(req.user);
             const {
                 page,
                 perPage
@@ -40,7 +49,7 @@ export default {
             const users = await User.paginate({}, options);
             return res.json(users);
         } catch (err) {
-            return res.status(500).send(err);
+            return res.status(500).json({"err":err});
         }
     },
     async findById(req, res) {
@@ -56,7 +65,7 @@ export default {
             }
             return res.json(user);
         } catch (err) {
-            return res.status(500).send(err);
+            return res.status(500).json({"err":err});
         }
     },
     async update(req, res) {
@@ -103,7 +112,7 @@ export default {
             }
         } catch (err) {
             console.log(err);
-            return res.status(500).send(err);
+            return res.status(500).json({"err":err});
         }
     },
     async delete(req, res) {
@@ -121,7 +130,7 @@ export default {
             }
             return res.json({});
         } catch (err) {
-            return res.status(500).send(err);
+            return res.status(500).json({"err":err});
         }
     }
 };

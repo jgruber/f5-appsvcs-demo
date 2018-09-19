@@ -1,0 +1,1622 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "F5 Application Services Demostration API",
+        "description": "Building Cloud Ready F5 Controller Services",
+        "version": "1.0.0",
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "contact": {
+            "name": "F5 DevCentral Community",
+            "url": "https://devcentral.f5.com"
+        }
+    },
+    "servers": [{
+        "url": "http://localhost:3000/api"
+    }],
+    "tags": [{
+        "name": "Users",
+        "description": "API for Users Endpoints"
+    }, {
+        "name": "Devices",
+        "description": "API for Devices Endpoints"
+    }, {
+        "name": "Deployments",
+        "description": "API for Deployments Endpoints"
+    }],
+    "components": {
+        "securitySchemes": {
+            "BasicAuth": {
+                "type": "http",
+                "scheme": "basic"
+            }
+        },
+        "schemas": {
+            "UserRequest": {
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "example": {
+                    "username": "admin",
+                    "password": "F5RocksAPIs!"
+                }
+            },
+            "UserUpdateRequest": {
+                "properties": {
+                    "password": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "example": {
+                    "roles": ["User Administrator", "BIGIP Administrator"]
+                }
+            },
+            "UserResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "example": {
+                    "id": "5ba06c34c075ca0008ff8731",
+                    "username": "admin",
+                    "roles": [
+                        "User Administrator"
+                    ]
+                }
+            },
+            "Users": {
+                "properties": {
+                    "docs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UserResponse"
+                        }
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    }
+                },
+                "example": {
+                    "docs": [{
+                            "id": "5ba06c34c075ca0008ff8731",
+                            "username": "admin",
+                            "roles": [
+                                "User Administrator"
+                            ]
+                        },
+                        {
+                            "id": "5ba264ccc3084f5528d41362",
+                            "username": "Bob",
+                            "roles": [
+                                "BIGIP Administrator"
+                            ]
+                        }
+                    ],
+                    "total": 2,
+                    "limit": 10,
+                    "page": 1,
+                    "pages": 1
+                }
+            },
+            "DeviceRequest": {
+                "required": [
+                    "bigipHost",
+                    "bigipPort",
+                    "bigipUsername",
+                    "bigipPassword"
+                ],
+                "properties": {
+                    "bigipHost": {
+                        "type": "string"
+                    },
+                    "bigipPort": {
+                        "type": "integer"
+                    },
+                    "bigipUsername": {
+                        "type": "string"
+                    },
+                    "bigipPassword": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "bigipHost": "172.13.1.107",
+                    "bigipPort": 443,
+                    "bigipUsername": "admin",
+                    "bigipPassword": "admin"
+                }
+            },
+            "DeviceResponce": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "state": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "httpsPort": {
+                        "type": "integer"
+                    }
+                },
+                "example": {
+                    "machineId": "7390b3b8-7682-4554-83e5-764e4f26703c",
+                    "state": "PENDING",
+                    "address": "172.13.1.107",
+                    "httpsPort": 443,
+                    "generation": 5,
+                    "id": "7390b3b8-7682-4554-83e5-764e4f26703c"
+                }
+            },
+            "DeviceTrustListEstablised": {
+                "example": [{
+                    "machineId": "7390b3b8-7682-4554-83e5-764e4f26703c",
+                    "state": "ACTIVE",
+                    "address": "172.13.1.107",
+                    "httpsPort": 443,
+                    "hostname": "test-bigip2.sample.openstack.f5se.com",
+                    "version": "13.1.1",
+                    "product": "BIG-IP",
+                    "platformMarketingName": "BIG-IP Virtual Edition",
+                    "edition": "Final",
+                    "build": "0.0.4",
+                    "restFrameworkVersion": "13.1.1-0.0.4",
+                    "isClustered": false,
+                    "isVirtual": true,
+                    "generation": 7,
+                    "id": "7390b3b8-7682-4554-83e5-764e4f26703c"
+                }]
+            },
+            "DeploymentRequest": {
+                "required": [
+                    "name",
+                    "deviceIds"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "deviceIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "ArrayOfDeploymentRequests": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/DeploymentRequest"
+                }
+            },
+            "DeployemntsUpdateRequest": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "deviceIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "ArrayOfDeploymentUpdateRequests": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/DeploymentRequest"
+                }
+            },
+            "DeploymentResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "deviceIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "ArrayOfDeploymentResponse": {
+                "type": "array",
+                "items": {
+                    "schema": {
+                        "$ref": "#/components/schemas/DeploymentRequest"
+                    }
+                }
+            },
+            "Deployments": {
+                "properties": {
+                    "docs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DeploymentResponse"
+                        }
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "pages": {
+                        "type": "integer"
+                    },
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "page": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "EmptyDeploymentiControlResponse": {
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "status": { 
+                            "type": "integer"
+                        },
+                        "body": {
+                            "$ref": "#/components/schemas/EmptyJSON"
+                        }
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "err": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "err": "Request Timed Out"
+                }
+            },
+            "EmptyJSON": {
+                "example": "{}"
+            }
+        }
+    },
+    "paths": {
+        "/users": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to create User",
+                "description": "Create a new user for the demonstration application",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The new User object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to get a list of User objects",
+                "description": "Get a list of all defined user objects allowed in the demonstration application",
+                "responses": {
+                    "200": {
+                        "description": "List of User Objects",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Users"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userId}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to get a User object referencing it id",
+                "description": "Get a list of a User object allowed in the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "userId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the User object to return"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "User Object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator role"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to update a User object referencing it id",
+                "description": "Update a User's roles or password in the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "userId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the User object to return"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User Object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator role"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to delete a User object referencing it id",
+                "description": "Delete a User allowed in the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "userId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the User object to return"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "User Object Deleted"
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator role"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/devices": {
+            "post": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to create BIG-IP Device Trusts",
+                "description": "Create a new BIG-IP device trust for the demonstration application",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeviceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The new Device object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeviceResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to get a list of BIG-IP device trusts",
+                "description": "Get a list of all BIG-IP device trust allowed in the demonstration application",
+                "responses": {
+                    "200": {
+                        "description": "List of Device Trusts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeviceTrustListEstablised"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to remove BIG-IP Device Trusts",
+                "description": "Remove a BIG-IP device trust from the demonstration application",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeviceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The new BIG-IP device trust was deleted"
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{deviceId}/{iControlRestURIEndpoint}": {
+            "get": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST GET call",
+                "description": "Place a GET request to a trusted BIG-IP from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to place iControl GET Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint without the leading path slash to make request on trusted BIG-IP device. </br><p>i.e.: mgmt/shared/identified-devices/config/device-info</p>"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "iControl REST response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyJSON"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST POST call",
+                "description": "Place a POST request to a trusted BIG-IP from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to place iControl POST Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on trusted BIG-IP device"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyJSON"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST PUT call",
+                "description": "Place a PUT request to a trusted BIG-IP from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to place iControl PUT Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on trusted BIG-IP device"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyJSON"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST PATCH call",
+                "description": "Place a PATCH request to a trusted BIG-IP from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to place iControl PATCH Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on trusted BIG-IP device"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyJSON"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST DELETE call",
+                "description": "Place a DELETE request to a trusted BIG-IP from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to place iControl DELETE Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on trusted BIG-IP device"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyJSON"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments": {
+            "post": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to create deployments of BIG-IP trusted devices",
+                "description": "Create a new target deployment for the demonstration application",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ArrayOfDeploymentRequest"
+                            },
+                            "example": [{
+                                "dmz": "admin",
+                                "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"]
+                            }]
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The new deployment(s) object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArrayOfDeploymentResponse"
+                                },
+
+                                "example": [{
+                                    "id": "5ba2ad11c96e8114849bf51e",
+                                    "dmz": "admin",
+                                    "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"]
+                                }]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to list deployments of BIG-IP trusted devices",
+                "description": "Lists available deployments for the demonstration application",
+                "responses": {
+                    "200": {
+                        "description": "The existing deployments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Deployments"
+                                },
+                                "example": {
+                                    "docs": [{
+                                        "deviceIds": [
+                                            "c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"
+                                        ],
+                                        "name": "dmz",
+                                        "id": "5ba2ad11c96e8114849bf51e"
+                                    }],
+                                    "total": 1,
+                                    "limit": 10,
+                                    "page": 1,
+                                    "pages": 1
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to update deployments of BIG-IP trusted devices",
+                "description": "Update target deployments for the demonstration application",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ArrayOfDeploymentRequest"
+                            },
+                            "example": [{
+                                "id": "5ba2ad11c96e8114849bf51e",
+                                "dmz": "admin",
+                                "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
+                            }]
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated deployments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArrayOfDeploymentResponse"
+                                },
+
+                                "example": [{
+                                    "id": "5ba2ad11c96e8114849bf51e",
+                                    "dmz": "admin",
+                                    "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
+                                }]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to delete deployments of BIG-IP trusted devices",
+                "description": "Delete target deployments for the demonstration application",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ArrayOfDeploymentRequest"
+                            },
+                            "example": [{
+                                "id": "5ba2ad11c96e8114849bf51e",
+                                "dmz": "admin",
+                                "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
+                            }]
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The deleted deployments",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ArrayOfDeploymentResponse"
+                                },
+                                "example": [{
+                                    "id": "5ba2ad11c96e8114849bf51e",
+                                    "dmz": "admin",
+                                    "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
+                                }]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/deployments/{deploymentId}/{iControlRestURIEndpoint}": {
+            "get": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST GET call to a deployment",
+                "description": "Place a GET request to all trusted BIG-IPs, in a deployemnt, from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to place iControl GET Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint without the leading path slash to make request on deployment. </br><p>i.e.: mgmt/shared/identified-devices/config/device-info</p>"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "iControl REST responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
+                                }
+                            },
+                            "example": [
+                                {
+                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
+                                    "status": 200,
+                                    "body": { }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST GET call to a deployment",
+                "description": "Place a POST request to all trusted BIG-IPs, in a deployemnt, from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to place iControl POST Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint without the leading path slash to make request on deployment. </br><p>i.e.: mgmt/shared/identified-devices/config/device-info</p>"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
+                                }
+                            },
+                            "example": [
+                                {
+                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
+                                    "status": 200,
+                                    "body": { }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST GET call to a deployment",
+                "description": "Place a PUT request to all trusted BIG-IPs, in a deployemnt, from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to place iControl PUT Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on deployment"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
+                                }
+                            },
+                            "example": [
+                                {
+                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
+                                    "status": 200,
+                                    "body": { }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST GET call to a deployment",
+                "description": "Place a PATCH request to all trusted BIG-IPs, in a deployemnt, from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to place iControl PATCH Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on deployment"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
+                                }
+                            },
+                            "example": [
+                                {
+                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
+                                    "status": 200,
+                                    "body": { }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to issue an iControl REST GET call to a deployment",
+                "description": "Place a DELETE request to all trusted BIG-IPs, in a deployemnt, from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to place iControl DELETE Request"
+                }, {
+                    "in": "path",
+                    "name": "iControlRestURIEndpoint",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "The iControl REST API endpoint to make request on deployment"
+                }],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmptyJSON"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "iControl REST responses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
+                                }
+                            },
+                            "example": [
+                                {
+                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
+                                    "status": 200,
+                                    "body": { }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires User Administrator"
+                    },
+                    "404": {
+                        "description": "User not found for supplied id"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

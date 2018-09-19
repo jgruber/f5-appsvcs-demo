@@ -1,8 +1,10 @@
 const appconf = require('./config/app');
 import express from 'express';
 import logger from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import { connect } from './config/db';
 import { restRouter } from './api/resources';
+import swaggerDocument from './config/swagger.json';
 
 const app = express();
 const PORT = appconf.app_listening_port;
@@ -14,7 +16,10 @@ app.use(express.urlencoded({
     extended: true
 }));
 app.use('/api', restRouter);
-
+app.use('/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument, {explorer: true})
+);
 // default route handlers
 app.use((req, res, next) => {
     const error = new Error('Not found');

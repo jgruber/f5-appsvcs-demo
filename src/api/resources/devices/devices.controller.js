@@ -11,7 +11,7 @@ const validateRequest = (id, req) => {
                 if (deviceInfo) {
                     try {
                         const r_url = new url.URL(req.url, 'http://localhost');    
-                        const device_uri = r_url.pathname.substring(r_url.pathname.indexOf('/',2)) + r_url.search;
+                        const device_uri = decodeURIComponent(r_url.pathname.substring(r_url.pathname.indexOf('/',2))) + r_url.search;
                         const request = {
                             valid: true,
                             uri: device_uri,
@@ -60,7 +60,7 @@ export default {
                         return res.status(201).json(deviceInfo);
                     } catch (ex) {
                         console.log(ex);
-                        return res.status(400).json(ex);
+                        return res.status(400).json({err: ex});
                     }
                 } else {
                     return res.status(400).json({
@@ -74,7 +74,7 @@ export default {
                     });
             }
         } catch (ex) {
-            return res.status(500).json(ex);
+            return res.status(500).json({err: ex});
         }
     },
     async getTrusts(req, res) {
@@ -116,7 +116,7 @@ export default {
                         });
                     } catch (ex) {
                         console.log(ex);
-                        return res.status(400).json(ex);
+                        return res.status(400).json({err: ex});
                     }
                 } else {
                     return res.status(400).json({
@@ -130,7 +130,7 @@ export default {
                     });
             }
         } catch (ex) {
-            return res.status(500).json(ex);
+            return res.status(500).json({err: ex});
         }
     },
     async get(req, res) {
@@ -159,7 +159,7 @@ export default {
             }
         } catch (err) {
             console.log(err);
-            return res.status(500).send(err);
+            return res.status(500).send({err: err});
         }
     },
     async post(req, res) {
@@ -188,7 +188,7 @@ export default {
             }
         } catch (err) {
             console.log(err);
-            return res.status(500).send(err);
+            return res.status(500).send({err: err});
         }
     },
     async put(req, res) {
@@ -217,7 +217,7 @@ export default {
             }
         } catch (err) {
             console.log(err);
-            return res.status(500).send(err);
+            return res.status(500).send({err: err});
         }
     },
     async patch(req, res) {
@@ -246,7 +246,7 @@ export default {
             }
         } catch (err) {
             console.log(err);
-            return res.status(500).send(err);
+            return res.status(500).send({err: err});
         }
     },
     async del(req, res) {
@@ -275,7 +275,7 @@ export default {
             }
         } catch (err) {
             console.log(err);
-            return res.status(500).send(err);
+            return res.status(500).send({err: err});
         }
     }
 };
