@@ -125,6 +125,26 @@ class Device {
         })
     }
 
+    static removeTrust(id) {
+        return new Promise((resolve, reject) => {
+            const device = Device.getTrustById(id).then((device) => {
+                if (device) {
+                    let promises = [
+                        Device._removeGWCertificateOnDevice(device),
+                        Device._removeDeviceFromGroup(device),
+                        Device._removeBIGIPCertificateOnGateway(device)
+                    ]
+                    Promise.all(promises).then(() => {
+                        cache.del(id);
+                        resolve({});
+                    });
+                } else {
+                    resolve({});
+                }
+            });
+        });
+    }
+
     static get(deviceId, uri, body, cb) {
         return new Promise((resolve, reject) => {
             const device = cache.get(deviceId);
@@ -290,97 +310,6 @@ class Device {
         });
     }
 
-    removeTrust() {
-        return new Promise((resolve, reject) => {
-            if (this.bigipUsername && this.bigipPassword) {
-                let promises = [
-                    this._removeDeviceFromGroup(),
-                    this._removeBIGIPCertificateOnGateway(),
-                    this._removeGWCertificateOnDevice()
-                ]
-                Promise.all(promises).then(() => {
-                    resolve();
-                });
-            } else {
-                err = 'device username and password required to remove trust';
-                throw Error(err);
-            }
-        });
-    }
-
-    _getDeviceInfo() {
-        return new Promise((resolve, reject) => {
-            const req_options = {
-                url: f5Gateway.f5_api_gw_devices_uri,
-                json: true
-            }
-            request.get(req_options, (err, resp, body) => {
-                if (err) {
-                    throw (err);
-                }
-                let device_found = false;
-                let device_info = null
-                if (resp.statusCode != 404) {
-                    body.items.map((device, idx) => {
-                        if (device.deviceUri === f5Gateway.f5_bigip_base_uri(this.bigipHost, this.bigipPort)) {
-                            device_found = true;
-                            device_info = device;
-                        }
-                    });
-                }
-                if (device_found) {
-                    resolve(device_info);
-                } else {
-                    resolve({});
-                }
-            })
-        });
-    }
-
-    _getGatewayMachineId() {
-        return new Promise((resolve, reject) => {
-            const req_options = {
-                url: f5Gateway.f5_api_gw_device_uri,
-                json: true
-            }
-            request.get(req_options, (err, resp, body) => {
-                if (err) {
-                    throw Error(err);
-                }
-                if (body.hasOwnProperty('machineId')) {
-                    resolve(body.machineId);
-                } else {
-                    resolve(null);
-                }
-            })
-        });
-    }
-
-    _getDeviceMachineId() {
-        return new Promise((resolve, reject) => {
-            const req_options = {
-                url: f5Gateway.f5_bigip_device_uri(this.bigipHost, this.bigipPort),
-                auth: {
-                    username: this.bigipUsername,
-                    password: this.bigipPassword
-                },
-                rejectUnauthorized: false,
-                requestCert: true,
-                json: true
-            }
-            request.get(req_options, (err, resp, body) => {
-                if (err) {
-                    throw Error(err);
-                }
-                if (body.hasOwnProperty('machineId')) {
-                    resolve(body.machineId);
-                } else {
-                    resolve(null);
-                }
-            })
-        });
-    }
-
     _validateDeviceGroup() {
         return new Promise((resolve, reject) => {
             const get_options = {
@@ -468,90 +397,109 @@ class Device {
         });
     };
 
-    _removeGWCertificateOnDevice() {
+    static _getGWMachineId() {
         return new Promise((resolve, reject) => {
-            this._getGatewayMachineId()
-                .then((machineId) => {
-                    const get_options = {
-                        url: f5Gateway.f5_bigip_cert_uri(this.bigipHost, this.bigipPort),
-                        auth: {
-                            username: this.bigipUsername,
-                            password: this.bigipPassword
-                        },
-                        rejectUnauthorized: false,
-                        requestCert: true,
-                        json: true
-                    }
-                    request.get(get_options, (err, resp, body) => {
-                        if (err) {
-                            throw Error(err);
-                        }
-                        let cert_not_found = true;
-                        body.items.map((cert, idx) => {
-                            if (cert.machineId === machineId) {
-                                cert_not_found = false;
-                                const del_options = {
-                                    url: f5Gateway.f5_bigip_cert_uri(this.bigipHost, this.bigipPort) + "/" + cert.certificateId,
-                                    auth: {
-                                        username: this.bigipUsername,
-                                        password: this.bigipPassword
-                                    },
-                                    rejectUnauthorized: false,
-                                    requestCert: true,
-                                    json: true
-                                }
-                                request.del(del_options, (err, resp, body) => {
-                                    if (err) {
-                                        throw Error(err);
-                                    }
-                                    resolve({});
-                                });
-                            }
-                        });
-                        if (cert_not_found) {
-                            resolve({});
-                        }
-                    })
-                });
+            const get_machineID_options = {
+                url: f5Gateway.f5_api_gw_device_uri,
+                body: {},
+                json: true
+            }
+            request.get(get_machineID_options, (err, resp, body) => {
+                if (err) {
+                    console.error('error retrieving gateway machineId:' + err);
+                    throw new Error(err);
+                }
+                resolve(body.machineId);
+            });
         });
     }
 
-    _removeBIGIPCertificateOnGateway() {
+    static _getGMCertificateId() {
         return new Promise((resolve, reject) => {
-            this._getDeviceMachineId()
-                .then((machineId) => {
-                    const get_options = {
-                        url: f5Gateway.f5_api_gw_cert_uri,
-                        json: true
+            Device._getGWMachineId().then((machineId) => {
+                const get_cert_id_options = {
+                    url: f5Gateway.f5_api_gw_cert_uri,
+                    body: {},
+                    json: true
+                }
+                request.get(get_cert_id_options, (err, resp, body) => {
+                    if (err) {
+                        console.error('error getting gateway certificates:' + err);
+                        throw new Error(err);
                     }
-                    request.get(get_options, (err, resp, body) => {
-                        if (err) {
-                            throw Error(err);
-                        }
-                        let cert_not_found = true;
-                        body.items.map((cert, idx) => {
-                            if (cert.machineId === machineId) {
-                                cert_not_found = false;
-                                const del_options = {
-                                    url: f5Gateway.f5_api_gw_cert_uri + "/" + cert.certificateId
-                                }
-                                request.del(del_options, (err, resp, body) => {
-                                    if (err) {
-                                        throw Error(err);
-                                    }
-                                    resolve();
-                                });
-                            }
-                        });
-                        if (cert_not_found) {
-                            resolve();
+                    let cert_not_found = true;
+                    body.items.map((cert, idx) => {
+                        if (cert.machineId === machineId) {
+                            cert_not_found = false;
+                            resolve(cert.certificateId);
                         }
                     });
+                    if (cert_not_found) {
+                        const err = 'gateway can not find its own certificate';
+                        console.error(err);
+                        throw Error(err);
+                    }
                 });
+            });
         });
     }
 
-    _removeDeviceFromGroup() {
+    static _removeGWCertificateOnDevice(device) {
+        return new Promise((resolve, reject) => {
+            const gw_cert_id = Device._getGMCertificateId().then((gw_cert_id) => {
+                const proxy_options = {
+                    url: f5Gateway.f5_api_gw_proxy_url,
+                    body: {
+                        "method": "Delete",
+                        "uri": f5Gateway.f5_bigip_base_uri(device.address, device.httpsPort) + '/mgmt/shared/device-certificates/' + gw_cert_id,
+                        "body": {}
+                    },
+                    json: true
+                };
+                request.post(proxy_options, (err, resp, body) => {
+                    if (err) {
+                        console.error('can not remove gateway certificate:' + err)
+                        throw new Error(err);
+                    }
+                    resolve();
+                });
+            });
+        });
+    }
+
+    static _removeBIGIPCertificateOnGateway(device) {
+        return new Promise((resolve, reject) => {
+            const get_options = {
+                url: f5Gateway.f5_api_gw_cert_uri,
+                json: true
+            }
+            request.get(get_options, (err, resp, body) => {
+                if (err) {
+                    throw Error(err);
+                }
+                let cert_not_found = true;
+                body.items.map((cert, idx) => {
+                    if (cert.machineId === device.machineId) {
+                        cert_not_found = false;
+                        const del_options = {
+                            url: f5Gateway.f5_api_gw_cert_uri + "/" + cert.certificateId
+                        }
+                        request.del(del_options, (err, resp, body) => {
+                            if (err) {
+                                throw Error(err);
+                            }
+                            resolve();
+                        });
+                    }
+                });
+                if (cert_not_found) {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    static _removeDeviceFromGroup(device) {
         return new Promise((resolve, reject) => {
             const req_options = {
                 url: f5Gateway.f5_api_gw_devices_uri,
@@ -565,7 +513,7 @@ class Device {
                 let device_info = null
                 if (resp.statusCode != 404) {
                     body.items.map((device, idx) => {
-                        if (device.deviceUri === f5Gateway.f5_bigip_base_uri(this.bigipHost, this.bigipPort)) {
+                        if (device.deviceUri === f5Gateway.f5_bigip_base_uri(device.address, device.httpsPort)) {
                             device_found = true;
                             device_info = device;
                         }

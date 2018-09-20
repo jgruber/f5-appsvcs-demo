@@ -168,7 +168,7 @@
                     "bigipPassword": "admin"
                 }
             },
-            "DeviceResponce": {
+            "DeviceResponse": {
                 "properties": {
                     "id": {
                         "type": "string"
@@ -226,34 +226,10 @@
                             "type": "string"
                         }
                     }
-                }
-            },
-            "ArrayOfDeploymentRequests": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/components/schemas/DeploymentRequest"
-                }
-            },
-            "DeployemntsUpdateRequest": {
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "deviceIds": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "ArrayOfDeploymentUpdateRequests": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/components/schemas/DeploymentRequest"
+                },
+                "example": {
+                    "name": "dmz",
+                    "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"]
                 }
             },
             "DeploymentResponse": {
@@ -270,14 +246,47 @@
                             "type": "string"
                         }
                     }
+                },
+                "example": {
+                    "name": "dmz",
+                    "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"]
                 }
             },
-            "ArrayOfDeploymentResponse": {
-                "type": "array",
-                "items": {
-                    "schema": {
-                        "$ref": "#/components/schemas/DeploymentRequest"
+            "DeploymentUpdateRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "deviceIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
+                },
+                "example": {
+                    "name": "dmz",
+                    "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a"]
+                }
+            },
+            "DeploymentUpdateResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "deviceIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "example": {
+                    "name": "dmz",
+                    "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a"]
                 }
             },
             "Deployments": {
@@ -300,6 +309,19 @@
                     "page": {
                         "type": "integer"
                     }
+                },
+                "example": {
+                    "docs": [{
+                        "deviceIds": [
+                            "c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"
+                        ],
+                        "name": "dmz",
+                        "id": "5ba2ad11c96e8114849bf51e"
+                    }],
+                    "total": 1,
+                    "limit": 10,
+                    "page": 1,
+                    "pages": 1
                 }
             },
             "EmptyDeploymentiControlResponse": {
@@ -309,13 +331,18 @@
                         "id": {
                             "type": "string"
                         },
-                        "status": { 
+                        "status": {
                             "type": "integer"
                         },
                         "body": {
                             "$ref": "#/components/schemas/EmptyJSON"
                         }
-                    }
+                    },
+                    "example": [{
+                        "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
+                        "status": 200,
+                        "body": {}
+                    }]
                 }
             },
             "ErrorResponse": {
@@ -660,6 +687,55 @@
                         }
                     }
                 }
+            }
+        },
+        "/devices/{deviceId}": {
+            "get": {
+                "tags": [
+                    "Devices"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to get a BIG-IP Device Trust",
+                "description": "List a BIG-IP device trust from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to list"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "The new BIG-IP device trust was deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeviceTrustListEstablised"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
             },
             "delete": {
                 "tags": [
@@ -670,15 +746,15 @@
                 }],
                 "summary": "API endpoint to remove BIG-IP Device Trusts",
                 "description": "Remove a BIG-IP device trust from the demonstration application",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/DeviceRequest"
-                            }
-                        }
-                    }
-                },
+                "parameters": [{
+                    "in": "path",
+                    "name": "deviceId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the BIG-IP device trust to delete"
+                }],
                 "responses": {
                     "200": {
                         "description": "The new BIG-IP device trust was deleted"
@@ -702,7 +778,7 @@
                 }
             }
         },
-        "/devices/{deviceId}/{iControlRestURIEndpoint}": {
+        "/devices/{deviceId}/proxy{iControlRestURIEndpoint}": {
             "get": {
                 "tags": [
                     "Devices"
@@ -727,7 +803,7 @@
                         "type": "string"
                     },
                     "required": true,
-                    "description": "The iControl REST API endpoint without the leading path slash to make request on trusted BIG-IP device. </br><p>i.e.: mgmt/shared/identified-devices/config/device-info</p>"
+                    "description": "The iControl REST API endpoint to make request on trusted BIG-IP device. </br><p>i.e.: /mgmt/shared/identified-devices/config/device-info</p>"
                 }],
                 "responses": {
                     "200": {
@@ -988,15 +1064,6 @@
                     "required": true,
                     "description": "The iControl REST API endpoint to make request on trusted BIG-IP device"
                 }],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EmptyJSON"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
                         "description": "iControl REST response",
@@ -1038,35 +1105,25 @@
                 "security": [{
                     "BasicAuth": []
                 }],
-                "summary": "API endpoint to create deployments of BIG-IP trusted devices",
+                "summary": "API endpoint to create a deployment of BIG-IP trusted devices",
                 "description": "Create a new target deployment for the demonstration application",
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ArrayOfDeploymentRequest"
-                            },
-                            "example": [{
-                                "dmz": "admin",
-                                "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"]
-                            }]
+                                "$ref": "#/components/schemas/DeploymentRequest"
+                            }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "The new deployment(s) object",
+                        "description": "The new deployment object",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfDeploymentResponse"
-                                },
-
-                                "example": [{
-                                    "id": "5ba2ad11c96e8114849bf51e",
-                                    "dmz": "admin",
-                                    "deviceIds": ["c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"]
-                                }]
+                                    "$ref": "#/components/schemas/DeploymentResponse"
+                                }
                             }
                         }
                     },
@@ -1104,19 +1161,6 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Deployments"
-                                },
-                                "example": {
-                                    "docs": [{
-                                        "deviceIds": [
-                                            "c61e1394-250c-451d-a1c2-fc0f7d1fa99a", "7390b3b8-7682-4554-83e5-764e4f26703c"
-                                        ],
-                                        "name": "dmz",
-                                        "id": "5ba2ad11c96e8114849bf51e"
-                                    }],
-                                    "total": 1,
-                                    "limit": 10,
-                                    "page": 1,
-                                    "pages": 1
                                 }
                             }
                         }
@@ -1138,7 +1182,9 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/deployments/{deploymentId}": {
             "put": {
                 "tags": [
                     "Deployments"
@@ -1146,19 +1192,23 @@
                 "security": [{
                     "BasicAuth": []
                 }],
-                "summary": "API endpoint to update deployments of BIG-IP trusted devices",
-                "description": "Update target deployments for the demonstration application",
+                "summary": "API endpoint to update a deployment of BIG-IP trusted devices",
+                "description": "Update a target deployment for the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to update"
+                }],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ArrayOfDeploymentRequest"
-                            },
-                            "example": [{
-                                "id": "5ba2ad11c96e8114849bf51e",
-                                "dmz": "admin",
-                                "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
-                            }]
+                                "$ref": "#/components/schemas/DeploymentUpdateRequest"
+                            }
                         }
                     }
                 },
@@ -1168,14 +1218,8 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfDeploymentResponse"
-                                },
-
-                                "example": [{
-                                    "id": "5ba2ad11c96e8114849bf51e",
-                                    "dmz": "admin",
-                                    "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
-                                }]
+                                    "$ref": "#/components/schemas/DeploymentUpdateResponse"
+                                }
                             }
                         }
                     },
@@ -1204,35 +1248,25 @@
                 "security": [{
                     "BasicAuth": []
                 }],
-                "summary": "API endpoint to delete deployments of BIG-IP trusted devices",
-                "description": "Delete target deployments for the demonstration application",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ArrayOfDeploymentRequest"
-                            },
-                            "example": [{
-                                "id": "5ba2ad11c96e8114849bf51e",
-                                "dmz": "admin",
-                                "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
-                            }]
-                        }
-                    }
-                },
+                "summary": "API endpoint to delete a deployment of BIG-IP trusted devices",
+                "description": "Delete target deployment from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to delete"
+                }],
                 "responses": {
                     "200": {
-                        "description": "The deleted deployments",
+                        "description": "The deleted deployment",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ArrayOfDeploymentResponse"
-                                },
-                                "example": [{
-                                    "id": "5ba2ad11c96e8114849bf51e",
-                                    "dmz": "admin",
-                                    "deviceIds": ["7390b3b8-7682-4554-83e5-764e4f26703c"]
-                                }]
+                                    "$ref": "#/components/schemas/DeploymentResponse"
+                                }
                             }
                         }
                     },
@@ -1255,7 +1289,7 @@
                 }
             }
         },
-        "/deployments/{deploymentId}/{iControlRestURIEndpoint}": {
+        "/deployments/{deploymentId}/proxy{iControlRestURIEndpoint}": {
             "get": {
                 "tags": [
                     "Deployments"
@@ -1280,7 +1314,7 @@
                         "type": "string"
                     },
                     "required": true,
-                    "description": "The iControl REST API endpoint without the leading path slash to make request on deployment. </br><p>i.e.: mgmt/shared/identified-devices/config/device-info</p>"
+                    "description": "The iControl REST API endpoint without the leading path slash to make request on deployment. </br><p>i.e.: /mgmt/shared/identified-devices/config/device-info</p>"
                 }],
                 "responses": {
                     "200": {
@@ -1290,14 +1324,7 @@
                                 "schema": {
                                     "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
                                 }
-                            },
-                            "example": [
-                                {
-                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
-                                    "status": 200,
-                                    "body": { }
-                                }
-                            ]
+                            }
                         }
                     },
                     "401": {
@@ -1345,7 +1372,7 @@
                         "type": "string"
                     },
                     "required": true,
-                    "description": "The iControl REST API endpoint without the leading path slash to make request on deployment. </br><p>i.e.: mgmt/shared/identified-devices/config/device-info</p>"
+                    "description": "The iControl REST API endpoint to make request on deployment"
                 }],
                 "requestBody": {
                     "content": {
@@ -1364,14 +1391,7 @@
                                 "schema": {
                                     "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
                                 }
-                            },
-                            "example": [
-                                {
-                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
-                                    "status": 200,
-                                    "body": { }
-                                }
-                            ]
+                            }
                         }
                     },
                     "401": {
@@ -1438,14 +1458,7 @@
                                 "schema": {
                                     "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
                                 }
-                            },
-                            "example": [
-                                {
-                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
-                                    "status": 200,
-                                    "body": { }
-                                }
-                            ]
+                            }
                         }
                     },
                     "401": {
@@ -1512,14 +1525,7 @@
                                 "schema": {
                                     "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
                                 }
-                            },
-                            "example": [
-                                {
-                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
-                                    "status": 200,
-                                    "body": { }
-                                }
-                            ]
+                            }
                         }
                     },
                     "401": {
@@ -1569,15 +1575,6 @@
                     "required": true,
                     "description": "The iControl REST API endpoint to make request on deployment"
                 }],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/EmptyJSON"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
                         "description": "iControl REST responses",
@@ -1586,14 +1583,7 @@
                                 "schema": {
                                     "$ref": "#/components/schemas/EmptyDeploymentiControlResponse"
                                 }
-                            },
-                            "example": [
-                                {
-                                    "id": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
-                                    "status": 200,
-                                    "body": { }
-                                }
-                            ]
+                            }
                         }
                     },
                     "401": {

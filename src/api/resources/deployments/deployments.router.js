@@ -4,7 +4,7 @@ import usersServices from '../users/users.services';
 export const deploymentsRouter = express.Router();
 
 deploymentsRouter
-    .route('/:id/*')
+    .route('/:id/proxy/*')
     .get(usersServices.isAuthenticated, deploymentsController.get)
     .post(usersServices.isAuthenticated, deploymentsController.post)
     .put(usersServices.isAuthenticated, deploymentsController.put)
@@ -12,8 +12,13 @@ deploymentsRouter
     .delete(usersServices.isAuthenticated, deploymentsController.del)
 
 deploymentsRouter
+    .route('/:id')
+    .get(usersServices.isAuthenticated, deploymentsController.findById)
+    .put(usersServices.isAuthenticated, deploymentsController.updateDeployment)
+    .delete(usersServices.isAuthenticated, deploymentsController.delete)
+
+deploymentsRouter
     .route('/')
-    .post(usersServices.isAuthenticated, deploymentsController.createDeployments)
-    .put(usersServices.isAuthenticated, deploymentsController.updateDeployments)
+    .post(usersServices.isAuthenticated, deploymentsController.createDeployment)
     .get(usersServices.isAuthenticated, deploymentsController.findAll)
-    .delete(usersServices.isAuthenticated, deploymentsController.removeDeployments)
+    

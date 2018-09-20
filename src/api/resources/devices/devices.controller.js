@@ -10,8 +10,8 @@ const validateRequest = (id, req) => {
             .then((deviceInfo) => {
                 if (deviceInfo) {
                     try {
-                        const r_url = new url.URL(req.url, 'http://localhost');    
-                        const device_uri = decodeURIComponent(r_url.pathname.substring(r_url.pathname.indexOf('/',2))) + r_url.search;
+                        const r_url = new url.URL(req.url, 'http://localhost');
+                        const device_uri = decodeURIComponent(r_url.pathname.substring(r_url.pathname.indexOf('proxy')+5)) + r_url.search;
                         const request = {
                             valid: true,
                             uri: device_uri,
@@ -59,7 +59,7 @@ export default {
                         let deviceInfo = await bigip.createTrust();
                         return res.status(201).json(deviceInfo);
                     } catch (ex) {
-                        console.log(ex);
+                        console.error(ex);
                         return res.status(400).json({err: ex});
                     }
                 } else {
@@ -94,34 +94,41 @@ export default {
             });
         }
     },
+    async getTrust(req, res) {
+        try {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
+                const {
+                    id
+                } = req.params
+                const device = await Device.getTrustById(id);
+                if(device == null) {
+                    return res.status(404).json({err:'no trust found for device id:' + id})
+                }
+                return res.json(device);
+            } else {
+                return res.status(401)
+                    .json({
+                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
+                    });
+            }
+        } catch (err) {
+            return res.status(500).json({
+                err: err
+            });
+        }
+    },
     async removeTrust(req, res) {
         try {
             if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const device = req.body;
-                if (device.hasOwnProperty('bigipHost') &&
-                    device.hasOwnProperty('bigipUsername') &&
-                    device.hasOwnProperty('bigipPassword')) {
-                    if (!device.hasOwnProperty('bigipPort')) {
-                        device.bigipPort = 443;
-                    }
-                    try {
-                        const bigip = new Device(
-                            device.bigipHost,
-                            device.bigipPort,
-                            device.bigipUsername,
-                            device.bigipPassword
-                        );
-                        bigip.removeTrust().then(() => {
-                            return res.status(200).json({});
-                        });
-                    } catch (ex) {
-                        console.log(ex);
-                        return res.status(400).json({err: ex});
-                    }
-                } else {
-                    return res.status(400).json({
-                        "err": "invalid BIG-IP Host"
-                    });
+                const {
+                    id
+                } = req.params
+                try {
+                    Device.removeTrust(id).then(() => {
+                        res.status(200).json({});
+                    })
+                } catch (ex) {
+                    return res.status(500).json({err: ex});
                 }
             } else {
                 return res.status(401)
@@ -158,7 +165,7 @@ export default {
                     });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
             return res.status(500).send({err: err});
         }
     },
@@ -187,7 +194,7 @@ export default {
                     });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
             return res.status(500).send({err: err});
         }
     },
@@ -216,7 +223,7 @@ export default {
                     });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
             return res.status(500).send({err: err});
         }
     },
@@ -245,7 +252,7 @@ export default {
                     });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
             return res.status(500).send({err: err});
         }
     },
@@ -274,7 +281,7 @@ export default {
                     });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
             return res.status(500).send({err: err});
         }
     }
