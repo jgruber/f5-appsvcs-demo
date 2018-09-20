@@ -19,17 +19,20 @@ export default {
                     let promises = [];
                     let new_deployment = null;
                     const valid_device_promises = deployment.deviceIds.map(async (deviceId, indx) => {
-                        let device = await Device.getTrustById(deviceId)
+                        let device = await Device.getTrustById(deviceId);
                         if (!device) {
                             has_errors = true;
-                            errors.push("deployment " + deployment.name + " deviceId " + deviceId + " is not a trusted device");
+                            const err = "deployment " + deployment.name + " deviceId " + deviceId + " is not a trusted device";
+                            console.error(err)
+                            errors.push(err);
                         }
+                        return
                     })
                     promises.push(valid_device_promises);
                     promises.push(new Promise((resolve, reject) => {
                         Promise.all(valid_device_promises).then(async () => {
                             if (!has_errors) {
-                                // create new Deployment
+                                console.log('creating new deployemnt');
                                 new_deployment = await new Deployment({
                                     name: deployment.name,
                                     deviceIds: deployment.deviceIds
@@ -37,21 +40,17 @@ export default {
                                 new_deployment.save(function (err) {
                                     if (err) {
                                         has_errors = true;
-                                        errors.push("deployment " + deployment.name + " err: " + err);
+                                        err = "deployment " + deployment.name + " err: " + err;
+                                        console.error(err);
+                                        errors.push(err);
                                     }
                                 })
-                                resolve();
                             }
+                            resolve();
                         })
                     }));
                     Promise.all(promises).then(() => {
                         if (has_errors) {
-                            // roll back
-                            new_deployments.map(async (deployment, idx) => {
-                                const del_deployemnt = await Deployment.findByIdAndRemove({
-                                    _id: deployment._idx
-                                });
-                            });
                             return res.status(400).json(errors);
                         } else {
                             return res.status(200).json(new_deployment);
@@ -176,6 +175,7 @@ export default {
             const {
                 id
             } = req.params;
+            console.log('deleting id:' +  id);
             const user = await Deployment.findByIdAndRemove({
                 _id: id
             });
@@ -191,6 +191,7 @@ export default {
             })
         }
         } catch (err) {
+            console.error(err);
             return res.status(500).json({"err":err});
         }
     },

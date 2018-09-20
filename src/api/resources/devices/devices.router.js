@@ -4,7 +4,7 @@ import usersServices from '../users/users.services';
 export const devicesRouter = express.Router();
 
 devicesRouter
-    .route('/:id/proxy/*')
+    .route('/:id/proxy*')
     .get(usersServices.isAuthenticated, devicesController.get)
     .post(usersServices.isAuthenticated, devicesController.post)
     .put(usersServices.isAuthenticated, devicesController.put)

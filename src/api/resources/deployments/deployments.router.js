@@ -4,7 +4,7 @@ import usersServices from '../users/users.services';
 export const deploymentsRouter = express.Router();
 
 deploymentsRouter
-    .route('/:id/proxy/*')
+    .route('/:id/proxy*')
     .get(usersServices.isAuthenticated, deploymentsController.get)
     .post(usersServices.isAuthenticated, deploymentsController.post)
     .put(usersServices.isAuthenticated, deploymentsController.put)

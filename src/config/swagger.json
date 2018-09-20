@@ -1185,6 +1185,53 @@
             }
         },
         "/deployments/{deploymentId}": {
+            "get": {
+                "tags": [
+                    "Deployments"
+                ],
+                "security": [{
+                    "BasicAuth": []
+                }],
+                "summary": "API endpoint to list a deployment of BIG-IP trusted devices",
+                "description": "List target deployment from the demonstration application",
+                "parameters": [{
+                    "in": "path",
+                    "name": "deploymentId",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "required": true,
+                    "description": "ID of the deployment to delete"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "The deployment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeploymentResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Request requires user authentication"
+                    },
+                    "403": {
+                        "description": "Request requires BIGIP Administrator role"
+                    },
+                    "500": {
+                        "description": "Application Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "put": {
                 "tags": [
                     "Deployments"
