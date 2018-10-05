@@ -22,4 +22,8 @@ echo "    -e F5_API_GW_HTTP_PORT=$F5_API_GW_HTTP_PORT \ "
 echo "    f5-appsvcs-demo:latest "
 echo ""
 
+cd static
+
+docker build -t f5-appsvcs-demo-web:latest .
+
 

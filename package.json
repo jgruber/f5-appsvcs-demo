@@ -6,6 +6,7 @@
   "scripts": {
     "start": "nodemon src/app.js --exec babel-node --presets env",
     "build": "babel src -d dist --source-maps inline --copy-files",
+    "build-doc": "node_modules/marked/bin/marked ./static/ISC_API_Gateway.md -o ./static/ISC_API_Gateway.html",
     "serve": "node dist/app.js"
   },
   "keywords": [
@@ -40,6 +41,7 @@
     "babel-preset-env": "^1.6.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
-    "nodemon": "^1.17.3"
+    "nodemon": "^1.17.3",
+    "marked": "0.5.1"
   }
 }

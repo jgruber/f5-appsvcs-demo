@@ -1,4 +1,4 @@
-import extensionsController from('../../resources/extensions/extensions.controller');
+import extensionsController from '../../resources/extensions/extensions.controller';
 import Device from '../../resources/devices/devices.model';
 const f5Gateway = require('../../../config/f5apigateway');
 const appconf = require('../../../config/app');
@@ -21,7 +21,7 @@ const rpmquery = '/bin/rpm -qp ';
 
 const rpmFileExits = (rpmFile) => {
     if (!fs.path.existsSync(EXT_STORAGE_PATH)) {
-        fs.mkdirSync(EXT_STORAGE_PATH, 0744);
+        fs.mkdirSync(EXT_STORAGE_PATH, '0744');
         return false
     } else {
         if (fs.existsSync(EXT_STORAGE_PATH + '/' + rpmFile)) {
@@ -31,23 +31,6 @@ const rpmFileExits = (rpmFile) => {
         }
     }
 };
-
-const updateExtensionModel = async (url, rpmFile) => {
-    if (rpmFileExits(rpmFile)) {
-        let query = rpmquery + EXT_STORAGE_PATH + '/' + rpmFile + '--queryformat ';
-        exec(query + '"%{NAME}=%{VERSION}=%{RELEASE}"', (err, stdout, stderr) => {
-            if (err) {
-                console.error('can not query rpm file ' + rpmFile + ' ' + err);
-            } else {
-                let model_parts = stdout.split("=");
-                await extensionsController.updateModelByURL(url, model_parts[0], model_parts[1], model_parts[2]);
-            }
-        });
-    } else {
-        console.error('rpm file ' + rpmFile + ' does not exist');
-        return false;
-    }
-}
 
 const multipartGatewayUpload = (rpmFile, cb) => {
     const filename = EXT_STORAGE_PATH + '/' + rpmFile;
@@ -110,7 +93,7 @@ const multipartGatewayUpload = (rpmFile, cb) => {
     });
 }
 
-const multipartDeviceUpload = (deviceId, rpmFile, cb) => {
+const multipartDeviceUpload = async (deviceId, rpmFile, cb) => {
     try {
         const device = await Device.getTrustById(deviceId);
         if (device) {
@@ -130,9 +113,7 @@ const multipartDeviceUpload = (deviceId, rpmFile, cb) => {
         const err = 'error uploading ' + rpmFile + ' to device: ' + deviceId + ' - ' + ex;
         console.error(err);
         throw Error(err);
-    } 
-
-
+    }
     
     const opts = {
         host: purl.hostname,
@@ -229,12 +210,12 @@ export default {
                             let contentDisposition = res.headers['content-disposition'];
                             let match = contentDisposition && contentDisposition.match(/(filename=|filename\*='')(.*)$/);
                             let filename = match && match[2] || default_file_name;
-                            await extensionFileDelete(filename);
+                            // await extensionFileDelete(filename);
                             let dest = fs.createWriteStream(EXT_STORAGE_PATH + "/" + filename);
                             dest.on('error', function (err) {
                                 console.error(err);
                                 try {
-                                    await extensionsController.updateStatusByURL(url, EXT_ERROR);
+                                    // await extensionsController.updateStatusByURL(url, EXT_ERROR);
                                 } catch (ue) {
                                     console.error('could not update extension status to error - ' + ue);
                                     return false;
@@ -245,7 +226,7 @@ export default {
                                 console.log('Downloaded ' + filename);
                                 extensionsController.updateStatusByURL(url, EXT_AVAILABLE);
                                 try {
-                                    await extensionsController.updateStatusByURL(url, EXT_AVAILABLE);
+                                    // await extensionsController.updateStatusByURL(url, EXT_AVAILABLE);
                                 } catch (ue) {
                                     console.error('could not update extension status to available - ' + ue);
                                     return false;
@@ -257,7 +238,7 @@ export default {
                             const err = 'error downloading and saving ' + url + ' - ' + ex;
                             console.error(err);
                             try {
-                                await extensionsController.updateStatusByURL(url, EXT_ERROR);
+                                // await extensionsController.updateStatusByURL(url, EXT_ERROR);
                             } catch (ue) {
                                 console.error('could not update extension status to error - ' + ue);
                                 return false;
@@ -267,7 +248,7 @@ export default {
                     } else {
                         console.error('download attempt for ' + url + ' returned status ' + res.statusCode);
                         try {
-                            await extensionsController.updateStatusByURL(url, EXT_ERROR);
+                            // await extensionsController.updateStatusByURL(url, EXT_ERROR);
                         } catch (ue) {
                             console.error('could not update extension status to error - ' + ue);
                             return false;
@@ -301,7 +282,7 @@ export default {
     },
     async queryExtensionOnGateway() {
         try {
-            const ext_uri = ;
+            // const ext_uri = 
             const create_task_body = {
                 operation: "QUERY"
             }
@@ -367,7 +348,7 @@ export default {
     async uploadExtensionToGateway(rpmFile) {
         try {
             if (rpmFileExits(rpmFile)) {
-                multipartGatewayUpload = (rpmFile, function (err) {
+                multipartGatewayUpload(rpmFile, function (err) {
                     console.error(err);
                     throw Error(err);
                 })
@@ -403,7 +384,7 @@ export default {
                     let status = body.status;
                     while (status === 'STARTED') {
                         setTimeout(function () {
-                            status = await queryExtentionTaskStatusOnGateway(taskId);
+                            // status = await queryExtentionTaskStatusOnGateway(taskId);
                         }, 2000);
                     }
                     if (status === 'FINISHED') {
@@ -446,7 +427,7 @@ export default {
                     let status = body.status;
                     while (status === 'STARTED') {
                         setTimeout(function () {
-                            status = await queryExtentionTaskStatusOnGateway(taskId);
+                            // status = await queryExtentionTaskStatusOnGateway(taskId);
                         }, 2000);
                     }
                     if (status === 'FINISHED') {
@@ -584,7 +565,7 @@ export default {
                         let status = body.status;
                         while (status === 'STARTED') {
                             setTimeout(function () {
-                                status = await queryExtentionTaskStatusOnDevice(deviceId, taskId);
+                                // status = await queryExtentionTaskStatusOnDevice(deviceId, taskId);
                             }, 2000);
                         }
                         if (status === 'FINISHED') {
@@ -634,7 +615,7 @@ export default {
                         let status = body.status;
                         while (status === 'STARTED') {
                             setTimeout(function () {
-                                status = await queryExtentionTaskStatusOnDevice(deviceId, taskId);
+                                // status = await queryExtentionTaskStatusOnDevice(deviceId, taskId);
                             }, 2000);
                         }
                         if (status === 'FINISHED') {
