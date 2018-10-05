@@ -1,6 +1,8 @@
 import User from './users.model';
 
-const ADMINISTRATOR_ROLE = 'User Administrator';
+const appconf = require('../../../config/app');
+
+const ADMINISTRATOR_ROLE = appconf.user_admin_role;
 
 export default {
     async create(req, res) {

@@ -6,6 +6,8 @@ const f5_api_gw_device_uri = f5_api_gw_base_uri + '/mgmt/shared/identified-devic
 const f5_api_gw_device_group_uri = f5_api_gw_base_uri + '/mgmt/shared/resolver/device-groups/' + f5_api_gw_device_group;
 const f5_api_gw_devices_uri = f5_api_gw_base_uri + '/mgmt/shared/resolver/device-groups/' + f5_api_gw_device_group + '/devices';
 const f5_api_gw_cert_uri = f5_api_gw_base_uri + '/mgmt/shared/device-certificates';
+const f5_api_gw_upload_uri = f5_api_gw_base_uri + '/mgmt/shared/file-transfer/uploads';
+const f5_api_gw_extensions_uri = f5_api_gw_base_uri + '/mgmt/shared/iapp/package-management-tasks';
 const f5_api_gw_proxy_url = f5_api_gw_base_uri + '/mgmt/shared/test/proxy-js';
 const f5_bigip_base_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port; }
 const f5_bigip_device_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port + '/mgmt/shared/identified-devices/config/device-info'; }
@@ -21,6 +23,8 @@ const f5_hidden_device_properties = [
     "selfLink",
     "lastUpdateMicros"
 ];
+const f5_bigip_extensions_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port + '/mgmt/shared/iapp/package-management-tasks'; }
+const f5_bigip_upload_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port + '/mgmt/shared/file-transfer/uploads'; }
 
 module.exports = {
     f5_api_gw_host: f5_api_gw_host,
@@ -31,9 +35,13 @@ module.exports = {
     f5_api_gw_device_group_uri: f5_api_gw_device_group_uri,
     f5_api_gw_devices_uri: f5_api_gw_devices_uri,
     f5_api_gw_cert_uri: f5_api_gw_cert_uri,
+    f5_api_gw_upload_uri: f5_api_gw_upload_uri,
+    f5_api_gw_extensions_uri: f5_api_gw_extensions_uri,
     f5_api_gw_proxy_url: f5_api_gw_proxy_url,
     f5_bigip_base_uri: f5_bigip_base_uri,
     f5_bigip_device_uri: f5_bigip_device_uri,
     f5_bigip_cert_uri: f5_bigip_cert_uri,
-    f5_hidden_device_properties: f5_hidden_device_properties
+    f5_hidden_device_properties: f5_hidden_device_properties,
+    f5_bigip_extensions_uri: f5_bigip_extensions_uri,
+    f5_bigip_upload_uri: f5_bigip_upload_uri
 }

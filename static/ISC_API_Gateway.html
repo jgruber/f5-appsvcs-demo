@@ -1,0 +1,240 @@
+<link href="./assets/css/bootstrap.min.css" rel="stylesheet"></link>
+<link href="./assets/css/f5.css" rel="stylesheet"></link>
+
+<h1 id="f5-container-based-solutions-to-provision-big-ips">F5 Container Based Solutions to Provision BIG-IPs</h1>
+<ol>
+<li><a href="#what-is-the-api-service-gateway-container-">What is the API Services Gateway Container?</a></li>
+<li><a href="#what-is-the-as3-container-">What is the AS3 Container?</a></li>
+<li><a href="#why-are-we-releasing-new-apis-and-containers-">Why Are We Releasing New APIs and Containers?</a><ul>
+<li><a href="#simplifying-big-ip-orchestration-through-declarative-apis">Simplifying BIG-IP Orchestration Through Declarative APIs</a></li>
+<li><a href="#we-started-declaring-with-as3">We Started Declaring with AS3</a></li>
+<li><a href="#there-is-still-more-to-declare">There Is Still More to Declare</a></li>
+</ul>
+</li>
+<li><a href="#deep-integration-into-an-orchestration-ecosystem">Deep Integration into an Orchestration Ecosystem</a><ul>
+<li><a href="#the-api-service-gateway-manifesto">The API Service Gateway Manifesto</a></li>
+</ul>
+</li>
+<li><a href="#which-option-to-choose-for-a-customer-or-partner">Which Option to Choose for a Customer or Partner</a></li>
+</ol>
+<h2 id="f5-container-orchestration-exercises">F5 Container Orchestration Exercises</h2>
+<ol start="6">
+<li><p><a href="#as3-container-exercises">AS3 Container Exercises</a></p>
+<ul>
+<li><a href="#exercise-1-downloading-and-launching-the-as3-container-with-docker">Exercise #1 - Downloading and Launching the AS3 Container with docker</a></li>
+<li><a href="#exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</a></li>
+</ul>
+</li>
+<li><p><a href="#f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</a></p>
+<ul>
+<li><a href="#exercise-3-downloading-and-launching-the-api-services-gateway-with-docker">Exercise #3 - Downloading and Launching the API Services Gateway with docker</a></li>
+<li><a href="#exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</a></li>
+<li><a href="#exercise-5-installing-trusted-proxy-icontrollx-extension-on-the-api-services-gateway">Exercise #5 - Installing Trusted Proxy iControlLX Extension on the API Services Gateway</a></li>
+<li><a href="#exercise-6-issuing-icontrol-rest-requests-through-the-trusted-proxy-icontrollx-extension">Exercise #6 - Issuing iControl REST Requests Through the Trusted Proxy iControlLX Extension</a></li>
+<li><a href="#exercise-7-launching-our-micro-services-deployment-with-docker-compose">Exercise #7 - Launching Our Micro Services Deployment with docker-compose</a></li>
+<li><a href="#exercise-8-installing-icontrollx-extensions-on-multiple-remote-big-ips">Exercise #8 - Installing iControlLX Extensions On Multiple Remote BIG-IPs</a></li>
+<li><a href="#exercise-9-making-trusted-declarations-to-multiple-remote-big-ips">Exercise #9 - Making Trusted Declarations to Multiple Remote BIG-IPs</a></li>
+<li><a href="#exercise-10-adding-third-party-oauth-credentials-for-big-ip-self-service-applications">Exercise #10 - Adding Third Party OAUTH Credentials for BIG-IP Self Service Applications</a></li>
+<li><a href="#exercise-11-adding-thrid-party-access-control-for-big-ip-self-service-applications">Exercise #11 - Adding Thrid Party Access Control for BIG-IP Self Service Applications</a></li>
+</ul>
+</li>
+<li><p><a href="#the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</a></p>
+</li>
+<li><p><a href="#how-can-i-capitalize-on-our-new-f5-orchestration-containers-">How Can I Capitalize On Our New F5 Orchestration Containers?</a></p>
+</li>
+</ol>
+<hr>
+<p>F5 now offers two container based solutions to aid in the orchestrated provisioning of BIG-IP services.</p>
+<ul>
+<li><a href="#the_api_services_gateway_container">The API Services Gateway Container</a></li>
+<li><a href="#the_as3_container">The AS3 Container</a></li>
+</ul>
+<hr>
+<h2 id="what-is-the-api-service-gateway-container-">What is the API Service Gateway Container?</h2>
+<p>The <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a> is a docker built container which runs both the iControl REST framework (restjavad) and the iControlLX extension framework (restnoded). </p>
+<p>The API Services Gateway container allows for the installation and operation of iControlLX extensions outside of a BIG-IP.  This enables opportunities for F5, or our customers and partners who are familiar with the iControlLX extensions framework, to run complex orchestration workflows in a container, rather then consuming resources on their BIG-IP&#39;s control planes.</p>
+<p>In addition to housing iControlLX extensions, the API Services Gateway&#39;s exposes REST endpoints which can be used to create trusted device groups. These device groups, which exist solely in the container, establishes a trust between the container and remote BIG-IP devices. Local iControlLX extensions in a trusted container can make iControl REST requests to peer BIG-IP devices without providing credentials. </p>
+<p>Typically iControl REST requires the establishment of a disticnt session token with each device. The aquistion of the token requires knowledge of a username and password which is valid on the remote BIG-IP device. This at times has lead to <em>&#39;leaking&#39;</em> BIG-IP credentials to tenant processes which could inturn access the XUI GUI or make remote iControl REST calls directly to the device. </p>
+<p>With the API Services Gateweay, trusted REST calls are signed by the container and the signature is validated on the remote target BIG-IP. If the signature is issued from a member of our trusted device group, the request is carried out with Administrator role permissions on the remote BIG-IP. This is the same security and process used to synchronize configurations between peer TMOS devices. The API Service Gateway premits a division of labor where, once a BIG-IP administration process creates the device trust with BIG-IP credentials, subsequent processes running within the container can make trusted iControl REST requests without being concerned with BIG-IP sercurity. This confines the requirement for BIG-IP credentials to only the API Service Gateway, and then only for the processes of creating the device trust group.</p>
+<p><img src="./assets/images/what_is_the_api_gateway_container.png" alt="What is the API Services Gateway Container"></p>
+<p><em>The API Services Gateway container is not a generalized API security proxy.</em> It is simply a way of extending our integration options in a cloud native way.</p>
+<p>In fact, utilizing the API Services Gateway container to establish trusts removes the need for F5 security on each iControl REST call to remote BIG-IPs. When the F5 security is removed from individual requests, third party security can be used to enforce proper access controls to provision BIG-IP services. Securing access to API endpoints is a major role typically already present in service ecosystems. The API Services Gateway increases the ease of integration for provisioning F5 services to an ecosystem, but then relies on the ecosystem&#39;s native security to authorize requests made to the gateway container.</p>
+<p>The API Services Gateway container is available with community support. As the intention of the container is to become F5&#39;s component in a ecosystem of deployed services, the supportability of the complete orchestration would naturally be beyond F5&#39;s scope. We only handle our part of the overall orchestration.</p>
+<p><img src="./assets/images/our_part_of_the_orchestration.png" alt="Our Part in the Orchestration Ecosystem"></p>
+<hr>
+<h2 id="-a-id-the_as3_container-what-is-the-as3-container-a-"><a id="the_as3_container">What is the AS3 Container?</a></h2>
+<p>The AS3 Container is an F5 optimized API Service Gateway which has the AS3 iControlLX extension pre-installed.</p>
+<p>The AS3 Container does not utilize device group trusts. F5 device level authentication and authorization for iControl REST calls to remote BIG-IP devices is still enforced by each BIG-IP device. The credentials for remote target AS3 deployments are included in the tenant declarations posted to the AS3 container. </p>
+<p>The AS3 container is only intended to support the pre-installed AS3 iControlLX extension. The customer should not expect to extend or alter the AS3 container in any way. You run it and use it.</p>
+<p>Because the AS3 container&#39;s functionality stands alone, without any dependencies on the customer&#39;s ecosystem of services, it can be maintained as a fully supported F5 product.</p>
+<p><img src="./assets/images/what_is_the_as3_container.png" alt="What is the AS3 Container"></p>
+<hr>
+<h2 id="why-are-we-releasing-new-apis-and-containers-">Why Are We Releasing New APIs and Containers?</h2>
+<p>For the most part, we have successfully migrated our customers and partners who are interested in orchestration to iControl REST. Why introduce new APIs for BIG-IP?</p>
+<hr>
+<h3 id="simplifying-big-ip-orchestration-through-declarative-apis">Simplifying BIG-IP Orchestration Through Declarative APIs</h3>
+<p>As BIG-IP administration increasingly becomes the job of automation, rather than human administrator interaction, focusing our efforts on simple declarative API interfaces will help our customers standardize their BIG-IP services, increases the agility of operations, and open the orchestration of the TMOS platform to a much larger ecosystem of external cloud services.</p>
+<p>For human administrator&#39;s, F5 has augmented the ease of use of TMOS devices in many ways. The XUI Web Graphical Interface performs complex provisioning workflows in behalf of the administrator. The TMSH CLI client uses smart tab completion to assist the administrator with available options for provisioning tasks.</p>
+<p><img src="./assets/images/ease_of_use_for_administrators.png" alt="ease of use measures for TMOS administrators"></p>
+<p>The complexities of remote provisioning BIG-IP services through iControl REST APIs has been a major hurdle for our customers in their efforts to automated. In our traditional &#39;programmable&#39; fashion, F5 introduced a scriptable framework allowing BIG-IP experts to take very complex provisioning interactions, or workflows, and expose them to non-F5 expert API tenants in a simplified way. The scripting language chosen was javascript. The APIs are made available as URL namespace extensions to the existing iControl REST URL schemas.</p>
+<pre><code>/mgmt/shared/{{simplified API namespace}}</code></pre><p>The interaction of the scripted workflows with the existing iControl REST API is handled through a set of javascript objects. These objects were called the <em>iControlLX extension framework</em>. In addition, web based UI extensions were enabled, called iAppsLX, allowing the F5 experts to define custom UI elements which can be accessed as part of the BIG-IP device&#39;s XUI web graphical interface.</p>
+<p><a href="https://clouddocs.f5.com/products/iapp/iapp-lx/tmos-14_0/">iControlLX Documentation</a> is part of the clouddocs.f5.com effort.</p>
+<p>As APIs access is the mechanism used in orchestrations, we will not discuss iAppsLX graphical presentations.</p>
+<p>Just because a framework exists, like iControlLX extensions, does not mean that the API endpoints exposed by that framework are easy to use. To that end, F5 began to follow a trend in orchestrated provisioning known as <em>&#39;declarative interfaces&#39;</em>. In general, declarative interfaces no longer require the end user to understand the stages and processes by which a system achieves a deployment, but rather simply defines the end service state of a system. </p>
+<p>Here is a an example of a YAML declarative deployment for a containerized proxy using the Kubernetes orchestrator.</p>
+<pre><code class="language-YAML">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80</code></pre>
+<p>Notice there is nothing in the YAML declaration which pertains to the steps to take in the proxy&#39;s configuration or entries in configuration files. The point of the declarative interface is to decouple and free the API tenant from any such concerns. This notion of decoupling is known as <em>&#39;separation of concerns&#39;</em> and is a basic concept in cloud ready deployments. In cloud, you decompose your systems into independent service interfaces which are only concerned about their part of the overall solution. As as system decomposes into smaller and smaller chunks of system functionality, these decomposed interfaces are referred to as <em>&#39;micro services&#39;</em>.</p>
+<hr>
+<h3 id="we-started-declaring-with-as3">We Started Declaring with AS3</h3>
+<p>Application Services 3 Extension (AS3) is the first supported declarative API for BIG-IP. AS3 endeavors to expose many advanced BIG-IP services while still hiding as many of the &#39;BIG-IP concerns&#39; as possible. AS3 is an iControlLX extension which, once installed on a system supporting the iControlLX framework, can be accessed at the iControl REST endpoint:</p>
+<pre><code>/mgmt/shared/appsvcs</code></pre><p><a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/">Application Services 3 Extension Documentation</a> is part of the clouddocs.f5.com effort.</p>
+<p>The AS3 iControlLX extension endpoint accepts a declaration defined by a standards based <a href="https://json-schema.org">JSON schema</a>. AS3 JSON schema allows for an entire BIG-IP&#39;s data plane services to be deployed through one declaration, in one REST call. The AS3 JSON schema includes the ability to define multiple tenants. We call the divisions tenants, verses the BIG-IP concept of partitions, because the API user should not be concerned that BIG-IP has partitions. In cloud, these divisions are typically defined as tenants, not partitions. In fact, if BIG-IP stopped supporting separations with partitions, the API definition of a tenant could remain unchanged. We are quite careful when we define the schema of our declarative APIs to make sure the concepts can be preserved as we pivot to our next generation of application delivery products.</p>
+<p><img src="./assets/images/as3_simplified_user_interaction.png" alt="AS3 simplified API Interaction"></p>
+<p>AS3&#39;s is constantly being enhanced to include declaration attributes which enable more BIG-IP services. AS3&#39;s aggressive agile based development cycle allows for the release of new AS3 versions on a much shorter release cycle than a full TMOS release. The development team demonstrates and tests new functionality for AS3 every two weeks.</p>
+<hr>
+<h3 id="there-is-still-more-to-declare">There Is Still More to Declare</h3>
+<p>Other declarative iControlLX extensions are being developed to simplify additional complex TMOS tasks. As an example, AS3 performs extensive validation before implementing its workflows. There are times where AS3&#39;s design might not lend itself to the frequency of automation requests possible in an given ecosystem. For such situations, other declarative APIs could work with AS3 to allow for rapid interaction with specific BIG-IP service objects.</p>
+<p>As another example, AS3 does not handle any system-wide onboarding tasks. Other declarative APIs are being developed to handle those type of orchestration requests.</p>
+<p>When complex orchestration tasks can be built into standalone micro services, supported containers, like the AS3 container, can become the release packaging. The AS3 container is an example of a standalone micro service just for AS3. Another example of a proposed standalone micro service we are considering, is a container build which unifies the creation and auto-scaling of TMOS VEs in multiple cloud environments. The intent for all such future standalone container builds is to provide simple <em>&#39;run and then use&#39;</em> orchestrations.</p>
+<p>All of our declarative APIs and micro service container builds follow the same aggressive development process. Our aim is to be able to provide the simplicity necessary for F5 services to function well in orchestrated environments at the agile pass of our customer&#39;s cloud native deployments. </p>
+<hr>
+<h2 id="deep-integration-into-an-orchestration-ecosystem">Deep Integration into an Orchestration Ecosystem</h2>
+<p>When declarative iControlLX services are deployed on existing TMOS platforms, they inherit TMOS&#39; system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS&#39; lack of support for cloud native identity systems, TMOS&#39; notions of roles, and the inflexibility of TMOs&#39; tenancy model make integration in the increasingly opinionated world of cloud orchestation extremely cumbersome.</p>
+<p><img src="./assets/images/bigip_no_oauth_support.png" alt="BIG-IP does not support customers identity or roles services"></p>
+<p>When TMOS forces the exposure of BIG-IP concepts to cloud service API tenants, we are not properly observing <em>&#39;separation of concerns&#39;</em> for our customers. The cloud won&#39;t change for F5, F5 needs to change for the cloud.</p>
+<p>In the past F5 has tried to accommodate specific partner ecosystem deployments, for example Cisco APIC or OpenStack Neutron. We did this by creating dedicated agent processes which work inside of the partner&#39;s controllers to <em>translate</em> requests into the workflows needed to provision BIG-IPs. Partner feature dependencies and multiple version testing have proven extremely fragile and complex to maintain.  Fortunately, the technology world had the same problem we did, that of supporting the lifecycle of their sofrware in the diversity of cloud services. A better way to handle software deployments in complex ecosystems based on process virtualization has take over our industry. <em>Containerization</em>!</p>
+<p>What can F5 do to enable deep integration now that ubiquitous containerization has become available in our customer&#39;s environments?</p>
+<p><em>We create our own containers which hides as many of the complexities of integrating with TMOS platforms as possible. That is the reason for the generalized <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a>. The API Service Gateway container can be integrated into micro service based controllers in ways that make orchestrated provisioning of TMOS devices appear native to the customer&#39;s services. Because of containerization, we can combine the simplicity of our new iControlLX extension declarative APIs with partner ecosystems services without forcing a costly and fragile deployment of one-off, ecosystem specific F5 agents.</em> </p>
+<hr>
+<h3 id="the-api-service-gateway-manifesto">The API Service Gateway Manifesto</h3>
+<h4 id="our-customers-should-be-able-to-utilize-the-advanced-services-we-offer-with-big-ip-without-being-concerned-about-the-tmos-system-complexities-we-use-to-deploy-those-services-"><strong><em>Our customers should be able to utilize the advanced services we offer with BIG-IP without being concerned about the TMOS system complexities we use to deploy those services.</em></strong></h4>
+<p>The marriage of housing our declarative iControlLX extensions and the ability to establish trusted communications with remote BIG-IPs make the API Services Gateway the basis for building F5&#39;s components within an ecosystem&#39;s orchestrated deployment of containers.</p>
+<hr>
+<h2 id="which-option-to-choose-for-a-customer-or-partner">Which Option to Choose for a Customer or Partner</h2>
+<h4 id="f5-big-iq-is-the-out-of-the-box-solution-for-big-ip-management-">F5 BIG-IQ is the <em>out of the box</em> solution for BIG-IP management.</h4>
+<ul>
+<li><p><em>If a customer wants a graphical user interface to manage BIG-IP devices, BIG-IQ provides that interface.</em></p>
+</li>
+<li><p><em>If a customer wants the ease of use declarative APIs for BIG-IP services available on an F5 managed platform, BIG-IQ 6.1 adds AS3 API endpoints for BIG-IQ managed devices. BIG-IQ will deploy AS3 on remote BIG-IPs and will apply analytics to AS3 declared services.</em></p>
+</li>
+</ul>
+<h4 id="if-your-customer-or-partner-is-looking-for-a-simplified-way-to-fully-control-the-provisioning-of-big-ips-as-part-of-their-own-orchestrated-services-we-now-offer-container-based-solutions-">If your customer or partner is looking for a simplified way to fully control the provisioning of BIG-IPs as part of their own orchestrated services, we now offer container based solutions.</h4>
+<ul>
+<li><p><em>If a customer wants a standalone way to provision BIG-IP services through a declarative API, the AS3 container performs that function.</em></p>
+</li>
+<li><p><em>If a customer or partner needs deep integration of BIG-IPs services into an ecosystem of cloud services, the API Service Gateway provides the basis for F5&#39;s components of such a solution.</em></p>
+</li>
+</ul>
+<h3 id="summary-of-solutions">Summary of Solutions</h3>
+<table>
+<thead>
+<tr>
+<th align="left">F5 Solution</th>
+<th align="left">Support Model</th>
+<th align="left">Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">F5 BIG-IQ</td>
+<td align="left">Full</td>
+<td align="left">Full Device Management with a Graphical Environment</td>
+</tr>
+<tr>
+<td align="left">F5 BIG-IQ with AS3</td>
+<td align="left">Full</td>
+<td align="left">Full Device Management with the Ease of Use Declarative API</td>
+</tr>
+<tr>
+<td align="left">F5 AS3 Container</td>
+<td align="left">Full</td>
+<td align="left">Ease of Use Declarative API as a Stand Alone Micro Service</td>
+</tr>
+<tr>
+<td align="left">F5 API Services Gateway &nbsp; &nbsp;</td>
+<td align="left">Community</td>
+<td align="left">F5&#39;s Components of an Integration into an Cloud Services Ecosystem</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="f5-container-orchestration-exercises">F5 Container Orchestration Exercises</h1>
+<hr>
+<h2 id="as3-container-exercises">AS3 Container Exercises</h2>
+<hr>
+<p>We will deploy the AS3 Container and then declare a BIG-IP device configuration.</p>
+<p>In these exercises you will need:</p>
+<ul>
+<li>A target BIG-IP system whose management address is reachable from the container</li>
+<li>Administrative role credentials to the BIG-IP</li>
+<li>The ability to launch a container with <code>docker</code></li>
+</ul>
+<hr>
+<h3 id="exercise-1-downloading-and-launching-the-as3-container-with-docker">Exercise #1 - Downloading and Launching the AS3 Container with <code>docker</code></h3>
+<h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
+<hr>
+<h2 id="f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</h2>
+<hr>
+<p>We will go through a series of exercises which illustrate the uses of the <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a> as a place to install and use iControlLX extensions and as a trusted gateway to remove BIG-IP concerns from a complex ecosystem integration.</p>
+<p>In these exercises you will need:</p>
+<ul>
+<li>A target BIG-IP system whose management address is reachable from the container</li>
+<li>Administrative role credentials to the BIG-IP</li>
+<li>The ability to launch a container with <code>docker</code></li>
+</ul>
+<hr>
+<h3 id="exercise-3-downloading-and-launching-the-api-services-gateway-with-docker">Exercise #3 - Downloading and Launching the API Services Gateway with <code>docker</code></h3>
+<h3 id="exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</h3>
+<h3 id="exercise-5-installing-trusted-proxy-icontrollx-extension-on-the-api-services-gateway">Exercise #5 - Installing Trusted Proxy iControlLX Extension on the API Services Gateway</h3>
+<h3 id="exercise-6-issuing-icontrol-rest-requests-through-the-trusted-proxy-icontrollx-extension">Exercise #6 - Issuing iControl REST Requests Through the Trusted Proxy iControlLX Extension</h3>
+<hr>
+<p>In the following exercises we are going to illustrate the use of your trusted device through an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using <code>docker-compose</code></p>
+<p>In these exercises you will need:</p>
+<ul>
+<li>At least one target BIG-IP system whose management address is reachable from the container</li>
+<li>Administrative role credentials to the BIG-IP</li>
+<li>The ability to launch a deployment of containers using <code>docker-compose</code></li>
+</ul>
+<h3 id="exercise-7-launching-our-micro-services-deployment-with-docker-compose">Exercise #7 - Launching Our Micro Services Deployment with <code>docker-compose</code></h3>
+<h3 id="exercise-8-installing-icontrollx-extensions-on-multiple-remote-big-ips">Exercise #8 - Installing iControlLX Extensions On Multiple Remote BIG-IPs</h3>
+<h3 id="exercise-9-making-trusted-declarations-to-multiple-remote-big-ips">Exercise #9 - Making Trusted Declarations to Multiple Remote BIG-IPs</h3>
+<hr>
+<p>In the following exercises we are going to utilize open standards based services already deployed as part of our demonstration orchestration deployment to restrict access to our declarative iControlLX extensions. We are going to authorize access via OAUTH to third party systems. Systems granted OAUTH credentials must maintain proper token security to a non-F5 component in our ecosystem in order to access our declarative APIs. This demonstrates how control of BIG-IP devices can be delegated securely to native components in a third party ecosystem.</p>
+<p>For these exercises, you must have completed exercises 7-9.</p>
+<h3 id="exercise-10-adding-third-party-oauth-credentials-for-big-ip-self-service-applications">Exercise #10 - Adding Third Party OAUTH Credentials for BIG-IP Self Service Applications</h3>
+<h3 id="exercise-11-adding-thrid-party-access-control-for-big-ip-self-service-applications">Exercise #11 - Adding Thrid Party Access Control for BIG-IP Self Service Applications</h3>
+<hr>
+<h1 id="the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</h1>
+<p>How do we keep up with rapidly developing service deployments in our every changing orchestration environments? We&#39;re betting on the ability to launch our containerized services. Our containerized services allow our customers to build distributed controllers which include secured access to BIG-IP provisioning. Our orchestration efforts become decoupled from partner dependencies and releases through iControlLX extensions declarative APIs. The internal workings of BIG-IP trusted access, iControl REST workflows, or even our ability to pivot to non-TMOS application delivery systems, can be masked from the partner ecosystem by consistent and maintainable declarations.</p>
+<p>Perhaps you are thinking this sounds like how other container orchestrators, like Kubernetes, handle deployments. Exactly! We are meeting the market where it is and, hopefully, where it is going. REST APIs were a great step in providing standardized protocol access without proprietary agents. The next phase was providing declared services which integrate directly into containerized application deployments. If you did the exercises above, then you&#39;ve already seen how this all works together. The API Service Gateway provides the basis to greatly simply access to F5 services and build out a fully integrated ecosystem.</p>
+<hr>
+<h1 id="how-can-i-capitalize-on-our-new-f5-orchestration-containers-">How Can I Capitalize On Our New F5 Orchestration Containers?</h1>
+<p>There are multiple ways:</p>
+<ul>
+<li><p>Start educating your customers on the use of AS3 declarations. This prepares them for cloud ready orchestration.</p>
+</li>
+<li><p>Wait for F5 to release API Service Gateway controller services for specific ecosystems like APIC and OpenStack</p>
+</li>
+<li><p>Present the API Service Gateway to your customers who need to develop deep integration for BIG-IP provisioning now.</p>
+</li>
+</ul>
+<p>The exercises above were your introduction to ready yourself for cloud native orchestration. Some customers are already expecting you to understand these concepts. Other customers&#39; migration to cloud services might still be simply a plan. Either way, you can be ready to help them now.</p>
+<hr>

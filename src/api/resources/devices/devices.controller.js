@@ -150,7 +150,10 @@ export default {
                     if (request.valid) {
                         Device.get(id, request.uri, req.body)
                             .then((pres) => {
-                                return res.status(pres.resp.statusCode).json(pres.body);
+                                if (pres.body.hasOwnProperty('responseHeaders')) {
+                                    res.headers = pres.body.responseHeaders;
+                                }
+                                return res.status(pres.resp.statusCode).json(pres.body.responseBody);
                             });
                     } else {
                         return res.status(400).json({
@@ -179,7 +182,10 @@ export default {
                     if (request.valid) {
                         Device.post(id, request.uri, req.body)
                             .then((pres) => {
-                                return res.status(pres.resp.statusCode).json(pres.body);
+                                if (pres.body.hasOwnProperty('responseHeaders')) {
+                                    res.headers = pres.body.responseHeaders;
+                                }
+                                return res.status(pres.resp.statusCode).json(pres.body.responseBody);
                             });
                     } else {
                         return res.status(400).json({
@@ -208,7 +214,10 @@ export default {
                     if (request.valid) {
                         Device.put(id, request.uri, req.body)
                             .then((pres) => {
-                                return res.status(pres.resp.statusCode).json(pres.body);
+                                if (pres.body.hasOwnProperty('responseHeaders')) {
+                                    res.headers = pres.body.responseHeaders;
+                                }
+                                return res.status(pres.resp.statusCode).json(pres.body.responseBody);
                             });
                     } else {
                         return res.status(400).json({
@@ -237,7 +246,10 @@ export default {
                     if (request.valid) {
                         Device.patch(id, request.uri, req.body)
                             .then((pres) => {
-                                return res.status(pres.resp.statusCode).json(pres.body);
+                                if (pres.body.hasOwnProperty('responseHeaders')) {
+                                    res.headers = pres.body.responseHeaders;
+                                }
+                                return res.status(pres.resp.statusCode).json(pres.body.responseBody);
                             });
                     } else {
                         return res.status(400).json({
@@ -266,7 +278,10 @@ export default {
                     if (request.valid) {
                         Device.del(id, request.uri, req.body)
                             .then((pres) => {
-                                return res.status(pres.resp.statusCode).json(pres.body);
+                                if (pres.body.hasOwnProperty('responseHeaders')) {
+                                    res.headers = pres.body.responseHeaders;
+                                }
+                                return res.status(pres.resp.statusCode).json(pres.body.responseBody);
                             });
                     } else {
                         return res.status(400).json({

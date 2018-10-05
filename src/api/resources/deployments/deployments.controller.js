@@ -217,7 +217,8 @@ export default {
                             responses.push({
                                 id: deviceId,
                                 status: pres.resp.statusCode,
-                                body: pres.body
+                                responseHeaders: pres.body.responseHeaders,
+                                body: pres.body.responseBody
                             })
                         } else {
                             responses.push({
@@ -274,7 +275,8 @@ export default {
                             responses.push({
                                 id: deviceId,
                                 status: pres.resp.statusCode,
-                                body: pres.body
+                                responseHeaders: pres.body.responseHeaders,
+                                body: pres.body.responseBody
                             })
                         } else {
                             responses.push({
@@ -331,7 +333,8 @@ export default {
                             responses.push({
                                 id: deviceId,
                                 status: pres.resp.statusCode,
-                                body: pres.body
+                                responseHeaders: pres.body.responseHeaders,
+                                body: pres.body.responseBody
                             })
                         } else {
                             responses.push({
@@ -388,7 +391,8 @@ export default {
                             responses.push({
                                 id: deviceId,
                                 status: pres.resp.statusCode,
-                                body: pres.body
+                                responseHeaders: pres.body.responseHeaders,
+                                body: pres.body.responseBody
                             })
                         } else {
                             responses.push({
@@ -445,7 +449,8 @@ export default {
                             responses.push({
                                 id: deviceId,
                                 status: pres.resp.statusCode,
-                                body: pres.body
+                                responseHeaders: pres.body.responseHeaders,
+                                body: pres.body.responseBody
                             })
                         } else {
                             responses.push({
