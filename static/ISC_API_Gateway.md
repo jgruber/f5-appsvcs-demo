@@ -69,7 +69,7 @@ The API Services Gateway container is available with community support. As the i
 
 ---
 
-<a id="the_as3_container">What is the AS3 Container?</a>
+What is the AS3 Container?
 -------------------
 
 The AS3 Container is an F5 optimized API Service Gateway which has the AS3 iControlLX extension pre-installed.
@@ -246,7 +246,19 @@ In these exercises you will need:
 
 ### Exercise #1 - Downloading and Launching the AS3 Container with ```docker```
 
+Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device
+
+Step 2. Pull the AS3 Container from Dockerhub
+
+Step 3. Create a running instance of the AS3 Container
+
 ### Exercise #2 - Declaring BIG-IP Services through the AS3 Container
+
+Step 1. Vaidate the version of the AS3 iControl Extension in the AS3 Container
+
+Step 2. Get any existing AS3 declaration on a remote BIG-IP
+
+Step 3. Issue an AS3 declaration to the a remote BIG-IP
 
 ---
 
@@ -267,15 +279,48 @@ In these exercises you will need:
 
 ### Exercise #3 - Downloading and Launching the API Services Gateway with ```docker```
 
+Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device
+
+
+Step 2. Pull the API Services Gateway Container from Dockerhub
+
+
+Step 3. Create a running instance of the API Services Gateway
+
+
 
 ### Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs
+
+Step 1. Make a iControl REST POST request to add a tusted remote BIG-IP
+
+
+Step 2. Query the status of the device trust to assure it is ACTIVE
 
 
 ### Exercise #5 - Installing Trusted Proxy iControlLX Extension on the API Services Gateway
 
+Step 1. Upload the Tusted Proxy iControlLX Extension RPM file to the API Services Gateway Container
+
+
+Step 2. Make an iControl REST POST request to initiate an install task for the Trusted Proxy iControlLX Extension in the API Services Gateway Container
+
+
+Step 3. Make an iControl REST POST request to initiate a query task for iControlLX Extensions in the API Services Gateway Container
+
+
+Step 4. Make an iControl REST GET request to retrieve the results of your query task
+
 
 ### Exercise #6 - Issuing iControl REST Requests Through the Trusted Proxy iControlLX Extension
 
+Step 1. Make an iControl REST GET request through the Trusted Proxy iControlLX Extension to a remote BIG-IP without credentials. 
+
+```
+NOTE: Stop both the AS3 Container and the API Service Gateway Containers before progressing to the next step
+
+docker stop AS3Container
+docker stop APIServicesGateway
+```
 
 ---
 
@@ -289,11 +334,33 @@ In these exercises you will need:
 
 ### Exercise #7 - Launching Our Micro Services Deployment with ```docker-compose```
 
+Step 1. Running ```docker-compose``` 
+
+Step 2. Validate the Demonstration app is running querying the OpenAPI Documentation user interface
+
+Step 3. Adding a initial User Administrator user to our demonstration application
+
+Step 4. Adding the BIGIP Administrator role to our demonstration application user
+
+Step 5. Adding a remote BIG-IP as a Trusted Device
+
+Step 6. Making a trusted iControl REST to the our application Device
+
+Step 7. Adding a Deployment including our Device
+
+Step 8. Making a trusted iControl REST to our application Deployment
+
 
 ### Exercise #8 - Installing iControlLX Extensions On Multiple Remote BIG-IPs
 
+Step 9, Uploading the AS3 iControlLX Extension to the demonstration application
+
+Step 10. Uploading the AS3 iControlLX Extension to a Deployment
+
 
 ### Exercise #9 - Making Trusted Declarations to Multiple Remote BIG-IPs
+
+Step 11. Get the version of the AS3 iControlLX Extension on all the Devices in your Deployment
 
 ---
 
@@ -303,9 +370,17 @@ For these exercises, you must have completed exercises 7-9.
 
 ### Exercise #10 - Adding Third Party OAUTH Credentials for BIG-IP Self Service Applications
 
+Step 12. Adding a Client ID 
+
+Step 13. Authorizing our Declaration to our Client 
+
+Step 14. Using our Client ID to make our Declaration
+
 ### Exercise #11 - Adding Thrid Party Access Control for BIG-IP Self Service Applications
 
 ---
+
+TODO: Add Steps to Build an IAM Role Policy and Use that to secure our declaration
 
 
 The API Service Gateway in Next Generation Partner Ecosystems

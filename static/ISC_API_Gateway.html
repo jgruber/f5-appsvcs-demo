@@ -62,7 +62,7 @@
 <p>The API Services Gateway container is available with community support. As the intention of the container is to become F5&#39;s component in a ecosystem of deployed services, the supportability of the complete orchestration would naturally be beyond F5&#39;s scope. We only handle our part of the overall orchestration.</p>
 <p><img src="./assets/images/our_part_of_the_orchestration.png" alt="Our Part in the Orchestration Ecosystem"></p>
 <hr>
-<h2 id="-a-id-the_as3_container-what-is-the-as3-container-a-"><a id="the_as3_container">What is the AS3 Container?</a></h2>
+<h2 id="what-is-the-as3-container-">What is the AS3 Container?</h2>
 <p>The AS3 Container is an F5 optimized API Service Gateway which has the AS3 iControlLX extension pre-installed.</p>
 <p>The AS3 Container does not utilize device group trusts. F5 device level authentication and authorization for iControl REST calls to remote BIG-IP devices is still enforced by each BIG-IP device. The credentials for remote target AS3 deployments are included in the tenant declarations posted to the AS3 container. </p>
 <p>The AS3 container is only intended to support the pre-installed AS3 iControlLX extension. The customer should not expect to extend or alter the AS3 container in any way. You run it and use it.</p>
@@ -189,7 +189,13 @@ spec:
 </ul>
 <hr>
 <h3 id="exercise-1-downloading-and-launching-the-as3-container-with-docker">Exercise #1 - Downloading and Launching the AS3 Container with <code>docker</code></h3>
+<p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
+<p>Step 2. Pull the AS3 Container from Dockerhub</p>
+<p>Step 3. Create a running instance of the AS3 Container</p>
 <h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
+<p>Step 1. Vaidate the version of the AS3 iControl Extension in the AS3 Container</p>
+<p>Step 2. Get any existing AS3 declaration on a remote BIG-IP</p>
+<p>Step 3. Issue an AS3 declaration to the a remote BIG-IP</p>
 <hr>
 <h2 id="f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</h2>
 <hr>
@@ -202,10 +208,23 @@ spec:
 </ul>
 <hr>
 <h3 id="exercise-3-downloading-and-launching-the-api-services-gateway-with-docker">Exercise #3 - Downloading and Launching the API Services Gateway with <code>docker</code></h3>
+<p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
+<p>Step 2. Pull the API Services Gateway Container from Dockerhub</p>
+<p>Step 3. Create a running instance of the API Services Gateway</p>
 <h3 id="exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</h3>
+<p>Step 1. Make a iControl REST POST request to add a tusted remote BIG-IP</p>
+<p>Step 2. Query the status of the device trust to assure it is ACTIVE</p>
 <h3 id="exercise-5-installing-trusted-proxy-icontrollx-extension-on-the-api-services-gateway">Exercise #5 - Installing Trusted Proxy iControlLX Extension on the API Services Gateway</h3>
+<p>Step 1. Upload the Tusted Proxy iControlLX Extension RPM file to the API Services Gateway Container</p>
+<p>Step 2. Make an iControl REST POST request to initiate an install task for the Trusted Proxy iControlLX Extension in the API Services Gateway Container</p>
+<p>Step 3. Make an iControl REST POST request to initiate a query task for iControlLX Extensions in the API Services Gateway Container</p>
+<p>Step 4. Make an iControl REST GET request to retrieve the results of your query task</p>
 <h3 id="exercise-6-issuing-icontrol-rest-requests-through-the-trusted-proxy-icontrollx-extension">Exercise #6 - Issuing iControl REST Requests Through the Trusted Proxy iControlLX Extension</h3>
-<hr>
+<p>Step 1. Make an iControl REST GET request through the Trusted Proxy iControlLX Extension to a remote BIG-IP without credentials. </p>
+<pre><code>NOTE: Stop both the AS3 Container and the API Service Gateway Containers before progressing to the next step
+
+docker stop AS3Container
+docker stop APIServicesGateway</code></pre><hr>
 <p>In the following exercises we are going to illustrate the use of your trusted device through an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using <code>docker-compose</code></p>
 <p>In these exercises you will need:</p>
 <ul>
@@ -214,14 +233,29 @@ spec:
 <li>The ability to launch a deployment of containers using <code>docker-compose</code></li>
 </ul>
 <h3 id="exercise-7-launching-our-micro-services-deployment-with-docker-compose">Exercise #7 - Launching Our Micro Services Deployment with <code>docker-compose</code></h3>
+<p>Step 1. Running <code>docker-compose</code> </p>
+<p>Step 2. Validate the Demonstration app is running querying the OpenAPI Documentation user interface</p>
+<p>Step 3. Adding a initial User Administrator user to our demonstration application</p>
+<p>Step 4. Adding the BIGIP Administrator role to our demonstration application user</p>
+<p>Step 5. Adding a remote BIG-IP as a Trusted Device</p>
+<p>Step 6. Making a trusted iControl REST to the our application Device</p>
+<p>Step 7. Adding a Deployment including our Device</p>
+<p>Step 8. Making a trusted iControl REST to our application Deployment</p>
 <h3 id="exercise-8-installing-icontrollx-extensions-on-multiple-remote-big-ips">Exercise #8 - Installing iControlLX Extensions On Multiple Remote BIG-IPs</h3>
+<p>Step 9, Uploading the AS3 iControlLX Extension to the demonstration application</p>
+<p>Step 10. Uploading the AS3 iControlLX Extension to a Deployment</p>
 <h3 id="exercise-9-making-trusted-declarations-to-multiple-remote-big-ips">Exercise #9 - Making Trusted Declarations to Multiple Remote BIG-IPs</h3>
+<p>Step 11. Get the version of the AS3 iControlLX Extension on all the Devices in your Deployment</p>
 <hr>
 <p>In the following exercises we are going to utilize open standards based services already deployed as part of our demonstration orchestration deployment to restrict access to our declarative iControlLX extensions. We are going to authorize access via OAUTH to third party systems. Systems granted OAUTH credentials must maintain proper token security to a non-F5 component in our ecosystem in order to access our declarative APIs. This demonstrates how control of BIG-IP devices can be delegated securely to native components in a third party ecosystem.</p>
 <p>For these exercises, you must have completed exercises 7-9.</p>
 <h3 id="exercise-10-adding-third-party-oauth-credentials-for-big-ip-self-service-applications">Exercise #10 - Adding Third Party OAUTH Credentials for BIG-IP Self Service Applications</h3>
+<p>Step 12. Adding a Client ID </p>
+<p>Step 13. Authorizing our Declaration to our Client </p>
+<p>Step 14. Using our Client ID to make our Declaration</p>
 <h3 id="exercise-11-adding-thrid-party-access-control-for-big-ip-self-service-applications">Exercise #11 - Adding Thrid Party Access Control for BIG-IP Self Service Applications</h3>
 <hr>
+<p>TODO: Add Steps to Build an IAM Role Policy and Use that to secure our declaration</p>
 <h1 id="the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</h1>
 <p>How do we keep up with rapidly developing service deployments in our every changing orchestration environments? We&#39;re betting on the ability to launch our containerized services. Our containerized services allow our customers to build distributed controllers which include secured access to BIG-IP provisioning. Our orchestration efforts become decoupled from partner dependencies and releases through iControlLX extensions declarative APIs. The internal workings of BIG-IP trusted access, iControl REST workflows, or even our ability to pivot to non-TMOS application delivery systems, can be masked from the partner ecosystem by consistent and maintainable declarations.</p>
 <p>Perhaps you are thinking this sounds like how other container orchestrators, like Kubernetes, handle deployments. Exactly! We are meeting the market where it is and, hopefully, where it is going. REST APIs were a great step in providing standardized protocol access without proprietary agents. The next phase was providing declared services which integrate directly into containerized application deployments. If you did the exercises above, then you&#39;ve already seen how this all works together. The API Service Gateway provides the basis to greatly simply access to F5 services and build out a fully integrated ecosystem.</p>
