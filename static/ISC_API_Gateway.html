@@ -19,14 +19,12 @@
 </ol>
 <h2 id="f5-container-orchestration-exercises">F5 Container Orchestration Exercises</h2>
 <ol start="6">
-<li><p><a href="#as3-container-exercises">AS3 Container Exercises</a></p>
-<ul>
+<li><a href="#as3-container-exercises">AS3 Container Exercises</a><ul>
 <li><a href="#exercise-1-downloading-and-launching-the-as3-container-with-docker">Exercise #1 - Downloading and Launching the AS3 Container with docker</a></li>
 <li><a href="#exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</a></li>
 </ul>
 </li>
-<li><p><a href="#f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</a></p>
-<ul>
+<li><a href="#f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</a><ul>
 <li><a href="#exercise-3-downloading-and-launching-the-api-services-gateway-with-docker">Exercise #3 - Downloading and Launching the API Services Gateway with docker</a></li>
 <li><a href="#exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</a></li>
 <li><a href="#exercise-5-installing-trusted-proxy-icontrollx-extension-on-the-api-services-gateway">Exercise #5 - Installing Trusted Proxy iControlLX Extension on the API Services Gateway</a></li>
@@ -38,10 +36,8 @@
 <li><a href="#exercise-11-adding-thrid-party-access-control-for-big-ip-self-service-applications">Exercise #11 - Adding Thrid Party Access Control for BIG-IP Self Service Applications</a></li>
 </ul>
 </li>
-<li><p><a href="#the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</a></p>
-</li>
-<li><p><a href="#how-can-i-capitalize-on-our-new-f5-orchestration-containers-">How Can I Capitalize On Our New F5 Orchestration Containers?</a></p>
-</li>
+<li><a href="#the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</a></li>
+<li><a href="#how-can-i-capitalize-on-our-new-f5-orchestration-containers-">How Can I Capitalize On Our New F5 Orchestration Containers?</a></li>
 </ol>
 <hr>
 <p>F5 now offers two container based solutions to aid in the orchestrated provisioning of BIG-IP services.</p>
@@ -49,7 +45,6 @@
 <li><a href="#the_api_services_gateway_container">The API Services Gateway Container</a></li>
 <li><a href="#the_as3_container">The AS3 Container</a></li>
 </ul>
-<hr>
 <h2 id="what-is-the-api-service-gateway-container-">What is the API Service Gateway Container?</h2>
 <p>The <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a> is a docker built container which runs both the iControl REST framework (restjavad) and the iControlLX extension framework (restnoded). </p>
 <p>The API Services Gateway container allows for the installation and operation of iControlLX extensions outside of a BIG-IP.  This enables opportunities for F5, or our customers and partners who are familiar with the iControlLX extensions framework, to run complex orchestration workflows in a container, rather then consuming resources on their BIG-IP&#39;s control planes.</p>
@@ -61,17 +56,14 @@
 <p>In fact, utilizing the API Services Gateway container to establish trusts removes the need for F5 security on each iControl REST call to remote BIG-IPs. When the F5 security is removed from individual requests, third party security can be used to enforce proper access controls to provision BIG-IP services. Securing access to API endpoints is a major role typically already present in service ecosystems. The API Services Gateway increases the ease of integration for provisioning F5 services to an ecosystem, but then relies on the ecosystem&#39;s native security to authorize requests made to the gateway container.</p>
 <p>The API Services Gateway container is available with community support. As the intention of the container is to become F5&#39;s component in a ecosystem of deployed services, the supportability of the complete orchestration would naturally be beyond F5&#39;s scope. We only handle our part of the overall orchestration.</p>
 <p><img src="./assets/images/our_part_of_the_orchestration.png" alt="Our Part in the Orchestration Ecosystem"></p>
-<hr>
 <h2 id="what-is-the-as3-container-">What is the AS3 Container?</h2>
 <p>The AS3 Container is an F5 optimized API Service Gateway which has the AS3 iControlLX extension pre-installed.</p>
 <p>The AS3 Container does not utilize device group trusts. F5 device level authentication and authorization for iControl REST calls to remote BIG-IP devices is still enforced by each BIG-IP device. The credentials for remote target AS3 deployments are included in the tenant declarations posted to the AS3 container. </p>
 <p>The AS3 container is only intended to support the pre-installed AS3 iControlLX extension. The customer should not expect to extend or alter the AS3 container in any way. You run it and use it.</p>
 <p>Because the AS3 container&#39;s functionality stands alone, without any dependencies on the customer&#39;s ecosystem of services, it can be maintained as a fully supported F5 product.</p>
 <p><img src="./assets/images/what_is_the_as3_container.png" alt="What is the AS3 Container"></p>
-<hr>
 <h2 id="why-are-we-releasing-new-apis-and-containers-">Why Are We Releasing New APIs and Containers?</h2>
 <p>For the most part, we have successfully migrated our customers and partners who are interested in orchestration to iControl REST. Why introduce new APIs for BIG-IP?</p>
-<hr>
 <h3 id="simplifying-big-ip-orchestration-through-declarative-apis">Simplifying BIG-IP Orchestration Through Declarative APIs</h3>
 <p>As BIG-IP administration increasingly becomes the job of automation, rather than human administrator interaction, focusing our efforts on simple declarative API interfaces will help our customers standardize their BIG-IP services, increases the agility of operations, and open the orchestration of the TMOS platform to a much larger ecosystem of external cloud services.</p>
 <p>For human administrator&#39;s, F5 has augmented the ease of use of TMOS devices in many ways. The XUI Web Graphical Interface performs complex provisioning workflows in behalf of the administrator. The TMSH CLI client uses smart tab completion to assist the administrator with available options for provisioning tasks.</p>
@@ -104,20 +96,17 @@ spec:
         ports:
         - containerPort: 80</code></pre>
 <p>Notice there is nothing in the YAML declaration which pertains to the steps to take in the proxy&#39;s configuration or entries in configuration files. The point of the declarative interface is to decouple and free the API tenant from any such concerns. This notion of decoupling is known as <em>&#39;separation of concerns&#39;</em> and is a basic concept in cloud ready deployments. In cloud, you decompose your systems into independent service interfaces which are only concerned about their part of the overall solution. As as system decomposes into smaller and smaller chunks of system functionality, these decomposed interfaces are referred to as <em>&#39;micro services&#39;</em>.</p>
-<hr>
 <h3 id="we-started-declaring-with-as3">We Started Declaring with AS3</h3>
 <p>Application Services 3 Extension (AS3) is the first supported declarative API for BIG-IP. AS3 endeavors to expose many advanced BIG-IP services while still hiding as many of the &#39;BIG-IP concerns&#39; as possible. AS3 is an iControlLX extension which, once installed on a system supporting the iControlLX framework, can be accessed at the iControl REST endpoint:</p>
 <pre><code>/mgmt/shared/appsvcs</code></pre><p><a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/">Application Services 3 Extension Documentation</a> is part of the clouddocs.f5.com effort.</p>
 <p>The AS3 iControlLX extension endpoint accepts a declaration defined by a standards based <a href="https://json-schema.org">JSON schema</a>. AS3 JSON schema allows for an entire BIG-IP&#39;s data plane services to be deployed through one declaration, in one REST call. The AS3 JSON schema includes the ability to define multiple tenants. We call the divisions tenants, verses the BIG-IP concept of partitions, because the API user should not be concerned that BIG-IP has partitions. In cloud, these divisions are typically defined as tenants, not partitions. In fact, if BIG-IP stopped supporting separations with partitions, the API definition of a tenant could remain unchanged. We are quite careful when we define the schema of our declarative APIs to make sure the concepts can be preserved as we pivot to our next generation of application delivery products.</p>
 <p><img src="./assets/images/as3_simplified_user_interaction.png" alt="AS3 simplified API Interaction"></p>
 <p>AS3&#39;s is constantly being enhanced to include declaration attributes which enable more BIG-IP services. AS3&#39;s aggressive agile based development cycle allows for the release of new AS3 versions on a much shorter release cycle than a full TMOS release. The development team demonstrates and tests new functionality for AS3 every two weeks.</p>
-<hr>
 <h3 id="there-is-still-more-to-declare">There Is Still More to Declare</h3>
 <p>Other declarative iControlLX extensions are being developed to simplify additional complex TMOS tasks. As an example, AS3 performs extensive validation before implementing its workflows. There are times where AS3&#39;s design might not lend itself to the frequency of automation requests possible in an given ecosystem. For such situations, other declarative APIs could work with AS3 to allow for rapid interaction with specific BIG-IP service objects.</p>
 <p>As another example, AS3 does not handle any system-wide onboarding tasks. Other declarative APIs are being developed to handle those type of orchestration requests.</p>
 <p>When complex orchestration tasks can be built into standalone micro services, supported containers, like the AS3 container, can become the release packaging. The AS3 container is an example of a standalone micro service just for AS3. Another example of a proposed standalone micro service we are considering, is a container build which unifies the creation and auto-scaling of TMOS VEs in multiple cloud environments. The intent for all such future standalone container builds is to provide simple <em>&#39;run and then use&#39;</em> orchestrations.</p>
 <p>All of our declarative APIs and micro service container builds follow the same aggressive development process. Our aim is to be able to provide the simplicity necessary for F5 services to function well in orchestrated environments at the agile pass of our customer&#39;s cloud native deployments. </p>
-<hr>
 <h2 id="deep-integration-into-an-orchestration-ecosystem">Deep Integration into an Orchestration Ecosystem</h2>
 <p>When declarative iControlLX services are deployed on existing TMOS platforms, they inherit TMOS&#39; system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS&#39; lack of support for cloud native identity systems, TMOS&#39; notions of roles, and the inflexibility of TMOs&#39; tenancy model make integration in the increasingly opinionated world of cloud orchestation extremely cumbersome.</p>
 <p><img src="./assets/images/bigip_no_oauth_support.png" alt="BIG-IP does not support customers identity or roles services"></p>
@@ -125,11 +114,9 @@ spec:
 <p>In the past F5 has tried to accommodate specific partner ecosystem deployments, for example Cisco APIC or OpenStack Neutron. We did this by creating dedicated agent processes which work inside of the partner&#39;s controllers to <em>translate</em> requests into the workflows needed to provision BIG-IPs. Partner feature dependencies and multiple version testing have proven extremely fragile and complex to maintain.  Fortunately, the technology world had the same problem we did, that of supporting the lifecycle of their sofrware in the diversity of cloud services. A better way to handle software deployments in complex ecosystems based on process virtualization has take over our industry. <em>Containerization</em>!</p>
 <p>What can F5 do to enable deep integration now that ubiquitous containerization has become available in our customer&#39;s environments?</p>
 <p><em>We create our own containers which hides as many of the complexities of integrating with TMOS platforms as possible. That is the reason for the generalized <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a>. The API Service Gateway container can be integrated into micro service based controllers in ways that make orchestrated provisioning of TMOS devices appear native to the customer&#39;s services. Because of containerization, we can combine the simplicity of our new iControlLX extension declarative APIs with partner ecosystems services without forcing a costly and fragile deployment of one-off, ecosystem specific F5 agents.</em> </p>
-<hr>
 <h3 id="the-api-service-gateway-manifesto">The API Service Gateway Manifesto</h3>
 <h4 id="our-customers-should-be-able-to-utilize-the-advanced-services-we-offer-with-big-ip-without-being-concerned-about-the-tmos-system-complexities-we-use-to-deploy-those-services-"><strong><em>Our customers should be able to utilize the advanced services we offer with BIG-IP without being concerned about the TMOS system complexities we use to deploy those services.</em></strong></h4>
 <p>The marriage of housing our declarative iControlLX extensions and the ability to establish trusted communications with remote BIG-IPs make the API Services Gateway the basis for building F5&#39;s components within an ecosystem&#39;s orchestrated deployment of containers.</p>
-<hr>
 <h2 id="which-option-to-choose-for-a-customer-or-partner">Which Option to Choose for a Customer or Partner</h2>
 <h4 id="f5-big-iq-is-the-out-of-the-box-solution-for-big-ip-management-">F5 BIG-IQ is the <em>out of the box</em> solution for BIG-IP management.</h4>
 <ul>
@@ -179,40 +166,544 @@ spec:
 <h1 id="f5-container-orchestration-exercises">F5 Container Orchestration Exercises</h1>
 <hr>
 <h2 id="as3-container-exercises">AS3 Container Exercises</h2>
-<hr>
 <p>We will deploy the AS3 Container and then declare a BIG-IP device configuration.</p>
 <p>In these exercises you will need:</p>
 <ul>
 <li>A target BIG-IP system whose management address is reachable from the container</li>
 <li>Administrative role credentials to the BIG-IP</li>
-<li>The ability to launch a container with <code>docker</code></li>
+<li>A running instance of the F5 Container Demonstration Virtual Device</li>
 </ul>
 <hr>
 <h3 id="exercise-1-downloading-and-launching-the-as3-container-with-docker">Exercise #1 - Downloading and Launching the AS3 Container with <code>docker</code></h3>
 <p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
-<p>Step 2. Pull the AS3 Container from Dockerhub</p>
-<p>Step 3. Create a running instance of the AS3 Container</p>
-<h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
-<p>Step 1. Vaidate the version of the AS3 iControl Extension in the AS3 Container</p>
-<p>Step 2. Get any existing AS3 declaration on a remote BIG-IP</p>
-<p>Step 3. Issue an AS3 declaration to the a remote BIG-IP</p>
+<p>You can Obtain the IP address of your booted F5 Container Demonstration Virtual Device by opening its console. </p>
+<p><img src="./assets/images/f5_container_demonstration_virtual_device_console.png" alt="F5 Container Demonstration Virtual Device Console"></p>
+<p>In this example, the IP address would be 172.16.27.128. Your address will likely be different.</p>
+<p>If the Host entry IP address is blank, please assure your network interface is properly conntected to a network.</p>
+<div class='webcontent'>
+
+<p>Fill in the form below to create your cut-n-paste examples for these exercises.</p>
 <hr>
+<table>
+<thead>
+<tr>
+<th align="left">Attribute</th>
+<th align="left">Explaination</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">deviceIP</td>
+<td align="left">The F5 Container Demonstration Virtual Device IP Address</td>
+</tr>
+<tr>
+<td align="left">targetHost</td>
+<td align="left">The iControl REST remote BIG-IP host, reachable from the container</td>
+</tr>
+<tr>
+<td align="left">targetUsername</td>
+<td align="left">The iControl REST username on the remote BIG-IP</td>
+</tr>
+<tr>
+<td align="left">targetPaaphrase</td>
+<td align="left">The iControl REST password on the remote BIG-IP</td>
+</tr>
+</tbody></table>
+<hr>
+<script>
+function buildAS3Exercises()
+{
+
+    var deviceIp = document.getElementById('as3-container-container-demonstration-virtual-device-ip').value;
+    var targetHost = document.getElementById('as3-container-exercises-targetHost').value;
+    var targetUsername = document.getElementById('as3-container-exercises-targetUsername').value;
+    var targetPassphrase = document.getElementById('as3-container-exercises-targetPassphrase').value;
+
+    var ssh_login = "<b>ssh f5admin@" + deviceIp + "</b>\nf5admin@" + deviceIp + "'s password: <b>f5admin</b>";
+
+    var as3_version_command = `
+<b>curl -k -s https://localhost:8443/mgmt/shared/appsvcs/info|json_pp</b>
+
+{
+   "schemaMinimum" : "3.0.0",
+   "release" : "3",
+   "version" : "3.5.0",
+   "schemaCurrent" : "3.5.0"
+}
+`;
+
+    var as3_retrieve_command = `
+<b>curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d '{
+    "class": "AS3",
+    "action": "retrieve",
+    "targetHost": "` + targetHost + `",
+    "targetUsername": "` + targetUsername + `",
+    "targetPassphrase": "` + targetPassphrase + `"
+}'|json_pp</b>
+`;
+
+    var as3_retrieve_command_output = `
+f5admin@containerhost:~$ <b>curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d '{
+    "class": "AS3",
+    "action": "retrieve",
+    "targetHost": "` + targetHost + `",
+    "targetUsername": "` + targetUsername + `",
+    "targetPassphrase": "` + targetPassphrase + `"
+}'|json_pp</b>
+
+f5admin@containerhost:~$ <-- Notice no response output!
+
+`;
+    var as3_retrieve_command_output_post_to_remote_bigip = `
+f5admin@containerhost:~$ <b>curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `/mgmt/shared/appsvcs/declare -d '{
+>     "class": "AS3",
+>     "action": "retrieve"
+> }'|json_pp</b>
+
+{
+    "statusCode": 404,
+    "message": "declaration 0 not found",
+    "code": 404
+}
+`;
+
+    var as3_retrieve_command_output_get_to_remote_bigip = `
+f5admin@containerhost:~$ <b>curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `/mgmt/shared/appsvcs/declare|json_pp</b>
+
+{
+    "statusCode": 404,
+    "message": "declaration 0 not found",
+    "code": 404
+}
+`;
+
+
+    var as3_declare_command = `
+<b>curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d '{
+    "class": "AS3",
+    "action": "deploy",
+    "targetHost": "` + targetHost + `",
+    "targetUsername": "` + targetUsername + `",
+    "targetPassphrase": "` + targetPassphrase + `",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.0.0",
+        "id": "container",
+        "label": "Sample 1 in a container",
+        "remark": "Simple HTTP application with RR pool",
+        "Sample_container": {
+            "class": "Tenant",
+            "A1": {
+                "class": "Application",
+                "template": "http",
+                "serviceMain": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.0.1.10"
+                ],
+                "pool": "web_pool"
+                },
+                "web_pool": {
+                "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                "members": [{
+                    "servicePort": 80,
+                    "serverAddresses": [
+                        "192.0.1.10",
+                        "192.0.1.11"
+                    ]
+                }]
+                }
+            }
+        }
+    }
+}'|json_pp</b>
+`;
+
+    var as3_remove_command = `
+<b>curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d '{
+    "class": "AS3",
+    "action": "remove",
+    "targetHost": "` + targetHost + `",
+    "targetUsername": "` + targetUsername + `",
+    "targetPassphrase": "` + targetPassphrase + `"
+}'|json_pp</b>
+`;
+
+    var command_header = `<pre><span style='font-size: 150%; font-family: Arial;'>cut-n-pase command:</span><p>`;
+    var sample_header = `<pre><p>`;
+    var sample_footer = `</p></pre>`;
+
+    document.getElementById('as3-ssh-login').innerHTML = sample_header + ssh_login + sample_footer;
+    document.getElementById('get-as3-version').innerHTML = command_header + as3_version_command + sample_footer;
+    document.getElementById('get-as3-existing-declaration-command').innerHTML = command_header + as3_retrieve_command + sample_footer;
+    document.getElementById('get-as3-existing-declaration-command-output').innerHTML = sample_header +as3_retrieve_command_output + sample_footer;
+    document.getElementById('get-as3-existing-declaration-post-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_post_to_remote_bigip + sample_footer;
+    document.getElementById('get-as3-existing-declaration-get-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_get_to_remote_bigip + sample_footer;
+    document.getElementById('as3-declare-example').innerHTML = command_header + as3_declare_command + sample_footer;
+    document.getElementById('as3-remove-example').innerHTML = command_header + as3_remove_command + sample_footer;
+
+}
+</script>
+
+<form id='as3-container-exercises-variables'>
+<table>
+<tr><th>deviceIP: </th><td><input id='as3-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
+<tr><th>targetHost: </th><td><input id='as3-container-exercises-targetHost' placeholder='BIG-IP IP Address'></td></tr>
+<tr><th>targetUsername: </th><td><input id='as3-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
+<tr><th>targetPassphrase: </th><td><input id='as3-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td colspan='2'><input type='button' onclick='buildAS3Exercises()' value=' Generate Exercises Cut-n-Paste curl Commands '></td></tr>
+</table>
+</form>
+
+</div>
+
+<p>Start your ssh client and login with the username, password, and host shown on the console.</p>
+<div id='as3-ssh-login'>
+
+<p><strong><code>ssh f5admin@[Your F5 Container Demonstration Device IP]</code></strong></p>
+<pre><code>f5admin@[Your F5 Container Demonstration Device IP]
+f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</code></pre></div>
+
+<pre><code>Welcome to F5 Container Demo Virtual Device (GNU/Linux 4.15.0-36-generic x86_64)
+
+Running Containers: 
+
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+Last login: Sat Sept 1 09:32:55 2018 from 172.16.27.1
+f5admin@containerhost:~$ 
+</code></pre><p>Step 2. Pull the AS3 Container from Dockerhub</p>
+<p><strong><code>docker pull f5devcentral/f5-as3-container</code></strong></p>
+<pre><code>f5admin@containerhost:~$ docker pull f5devcentral/f5-as3-container
+Using default tag: latest
+latest: Pulling from f5devcentral/f5-as3-container
+911c6d0c7995: Pulling fs layer
+....
+....
+6ce7b086198f: Pull complete 
+Digest: sha256:9ccf5a8e18699742440ea50b9023a9728987d04da4710869e8964d36bcf1d552
+Status: Downloaded newer image for f5devcentral/f5-as3-container:latest
+</code></pre><p>Step 3. Create a running instance of the AS3 Container</p>
+<p><strong><code>docker run --name as3_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-as3-container:latest</code></strong></p>
+<pre><code>f5admin@containerhost:~$ docker run --name as3_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-as3-container:latest
+478d06836ee38fdd48f89e267d7b91c9d3bfb9538c0602e3fdb444062e2f3e54</code></pre><p>List the running containers.</p>
+<p><strong><code>docker ps</code></strong></p>
+<pre><code>f5admin@containerhost:~$ docker ps
+CONTAINER ID        IMAGE                                  COMMAND             CREATED             STATUS              PORTS                                         NAMES
+478d06836ee3        f5devcentral/f5-as3-container:latest   &quot;/etc/runit/boot&quot;   8 seconds ago       Up 7 seconds        0.0.0.0:8080-&gt;80/tcp, 0.0.0.0:8443-&gt;443/tcp   as3_container
+</code></pre><h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
+<p><strong>Step 1. Vaidate the version of the AS3 iControl Extension in the AS3 Container</strong></p>
+<p>Issue an iControl REST GET request to the AS3 Container with URL ```/mgmt/shared/appsvcs/info``</p>
+<p><strong>Use curl in the container</strong></p>
+<div id='get-as3-version'>
+
+<pre><code>f5admin@containerhost:~$ curl -k -s  https://localhost:8443/mgmt/shared/appsvcs/info|json_pp
+{
+   &quot;schemaMinimum&quot; : &quot;3.0.0&quot;,
+   &quot;release&quot; : &quot;3&quot;,
+   &quot;version&quot; : &quot;3.5.0&quot;,
+   &quot;schemaCurrent&quot; : &quot;3.5.0&quot;
+}</code></pre></div>
+
+<p>You should see a returned JSON object which shows the version of the AS3 iControlLX Extension which was pre-installed in the AS3 Container. </p>
+<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration informs the AS3 iControlLX extension that is should not issue iControl REST requests to <code>localhost</code>, but should authenticate and issue iControl REST requests to the <code>targetHost</code>. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
+<p><strong>Note:</strong> Since declaration attributes are required to target remote BIG-IPs, we won&#39;t be able to make HTTP GET or DELETE requests, which by RFC can not contain a request body, for any remote declarations. You can query the version from the iControlLX extension with a GET request, but any requests to manage a declaration on a remote BIG-IP must use POST or PATCH methods.</p>
+<p><strong>Step 2. Get any existing AS3 declaration on a remote BIG-IP</strong></p>
+<p><strong>Use curl in the container</strong></p>
+<div id='get-as3-existing-declaration-command'>
+
+<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+    &quot;class&quot;: &quot;AS3&quot;,
+    &quot;action&quot;: &quot;retrieve&quot;,
+    &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
+    &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
+}&#39;|json_pp</code></pre></div>
+
+<p>If you recieve no response output like this:</p>
+<div id='get-as3-existing-declaration-command-output'>
+
+<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+    &quot;class&quot;: &quot;AS3&quot;,
+    &quot;action&quot;: &quot;retrieve&quot;,
+    &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
+    &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
+}&#39;|json_pp
+
+f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
+
+<p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> response.</p>
+<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControlLX extension installed on a BIG-IP. This is important to note when writing tests. You will want to validate your requests against the AS3 container, not just AS3 iControlLX extensions installed locally on BIG-IPs.</p>
+<p>As an example, assuming you have the AS3 iControlLX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get <code>404</code> responses, not the <code>204</code> response returned from the AS3 Container.</p>
+<p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
+<div id='get-as3-existing-declaration-post-to-remote-bigip'>
+
+<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]/mgmt/shared/appsvcs/declare -d &#39;{
+&gt;     &quot;class&quot;: &quot;AS3&quot;,
+&gt;     &quot;action&quot;: &quot;retrieve&quot;
+&gt; }&#39;|json_pp
+{
+    &quot;statusCode&quot;: 404,
+    &quot;message&quot;: &quot;declaration 0 not found&quot;,
+    &quot;code&quot;: 404
+}</code></pre></div>
+
+<p>Note the response issuing a <code>GET</code> request on AS3 installed on your remote BIG-IP:</p>
+<div id='get-as3-existing-declaration-get-to-remote-bigip'>
+
+<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]/mgmt/shared/appsvcs/declare|json_pp
+{
+    &quot;statusCode&quot;: 404,
+    &quot;message&quot;: &quot;declaration 0 not found&quot;,
+    &quot;code&quot;: 404
+}</code></pre></div>
+
+<p><strong>Step 3. Issue an AS3 declaration to the a remote BIG-IP</strong></p>
+<p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
+<p><strong>Use curl in the container</strong></p>
+<div id='as3-declare-example'>
+
+</div>
+
+<p>iControlLX extension resources are create in the AS3 Container and then a series of iControl REST requests are issued to the target host BIG-IP to provision the services declared. The declaration is maintained in the AS3 Container, the declared state is implemented on the remote BIG-IP.</p>
+<p>Here is what the result should look like. </p>
+<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+    &quot;class&quot;: &quot;AS3&quot;,
+    &quot;action&quot;: &quot;deploy&quot;,
+    &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
+    &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
+    &quot;declaration&quot;: {
+        &quot;class&quot;: &quot;ADC&quot;,
+        &quot;schemaVersion&quot;: &quot;3.0.0&quot;,
+        &quot;id&quot;: &quot;container&quot;,
+        &quot;label&quot;: &quot;Sample 1 in a container&quot;,
+        &quot;remark&quot;: &quot;Simple HTTP application with RR pool&quot;,
+        &quot;Sample_container&quot;: {
+            &quot;class&quot;: &quot;Tenant&quot;,
+            &quot;A1&quot;: {
+                &quot;class&quot;: &quot;Application&quot;,
+                &quot;template&quot;: &quot;http&quot;,
+                &quot;serviceMain&quot;: {
+                &quot;class&quot;: &quot;Service_HTTP&quot;,
+                &quot;virtualAddresses&quot;: [
+                    &quot;10.0.1.10&quot;
+                ],
+                &quot;pool&quot;: &quot;web_pool&quot;
+                },
+                &quot;web_pool&quot;: {
+                &quot;class&quot;: &quot;Pool&quot;,
+                    &quot;monitors&quot;: [
+                        &quot;http&quot;
+                    ],
+                &quot;members&quot;: [{
+                    &quot;servicePort&quot;: 80,
+                    &quot;serverAddresses&quot;: [
+                        &quot;192.0.1.10&quot;,
+                        &quot;192.0.1.11&quot;
+                    ]
+                }]
+                }
+            }
+        }
+    }
+}&#39;|json_pp
+{
+    &quot;results&quot;: [{
+        &quot;message&quot;: &quot;success&quot;,
+        &quot;lineCount&quot;: 24,
+        &quot;code&quot;: 200,
+        &quot;host&quot;: &quot;[Your targetHost]&quot;,
+        &quot;tenant&quot;: &quot;Sample_container&quot;,
+        &quot;runTime&quot;: 1077
+    }],
+    &quot;declaration&quot;: {
+        &quot;class&quot;: &quot;ADC&quot;,
+        &quot;schemaVersion&quot;: &quot;3.0.0&quot;,
+        &quot;id&quot;: &quot;container&quot;,
+        &quot;label&quot;: &quot;Sample 1 in a container&quot;,
+        &quot;remark&quot;: &quot;Simple HTTP application with RR pool&quot;,
+        &quot;Sample_container&quot;: {
+            &quot;class&quot;: &quot;Tenant&quot;,
+            &quot;A1&quot;: {
+                &quot;class&quot;: &quot;Application&quot;,
+                &quot;template&quot;: &quot;http&quot;,
+                &quot;serviceMain&quot;: {
+                    &quot;class&quot;: &quot;Service_HTTP&quot;,
+                    &quot;virtualAddresses&quot;: [&quot;10.0.1.10&quot;],
+                    &quot;pool&quot;: &quot;web_pool&quot;
+                },
+                &quot;web_pool&quot;: {
+                    &quot;class&quot;: &quot;Pool&quot;,
+                    &quot;monitors&quot;: [&quot;http&quot;],
+                    &quot;members&quot;: [{
+                        &quot;servicePort&quot;: 80,
+                        &quot;serverAddresses&quot;: [&quot;192.0.1.10&quot;, &quot;192.0.1.11&quot;]
+                    }]
+                }
+            }
+        },
+        &quot;controls&quot;: {
+            &quot;archiveTimestamp&quot;: &quot;2018-10-06T20:12:08.104Z&quot;
+        }
+    }
+}
+
+f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes and issuing the same request to the AS3 Container.</p>
+<p><strong>Step 4. Remove an AS3 declaration from a remote BIG-IP</strong></p>
+<p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
+<p><strong>Use curl in the container</strong></p>
+<div id='as3-remove-example'>
+
+</div>
+
+<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+    &quot;class&quot;: &quot;AS3&quot;,
+    &quot;action&quot;: &quot;remove&quot;,
+    &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
+    &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
+}&#39;|json_pp
+{
+    &quot;results&quot;: [
+        {
+            &quot;message&quot;: &quot;success&quot;,
+            &quot;lineCount&quot;: 22,
+            &quot;code&quot;: 200,
+            &quot;host&quot;: &quot;[Your targetHost]&quot;,
+            &quot;tenant&quot;: &quot;Sample_container&quot;,
+            &quot;runTime&quot;: 21546
+        }
+    ],
+    &quot;declaration&quot;: {
+        &quot;class&quot;: &quot;ADC&quot;,
+        &quot;schemaVersion&quot;: &quot;3.0.0&quot;,
+        &quot;id&quot;: &quot;1538861091968&quot;,
+        &quot;updateMode&quot;: &quot;complete&quot;,
+        &quot;controls&quot;: {
+            &quot;archiveTimestamp&quot;: &quot;2018-10-06T21:25:14.496Z&quot;
+        }
+    }
+}</code></pre><p><strong>Step 5. Stop the AS3 Container</strong></p>
+<p>To stop the AS3 Container on our F5 Container Demonstration Virtual Device issue the following <code>docker</code> command.</p>
+<p><strong><code>docker stop as3_container</code></strong></p>
+<pre><code>f5admin@containerhost:~$ docker stop as3_container </code></pre><hr>
 <h2 id="f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</h2>
-<hr>
 <p>We will go through a series of exercises which illustrate the uses of the <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a> as a place to install and use iControlLX extensions and as a trusted gateway to remove BIG-IP concerns from a complex ecosystem integration.</p>
 <p>In these exercises you will need:</p>
 <ul>
 <li>A target BIG-IP system whose management address is reachable from the container</li>
 <li>Administrative role credentials to the BIG-IP</li>
-<li>The ability to launch a container with <code>docker</code></li>
+<li>A running instance of the F5 Container Demonstration Virtual Device</li>
 </ul>
 <hr>
 <h3 id="exercise-3-downloading-and-launching-the-api-services-gateway-with-docker">Exercise #3 - Downloading and Launching the API Services Gateway with <code>docker</code></h3>
 <p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
-<p>Step 2. Pull the API Services Gateway Container from Dockerhub</p>
-<p>Step 3. Create a running instance of the API Services Gateway</p>
-<h3 id="exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</h3>
+<p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
+<p>You can Obtain the IP address of your booted F5 Container Demonstration Virtual Device by opening its console. </p>
+<p><img src="./assets/images/f5_container_demonstration_virtual_device_console.png" alt="F5 Container Demonstration Virtual Device Console"></p>
+<p>In this example, the IP address would be 172.16.27.128. Your address will likely be different.</p>
+<p>If the Host entry IP address is blank, please assure your network interface is properly conntected to a network.</p>
+<div class='webcontent'>
+
+<p>Fill in the form below to create your cut-n-paste examples for these exercises.</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th align="left">Attribute</th>
+<th align="left">Explaination</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">deviceIP</td>
+<td align="left">The F5 Container Demonstration Virtual Device IP Address</td>
+</tr>
+<tr>
+<td align="left">targetHost</td>
+<td align="left">The iControl REST remote BIG-IP host, reachable from the container</td>
+</tr>
+<tr>
+<td align="left">targetUsername</td>
+<td align="left">The iControl REST username on the remote BIG-IP</td>
+</tr>
+<tr>
+<td align="left">targetPaaphrase</td>
+<td align="left">The iControl REST password on the remote BIG-IP</td>
+</tr>
+</tbody></table>
+<hr>
+<script>
+function buildASGExercises()
+{
+
+    var deviceIp = document.getElementById('asg-container-container-demonstration-virtual-device-ip').value;
+    var targetHost = document.getElementById('asg-container-exercises-targetHost').value;
+    var targetUsername = document.getElementById('asg-container-exercises-targetUsername').value;
+    var targetPassphrase = document.getElementById('asg-container-exercises-targetPassphrase').value;
+
+    var ssh_login = "<b>ssh f5admin@" + deviceIp + "</b>\nf5admin@" + deviceIp + "'s password: <b>f5admin</b>";
+
+    var command_header = `<pre><span style='font-size: 150%; font-family: Arial;'>cut-n-pase command:</span><p>`;
+    var sample_header = `<pre><p>`;
+    var sample_footer = `</p></pre>`;
+
+    document.getElementById('asg-ssh-login').innerHTML = sample_header + ssh_login + sample_footer;
+
+
+}
+</script>
+
+<form id='asg-container-exercises-variables'>
+<table>
+<tr><th>deviceIP: </th><td><input id='asg-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
+<tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address'></td></tr>
+<tr><th>targetUsername: </th><td><input id='asg-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
+<tr><th>targetPassphrase: </th><td><input id='asg-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td colspan='2'><input type='button' onclick='buildASGExercises()' value=' Generate Exercises Cut-n-Paste curl Commands '></td></tr>
+</table>
+</form>
+
+</div>
+
+<p>Start your ssh client and login with the username, password, and host shown on the console.</p>
+<div id='asg-ssh-login'>
+
+<p><strong><code>ssh f5admin@[Your F5 Container Demonstration Device IP]</code></strong></p>
+<pre><code>f5admin@[Your F5 Container Demonstration Device IP]
+f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</code></pre></div>
+
+<pre><code>Welcome to F5 Container Demo Virtual Device (GNU/Linux 4.15.0-36-generic x86_64)
+
+Running Containers: 
+
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+Last login: Sat Sept 1 09:32:55 2018 from 172.16.27.1
+f5admin@containerhost:~$ 
+</code></pre><p>Step 2. Pull the API Services Gateway Container from Dockerhub</p>
+<p><strong><code>docker pull f5devcentral/f5-api-services-gateway</code></strong></p>
+<pre><code>f5admin@containerhost:~$ docker pull f5devcentral/f5-api-services-gateway
+Using default tag: latest
+latest: Pulling from f5devcentral/f5-api-services-gateway
+911c6d0c7995: Already exists 
+9a55ca73fa67: Pulling fs layer 
+....
+....
+8ad0544354f6: Pull complete 
+Digest: sha256:6d425a974564940fb7a86bfd899d17999260cf16f839f9ab451b99ef38c68b7e
+Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</code></pre><p>Step 3. Create a running instance of the API Services Gateway</p>
+<p><strong><code>docker run --name asg_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-api-services-gateway:latest</code></strong></p>
+<pre><code>f5admin@containerhost:~$ docker run --name asg_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-api-services-gateway:latest
+1c93dd6fa06e7f63df22953d0a0facb20635d7db74ca9a322f798fe3ff582119</code></pre><h3 id="exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</h3>
 <p>Step 1. Make a iControl REST POST request to add a tusted remote BIG-IP</p>
+<p>The main use case for the API Services Gateway is to add an container based service which decouples all the TMOS concerns from the rest of the orchestration services. One of the major concerns imposed by TMOS is its authentication and roles based authorizations. To remove those concerns we are going to create a device trust between the API Services Gateway and a remote BIG-IP.</p>
+<p><strong>Use curl in the container</strong></p>
 <p>Step 2. Query the status of the device trust to assure it is ACTIVE</p>
 <h3 id="exercise-5-installing-trusted-proxy-icontrollx-extension-on-the-api-services-gateway">Exercise #5 - Installing Trusted Proxy iControlLX Extension on the API Services Gateway</h3>
 <p>Step 1. Upload the Tusted Proxy iControlLX Extension RPM file to the API Services Gateway Container</p>
@@ -223,8 +714,8 @@ spec:
 <p>Step 1. Make an iControl REST GET request through the Trusted Proxy iControlLX Extension to a remote BIG-IP without credentials. </p>
 <pre><code>NOTE: Stop both the AS3 Container and the API Service Gateway Containers before progressing to the next step
 
-docker stop AS3Container
-docker stop APIServicesGateway</code></pre><hr>
+docker stop as3_container
+docker stop api_services_gateway</code></pre><hr>
 <p>In the following exercises we are going to illustrate the use of your trusted device through an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using <code>docker-compose</code></p>
 <p>In these exercises you will need:</p>
 <ul>
@@ -259,7 +750,6 @@ docker stop APIServicesGateway</code></pre><hr>
 <h1 id="the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</h1>
 <p>How do we keep up with rapidly developing service deployments in our every changing orchestration environments? We&#39;re betting on the ability to launch our containerized services. Our containerized services allow our customers to build distributed controllers which include secured access to BIG-IP provisioning. Our orchestration efforts become decoupled from partner dependencies and releases through iControlLX extensions declarative APIs. The internal workings of BIG-IP trusted access, iControl REST workflows, or even our ability to pivot to non-TMOS application delivery systems, can be masked from the partner ecosystem by consistent and maintainable declarations.</p>
 <p>Perhaps you are thinking this sounds like how other container orchestrators, like Kubernetes, handle deployments. Exactly! We are meeting the market where it is and, hopefully, where it is going. REST APIs were a great step in providing standardized protocol access without proprietary agents. The next phase was providing declared services which integrate directly into containerized application deployments. If you did the exercises above, then you&#39;ve already seen how this all works together. The API Service Gateway provides the basis to greatly simply access to F5 services and build out a fully integrated ecosystem.</p>
-<hr>
 <h1 id="how-can-i-capitalize-on-our-new-f5-orchestration-containers-">How Can I Capitalize On Our New F5 Orchestration Containers?</h1>
 <p>There are multiple ways:</p>
 <ul>
@@ -271,4 +761,3 @@ docker stop APIServicesGateway</code></pre><hr>
 </li>
 </ul>
 <p>The exercises above were your introduction to ready yourself for cloud native orchestration. Some customers are already expecting you to understand these concepts. Other customers&#39; migration to cloud services might still be simply a plan. Either way, you can be ready to help them now.</p>
-<hr>
