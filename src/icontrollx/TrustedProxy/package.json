@@ -1,0 +1,13 @@
+{
+  "name": "TrustedProxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "iControlLX extension to proxy requests to a trusted TMOS device",
+  "scripts": {
+    "build": "npm prune --production && rm -rf build && rpmbuild --define \"main `pwd`\" --define \"_topdir %{main}/build\" -bb lx.spec"
+  },
+  "author": "j.gruber@f5.com",
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {}
+}
