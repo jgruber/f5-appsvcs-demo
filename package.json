@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon src/app.js --exec babel-node --presets env",
     "build": "babel src -d dist --source-maps inline --copy-files",
-    "build-doc": "node_modules/marked/bin/marked ./static/ISC_API_Gateway.md -o ./static/ISC_API_Gateway.html",
+    "build-doc": "node_modules/marked/bin/marked ./static/ISC_API_Gateway.md -o ./static/ISC_API_Gateway.html && cat ./static/www_header.html ./static/ISC_API_Gateway.html ./static/www_footer.html > ./static/index.html",
     "serve": "node dist/app.js"
   },
   "keywords": [

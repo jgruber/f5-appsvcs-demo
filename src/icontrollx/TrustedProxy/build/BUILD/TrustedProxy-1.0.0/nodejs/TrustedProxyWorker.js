@@ -25,7 +25,6 @@ class TrustedProxyWorker {
             .setUri(this.url.parse(body.uri))
             .setHeaders(body.headers || restOperation.getHeaders())
             .setBody(body.body)
-            .setContentType(body.contentType || "application/json")
             .setReferer(this.getUri().href);
 
         this.eventChannel.emit(this.eventChannel.e.sendRestOperation, identifiedDeviceRequest,
