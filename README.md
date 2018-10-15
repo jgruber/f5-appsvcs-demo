@@ -1,5 +1,5 @@
 # f5-appsvcs-demo
-Demonstrating the Strength of API Gateways and iControlLX
+Demonstrating the Strength of API Gateways and iControl LX
 
 ## Building the Demonstration Container
 
@@ -46,8 +46,8 @@ The container application is part of an overall microservice deployment and depe
 
 | Service | What it Does |
 | ---------- | ----------- | 
-| mongodb |  Used to store you local user database (salted hashed), roles, deployments, and iControlLX extension catalog. Notice your BIG-IP credentials are never stored! |
-| f5-api-services-gateway | Establishes trusted communicatoins with BIG-IP devices. Optionally it can also host iControlLX extensions which are designed to be used with as a gateway controller  | 
+| mongodb |  Used to store you local user database (salted hashed), roles, deployments, and iControl LX extension catalog. Notice your BIG-IP credentials are never stored! |
+| f5-api-services-gateway | Establishes trusted communicatoins with BIG-IP devices. Optionally it can also host iControl LX extensions which are designed to be used with as a gateway controller  | 
 
 The following environment variables tell our containerized application how to communicate with these dependant services:
 
@@ -215,13 +215,13 @@ curl -u 'admin:F5RocksAPIs!' -H 'Content-Type: application/json' -X GET  http://
 
 TODO: Sprint Demo the week of 9-24-2018
 
-## Publishing iControlLX Extensions to Deployments
+## Publishing iControl LX Extensions to Deployments
 
 TODO: Sprint Demo the week of 9-24-2018
 
 ## Adding a BIG-IP Tenant User
 
-## Exposing iControlLX Extension to BIG-IP Tenants via Role Tags
+## Exposing iControl LX Extension to BIG-IP Tenants via Role Tags
 
 TODO: Sprint Demo the week of 9-24-2018
 
@@ -229,7 +229,7 @@ TODO: Sprint Demo the week of 9-24-2018
 
 TODO: Sprint Demo the week of 10-1-2018
 
-## Issuing iControlLX Extension Declarations from an OAUTH Client
+## Issuing iControl LX Extension Declarations from an OAUTH Client
 
 TODO: Sprint Demo the week of 10-1-2018
 

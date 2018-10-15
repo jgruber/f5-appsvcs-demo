@@ -10,7 +10,7 @@
     "serve": "node dist/app.js"
   },
   "keywords": [
-    "iControlLX",
+    "iControl LX",
     "iControl REST"
   ],
   "author": "John Gruber - F5 Networks",
