@@ -323,49 +323,49 @@ class TrustedDevicesWorker {
     removeCertificateFromTrustedDevice(device, machineId) {
         return new Promise((resolve) => {
             this.logger.info('removing certificate for machineId: ' + machineId + ' from device ' + device.targetHost + ':' + device.targetPort);
-            const certificatePromises = [];
             const certPath = '/mgmt/shared/device-certificates';
             const certUrl = 'https://' + device.targetHost + ":" + device.targetPort + certPath;
-            certificatePromises.push(new Promise( (resolve) => {
-                const certGetRequest = this.restOperationFactory.createRestOperationInstance()
-                    .setIdentifiedDeviceRequest(true)
-                    .setUri(this.url.parse(certUrl))
-                    .setReferer(this.getUri().href)
-                    .setMethod('Get');
-                    this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certGetRequest,
-                        (response) => {
-                            const certsBody = response.getBody();
-                            if (certsBody.hasOwnProperty('items')) {
-                                const certs = certsBody.items;
-                                certs.map((cert) => {
-                                    certificatePromises.push( new Promise( (resolve) => {
-                                        if (cert.machineId == machineId) {
-                                            const certDelUrl = certUrl + '/' + cert.certificateId;
-                                            const certDelRequest = this.restOperationFactory.createRestOperationInstance()
-                                                .setIdentifiedDeviceRequest(true)
-                                                .setUri(this.url.parse(certDelUrl))
-                                                .setReferer(this.getUri().href)
-                                                .setMethod('Delete');
-                                            this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certDelRequest,
-                                                (response) => {
-                                                    resolve();
-                                                },
-                                                (err) => {
-                                                    this.logger.severe('Error deleting certificate from remote device:' + err.message);
-                                                    throw err;
-                                                });     
-                                        }
-                                    }));
-                                });
-                                resolve();
+            const certGetRequest = this.restOperationFactory.createRestOperationInstance()
+                .setIdentifiedDeviceRequest(true)
+                .setUri(this.url.parse(certUrl))
+                .setReferer(this.getUri().href);
+            const certificateGetPromise = this.restRequestSender.sendGet(certGetRequest)
+                .then((response) => {
+                    const certsBody = response.getBody();
+                    if (certsBody.hasOwnProperty('items')) {
+                        const certs = certsBody.items;
+                        certs.map((cert) => {
+                            if (cert.machineId == machineId) {
+                                const certDelUrl = certUrl + '/' + cert.certificateId;
+                                const certDelRequest = this.restOperationFactory.createRestOperationInstance()
+                                    .setIdentifiedDeviceRequest(true)
+                                    .setUri(this.url.parse(certDelUrl))
+                                    .setReferer(this.getUri().href);
+                                const certDeletePromise = this.restRequestSender.sendDelete(certDelRequest)
+                                    .then(() => {
+                                        resolve();
+                                    })
+                                    .catch((err) => {
+                                        this.logger.severe('Error deleting certificate from remote device:' + err.message);
+                                        throw err;
+                                    });
+                                Promise.all([certDeletePromise])
+                                    .then(() => {
+                                        resolve();
+                                    })
+                                    .catch((err) => {
+                                        throw err;
+                                    });
                             }
-                        },
-                        (err) => {
-                            throw err;
-                        }  
-                    );
-            }))
-            Promise.all([certificatePromises])
+                        });
+                    }
+                    resolve();
+                })
+                .catch((err) => {
+                    this.logger.severe('Error getting certificates from remote device:' + err.message);
+                    throw err;
+                });
+            Promise.all([certificateGetPromise])
                 .then(() => {
                     resolve();
                 })
@@ -397,6 +397,7 @@ class TrustedDevicesWorker {
                             if (cert.machineId == machineId) {
                                 const certDelUrl = certUrl + '/' + cert.certificateId;
                                 const certDelRequest = this.restOperationFactory.createRestOperationInstance()
+                                    .setIdentifiedDeviceRequest(true)
                                     .setUri(this.url.parse(certDelUrl))
                                     .setReferer(this.getUri().href);
                                 const certDeletePromise = this.restRequestSender.sendDelete(certDelRequest);
