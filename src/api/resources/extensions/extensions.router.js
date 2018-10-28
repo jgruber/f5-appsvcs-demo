@@ -6,6 +6,8 @@ import usersServices from '../users/users.services';
 extensionsRouter
     .route('/:id')
     .get(usersServices.isAuthenticated, extensionsController.findById)
+    .put(usersServices.isAuthenticated, extensionsController.update)
+    .patch(usersServices.isAuthenticated, extensionsController.augment)
     .delete(usersServices.isAuthenticated, extensionsController.delete)
 
 extensionsRouter

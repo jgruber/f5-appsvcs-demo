@@ -2,11 +2,8 @@ import Extension from './extensions.model';
 import extensionsServices from './extensions.services';
 import devicesController from '../devices/devices.controller';
 import {
-    promises
+    unwatchFile
 } from 'fs';
-import {
-    format
-} from 'util';
 
 const appconf = require('../../../config/app');
 const url = require('url');
@@ -27,7 +24,7 @@ export default {
                         if (Array.isArray(req.body.deviceIds)) {
                             deviceIds = req.body.deviceIds;
                         } else {
-                            deviceIds = [reques.body.deviceIds];
+                            deviceIds = [req.body.deviceIds];
                         }
                     }
                     let ongateway = false;
@@ -119,6 +116,297 @@ export default {
             console.error('error creating extension: ' + ex.message);
             return res.status(500).json({
                 err: ex
+            });
+        }
+    },
+    async update(req, res) {
+        try {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
+                if (req.body.hasOwnProperty('url')) {
+                    const message = 'extension url is immutable';
+                    return res.status(400).json({
+                        err: message
+                    })
+                }
+                const {
+                    id
+                } = req.params;
+                const extension = await Extension.findById(id);
+                if (!extension) {
+                    const message = 'could not find extension to update for id ' + id;
+                    console.error(message);
+                    return res.status(404).json({
+                        err: message
+                    });
+                }
+
+                let needToInstallOnGateway = false;
+                let needToUninstallOnGateway = false;
+
+                if (body.hasOwnProperty('onGateway')) {
+                    if (!extension.ongateway && body.ongateway) {
+                        needToInstallOnGateway = true;
+                    }
+                    if (extension.ongateway && !body.ongateway) {
+                        needToUninstallOnGateway = true;
+                    }
+                }
+
+                const needToInstallDevices = [];
+                const needToUninstallDevices = [];
+
+                if (req.body.hasOwnProperty('deviceIds')) {
+                    if (Array.isArray(req.body.deviceIds)) {
+                        deviceIds = req.body.deviceIds;
+                    } else {
+                        deviceIds = [req.body.deviceIds];
+                    }
+                    deviceId.map((deviceid) => {
+                        if (!extension.deviceIds.includes(deviceid)) {
+                            needToInstallDevices.push(deviceId);
+                        }
+                    });
+                    extension.deviceIds.map((deviceid) => {
+                        if (!deviceIds.includes(deviceid)) {
+                            needToUninstallDevices.push(deviceid);
+                        }
+                    });
+                }
+                if (needToInstallOnGateway ||
+                    needToUninstallOnGateway ||
+                    needToInstallDevices.length > 0 ||
+                    needToUninstallDevices.length > 0) {
+                    if (!extension.filename) {
+                        const message = 'extension was to be updated, but the extension file is not in storage';
+                        console.error(message);
+                        return res.status(400).json({
+                            err: message
+                        });
+                    } else {
+                        const updatePromises = [];
+                        const updateDevices = {};
+                        const retPromises = [];
+                        needToInstallDevices.map((deviceid) => {
+                            retPromise = Device.findbyId(deviceid)
+                                .then((device) => {
+                                    if (device) {
+                                        updateDevices[deviceid] = device;
+                                    } else {
+                                        const message = 'extension was to be installed on an unknown device id:' + deviceid;
+                                        console.error(message);
+                                        return res.status(400).json({
+                                            err: message
+                                        });
+                                    }
+                                });
+                            retPromises.push(retPromise);
+                        });
+                        needToUninstallDevices.map((deviceid) => {
+                            retPromise = Device.findbyId(deviceid)
+                                .then((device) => {
+                                    if (device) {
+                                        updateDevices[deviceid] = device;
+                                    } else {
+                                        const message = 'extension was to be uninstalled on an unknown device id:' + deviceid;
+                                        console.error(message);
+                                        return res.status(400).json({
+                                            err: message
+                                        });
+                                    }
+                                });
+                            retPromises.push(retPromise);
+                        });
+                        await Promise.all(retPromises);
+
+                        if(needToInstallOnGateway) {
+                            extension.onGateway = true;
+                        }
+                        if(needToUninstallOnGateway) {
+                            extension.onGateway = false;
+                        }
+                        needToUninstallDevices.map((deviceid) => {
+                            extension.deviceIds.filter(id => id !== deviceid);
+                        });
+                        needToInstallDevices.map((deviceid) => {
+                            extension.deviceIds.push(deviceid);
+                        });
+
+                        if (installExtensionOnGateway) {
+                            const installGatewayPromise = extensionsServices.installExtensionOnGateway(extension.filename);
+                            updatePromises.push(installGatewayPromise);
+                        }
+                        if (uninstallExtensionOnGateway) {
+                            const uninstallGatewayPromise = extensionsServices.uninstallExtensionOnGateway(extension.filename);
+                            updatePromises.push(uninstallGatewayPromise);
+                        }
+                        needToInstallDevices.map((deviceid) => {
+                            const device = updateDevices[deviceid];
+                            const deviceInstallPromise = extensionsServices.installExtensionOnTrustedDevice(extension.filename, device.targetHost, device.targetPort);
+                            updatePromises.push(deviceInstallPromise);
+                        });
+                        needToUninstallDevices.map((deviceid) => {
+                            const device = updateDevices[deviceid];
+                            const deviceInstallPromise = extensionsServices.uninstallAllExtensionsOnTrustedDevice(extension.filename, device.targetHost, device.targetPort);
+                            updatePromises.push(deviceInstallPromise);
+                        });
+
+                        Promise.all(updatePromises)
+                            then(() => {
+                                extension.save(function (err) {
+                                    if (err) {
+                                        const message = 'extension ' + id + ' could not be saved - ' + err.message;
+                                        return res.status(500).json({
+                                            err: message
+                                        });
+                                    } else {
+                                        return res.status(201).json(extension);
+                                    }
+                                });
+                            });
+                    }
+                } else {
+                    return res.status(200).json(extension); 
+                }
+            } else {
+                return res.status(403).json({
+                    err: 'updating extensions requires ' + BIGIP_ADMIN_ROLE + ' role'
+                })
+            }
+        } catch (err) {
+            console.error("Error updating extension: " + err.message);
+            return res.status(500).json({
+                err: err.message
+            });
+        }
+
+    },
+    async augment(req, res) {
+        try {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
+                if (req.body.hasOwnProperty('url')) {
+                    const message = 'extension url is immutable';
+                    return res.status(400).json({
+                        err: message
+                    })
+                }
+                const {
+                    id
+                } = req.params;
+                const extension = await Extension.findById(id);
+                if (!extension) {
+                    const message = 'could not find extension to update for id ' + id;
+                    console.error(message);
+                    return res.status(404).json({
+                        err: message
+                    });
+                }
+
+                let needToInstallOnGateway = false;
+                let needToUninstallOnGateway = false;
+
+                if (body.hasOwnProperty('onGateway')) {
+                    if (!extension.ongateway && body.ongateway) {
+                        needToInstallOnGateway = true;
+                    }
+                    if (extension.ongateway && !body.ongateway) {
+                        needToUninstallOnGateway = true;
+                    }
+                }
+
+                const needToInstallDevices = [];
+
+                if (req.body.hasOwnProperty('deviceIds')) {
+                    if (Array.isArray(req.body.deviceIds)) {
+                        deviceIds = req.body.deviceIds;
+                    } else {
+                        deviceIds = [req.body.deviceIds];
+                    }
+                    deviceId.map((deviceid) => {
+                        if (!extension.deviceIds.includes(deviceid)) {
+                            needToInstallDevices.push(deviceId);
+                        }
+                    });
+                }
+                if (needToInstallOnGateway ||
+                    needToUninstallOnGateway ||
+                    needToInstallDevices.length > 0) {
+                    if (!extension.filename) {
+                        const message = 'extension was to be updated, but the extension file is not in storage';
+                        console.error(message);
+                        return res.status(400).json({
+                            err: message
+                        });
+                    } else {
+                        const updatePromises = [];
+                        const updateDevices = {};
+                        const retPromises = [];
+                        needToInstallDevices.map((deviceid) => {
+                            retPromise = Device.findbyId(deviceid)
+                                .then((device) => {
+                                    if (device) {
+                                        updateDevices[deviceid] = device;
+                                    } else {
+                                        const message = 'extension was to be installed on an unknown device id:' + deviceid;
+                                        console.error(message);
+                                        return res.status(400).json({
+                                            err: message
+                                        });
+                                    }
+                                });
+                            retPromises.push(retPromise);
+                        });
+                        await Promise.all(retPromises);
+
+                        if(needToInstallOnGateway) {
+                            extension.onGateway = true;
+                        }
+                        if(needToUninstallOnGateway) {
+                            extension.onGateway = false;
+                        }
+                        needToInstallDevices.map((deviceid) => {
+                            extension.deviceIds.push(deviceid);
+                        });
+
+                        if (installExtensionOnGateway) {
+                            const installGatewayPromise = extensionsServices.installExtensionOnGateway(extension.filename);
+                            updatePromises.push(installGatewayPromise);
+                        }
+                        if (uninstallExtensionOnGateway) {
+                            const uninstallGatewayPromise = extensionsServices.uninstallExtensionOnGateway(extension.filename);
+                            updatePromises.push(uninstallGatewayPromise);
+                        }
+                        needToInstallDevices.map((deviceid) => {
+                            const device = updateDevices[deviceid];
+                            const deviceInstallPromise = extensionsServices.installExtensionOnTrustedDevice(extension.filename, device.targetHost, device.targetPort);
+                            updatePromises.push(deviceInstallPromise);
+                        });
+
+                        Promise.all(updatePromises)
+                            then(() => {
+                                extension.save(function (err) {
+                                    if (err) {
+                                        const message = 'extension ' + id + ' could not be saved - ' + err.message;
+                                        return res.status(500).json({
+                                            err: message
+                                        });
+                                    } else {
+                                        return res.status(201).json(extension);
+                                    }
+                                });
+                            });
+                    }
+                } else {
+                    return res.status(200).json(extension); 
+                }
+            } else {
+                return res.status(403).json({
+                    err: 'updating extensions requires ' + BIGIP_ADMIN_ROLE + ' role'
+                })
+            }
+        } catch (err) {
+            console.error("Error updating extension: " + err.message);
+            return res.status(500).json({
+                err: err.message
             });
         }
     },
