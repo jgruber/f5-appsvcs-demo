@@ -1,1 +1,1 @@
-export {usersRouter} from './extensions.router';
+export {extensionsRouter} from './extensions.router';

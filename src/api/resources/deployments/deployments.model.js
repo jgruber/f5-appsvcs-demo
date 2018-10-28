@@ -4,6 +4,7 @@ import mongoosePaginate from 'mongoose-paginate';
 const {
     Schema
 } = mongoose
+
 const deploymentsSchema = new Schema({
     name: {
         type: String,

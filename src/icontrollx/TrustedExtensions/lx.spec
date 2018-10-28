@@ -1,5 +1,5 @@
-Summary: TrustedExtensionInstaller for the Application Services Gateway
-Name: TrustedExtensionInstaller
+Summary: TrustedExtensions for the Application Services Gateway
+Name: TrustedExtensions
 Version: 1.0.0
 Release: 0001
 BuildArch: noarch
@@ -8,7 +8,7 @@ License: Apache-2.0
 Packager: F5 DevCentral Community <j.gruber@f5.com>
 
 %description
-iControl LX extension to install iControl LX extensions on trusted TMOS devices
+iControl LX extension to handle extension lifecycle management on trusted TMOS devices
 
 %define APP_DIR /var/config/rest/iapps/%{name}
 

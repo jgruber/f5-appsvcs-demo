@@ -1,0 +1,13 @@
+{
+  "name": "TrustedUploader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "iControl LX extension to upload files from the API Services Gateway to trusted TMOS devices",
+  "scripts": {
+    "build": "npm prune --production && rm -rf build && rpmbuild --define \"main `pwd`\" --define \"_topdir %{main}/build\" -bb lx.spec"
+  },
+  "author": "j.alonso@f5.com",
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {}
+}

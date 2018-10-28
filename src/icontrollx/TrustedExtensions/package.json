@@ -1,12 +1,12 @@
 {
-  "name": "TrustedExtensionInstaller",
+  "name": "TrustedExtensions",
   "version": "1.0.0",
   "private": true,
-  "description": "iControl LX extension to install iControl LX extensions on trusted TMOS devices",
+  "description": "iControl LX extension to handle extension lifecycle management on trusted TMOS devices",
   "scripts": {
     "build": "npm prune --production && rm -rf build && rpmbuild --define \"main `pwd`\" --define \"_topdir %{main}/build\" -bb lx.spec"
   },
-  "author": "j.gruber@f5.com",
+  "author": "j.alonso@f5.com",
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {}

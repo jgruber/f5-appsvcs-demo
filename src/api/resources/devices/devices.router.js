@@ -13,10 +13,10 @@ devicesRouter
 
 devicesRouter
     .route('/:id')
-    .get(usersServices.isAuthenticated, devicesController.getTrust)
-    .delete(usersServices.isAuthenticated, devicesController.removeTrust)
+    .get(usersServices.isAuthenticated, devicesController.findById)
+    .delete(usersServices.isAuthenticated, devicesController.delete)
 
 devicesRouter
     .route('/')
-    .post(usersServices.isAuthenticated, devicesController.createTrust)
-    .get(usersServices.isAuthenticated, devicesController.getTrusts)
+    .post(usersServices.isAuthenticated, devicesController.create)
+    .get(usersServices.isAuthenticated, devicesController.findAll)

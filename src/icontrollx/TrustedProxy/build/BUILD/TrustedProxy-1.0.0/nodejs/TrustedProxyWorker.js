@@ -1,13 +1,55 @@
+/* jshint esversion: 6 */
+/* jshint node: true */
 "use strict";
+
+const http = require('http');
 
 /**
  * Trusted Device Proxy which handles only POST requests
  * @constructor
  */
 class TrustedProxyWorker {
+
     constructor() {
         this.WORKER_URI_PATH = "shared/TrustedProxy";
+        this.isPassThrough = true;
         this.isPublic = true;
+    }
+
+    /**
+     * handle onGet HTTP request - get the query paramater token for a trusted device.
+     * @param {Object} restOperation
+     */
+    onGet(restOperation) {
+        const paths = restOperation.uri.pathname.split('/');
+        if (paths.length > 3) {
+            const targetHost = paths[3];
+            this.getToken(targetHost)
+                .then((token) => {
+                    restOperation.statusCode = 200;
+                    restOperation.body = token;
+                    this.completeRestOperation(restOperation);
+                });
+        } else {
+            this.getTrustedDevices()
+                .then((trustedDevices) => {
+                    const tokens = {};
+                    const tokenPromises = [];
+                    trustedDevices.map((trustedDevice) => {
+                        const tokenPromise = this.getToken(trustedDevice.address)
+                            .then((token) => {
+                                tokens[trustedDevice.address] = token;
+                            });
+                        tokenPromises.push(tokenPromise);
+                    });
+                    Promise.all(tokenPromises)
+                        .then(() => {
+                            restOperation.statusCode = 200;
+                            restOperation.body = JSON.stringify(tokens);
+                            this.completeRestOperation(restOperation);
+                        });
+                });
+        }
     }
 
     /**
@@ -51,6 +93,74 @@ class TrustedProxyWorker {
             }
         );
     }
+
+    /**
+     * handle trusted devices request - all trusted devices.
+     * @param {Object} restOperation
+     */
+    getTrustedDevices() {
+        const refThis = this;
+        const trustedDeviceUrl = 'http://localhost:8100/mgmt/shared/resolver/device-groups/dockerContainers/devices';
+        return new Promise((resolve) => {
+            http.get(trustedDeviceUrl, (res) => {
+                let body = '';
+                res.on('data', (seg) => {
+                    body += seg;
+                });
+                res.on('end', () => {
+                    if (res.statusCode < 400) {
+                        resolve(JSON.parse(body).items);
+                    } else {
+                        refThis.logger.severe('no trusted devices in dockerContainer device group');
+                        resolve([]);
+                    }
+                });
+                res.on('error', (err) => {
+                    refThis.logger.severe('error getting trusted devices:' + err.message);
+                    resolve([]);
+                });
+            });
+        });
+    }
+
+    /**
+     * handle getToken equest - get the query paramater token for a trusted device.
+     * @param {Object} restOperation
+     */
+    getToken(targetHost) {
+        const refThis = this;
+        return new Promise((resolve) => {
+            const tokenBody = JSON.stringify({ address: targetHost });
+            let body = '';
+            const postOptions = {
+                host: 'localhost',
+                port: 8100,
+                path: '/shared/token',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Legth': tokenBody.length
+                },
+                method: 'POST'
+            };
+            const request = http.request(postOptions, (res) => {
+                res.on('data', (seg) => {
+                    body += seg;
+                });
+                res.on('end', () => {
+                    resolve(body);
+                    resolve(null);
+                });
+                res.on('error', (err) => {
+                    refThis.logger.severe('error: ' + err);
+                    resolve(null);
+                });
+            });
+            request.write(tokenBody);
+            request.end();
+        });
+    }
+
+
 }
 
 module.exports = TrustedProxyWorker;

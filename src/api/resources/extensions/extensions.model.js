@@ -1,9 +1,8 @@
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate';
 
-const {
-    Schema
-} = mongoose
+const { Schema } = mongoose;
+
 const extensionsSchema = new Schema({
     url: {
         type: String,
@@ -12,7 +11,6 @@ const extensionsSchema = new Schema({
     },
     name: {
         type: String,
-        unique: true,
         required: false
     },
     version: {
@@ -23,17 +21,27 @@ const extensionsSchema = new Schema({
         type: String,
         required: false
     },
+    packagename: {
+        type: String,
+        required: false
+    },
     filename: {
         type: String,
-        unique: true,
         required: false
     },
     status: {
         type: String,
         required: false,
         default: 'REQUESTED'
-    }
+    },
+    onGateway: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    deviceIds: [String]
 });
+
 extensionsSchema.plugin(mongoosePaginate);
 
 extensionsSchema.set('toJSON', {
@@ -51,6 +59,6 @@ extensionsSchema.set('toObject', {
         delete ret._id;
         delete ret.__v;
     }
-})
+});
 
 export default mongoose.model('Extension', extensionsSchema);

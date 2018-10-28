@@ -1,25 +1,11 @@
+/* jshint esversion: 6 */
+/* jshint node: true */
 "use strict";
 
 const fs = require("fs");
 const deviceGroupsUrl = 'http://localhost:8100/mgmt/shared/resolver/device-groups';
 const ACTIVE = 'ACTIVE';
 const UNDISCOVERED = 'UNDISCOVERED';
-
-/**
- * return back the ASG machine ID
- * @returns string machine UUID
- */
-const getASGMachineId = () => {
-    return String(fs.readFileSync('/machineId', 'utf8')).replace(/[^ -~]+/g, "");
-};
-
-/**
- * delay timer
- * @returns Promise which resolves after timer expires
- */
-const wait = (ms) => new Promise((resolve) => {
-    setTimeout(resolve, ms)
-});
 
 /**
  * Trusted Device Controller
@@ -32,6 +18,148 @@ class TrustedDevicesWorker {
         this.isPublic = true;
     }
 
+    /**
+     * handle onGet HTTP request to get trusted devices
+     * @param {Object} restOperation
+     */
+    onGet(restOperation) {
+        try {
+            this.getDevices()
+                .then((devices) => {
+                    restOperation.statusCode = 200;
+                    restOperation.body = {
+                        devices: devices
+                    };
+                    this.completeRestOperation(restOperation);
+                })
+                .catch((err) => {
+                    throw err;
+                });
+        } catch (err) {
+            this.logger.severe("GET request to retrieve trusted devices failed: \n%s", err);
+            err.httpStatusCode = 400;
+            restOperation.fail(err);
+        }
+    }
+
+    /**
+     * handle onPost HTTP request
+     * @param {Object} restOperation - body is the declared devices to trust
+     */
+    onPost(restOperation) {
+        try {
+            // get the post body from the request
+            const declaration = restOperation.getBody();
+            if (!declaration || !declaration.hasOwnProperty('devices')) {
+                // there was no declaration body submitted, return an error
+                const err = new Error();
+                err.message = 'declaration missing';
+                err.httpStatusCode = 400;
+                this.logger.severe("POST request to trusted devices failed: declaration missing");
+                restOperation.fail(err);
+            }
+            const desiredDevices = declaration.devices;
+
+            if (desiredDevices.length > 0) {
+                // Create comparison collections.
+                const desiredDeviceDict = {};
+                const existingDeviceDict = {};
+                // Populate desired comparison collection with targetHost:targetPort as the key.
+                desiredDevices.map((device) => {
+                    if (!device.hasOwnProperty('targetPort')) {
+                        device.targetPort = 443;
+                    }
+                    desiredDeviceDict[device.targetHost + ":" + device.targetPort] = device;
+                });
+                try {
+                    this.getDevices(true)
+                        .then((existingDevices) => {
+                            // Populate existing comparison collection with targetHost:targetPort as the key.
+                            existingDevices.map((device) => {
+                                existingDeviceDict[device.targetHost + ":" + device.targetPort] = device;
+                            });
+                            for (let device in desiredDeviceDict) {
+                                if (existingDeviceDict.hasOwnProperty(device)) {
+                                    if (existingDeviceDict[device].state === ACTIVE) {
+                                        // Device is desired, exists already, and is active. Don't remove it.
+                                        existingDevices.pop(existingDeviceDict[device]);
+                                        // Device is desired, exists alerady, and is active. Don't add it.
+                                        desiredDevices.pop(desiredDeviceDict[device]);
+                                    } else {
+                                        // Device is desired, exists already, but trust is not active. Reset it.
+                                        this.logger.info('resetting ' + device.targetHost + ':' + device.targetPort + ' because its state is:' + device.state);
+                                    }
+                                } else {
+                                    // Assure that the device declaration has the needed attributed to add.
+                                    if (!desiredDeviceDict[device].hasOwnProperty('targetUsername') ||
+                                        !desiredDeviceDict[device].hasOwnProperty('targetPassphrase')) {
+                                        const err = new Error();
+                                        err.message = 'declared device missing targetUsername or targetPassphrase';
+                                        err.httpStatusCode = 400;
+                                        restOperation.fail(err);
+                                    }
+                                }
+                            }
+                            // Serially remove devices not desired in the declaration.
+                            Promise.all([this.removeDevices(existingDevices)])
+                                .then(() => {
+                                    Promise.all([this.addDevices(desiredDevices)])
+                                        .then(() => {
+                                            // Get the list of currently trusted devices as
+                                            // the response to our declaration.
+                                            this.getDevices()
+                                                .then((devices) => {
+                                                    restOperation.statusCode = 200;
+                                                    restOperation.body = {
+                                                        devices: devices
+                                                    };
+                                                    this.completeRestOperation(restOperation);
+                                                })
+                                                .catch((err) => {
+                                                    this.logger.severe('Error returning list of devices:' + err.message);
+                                                    throw err;
+                                                });
+                                        });
+                                })
+                                .catch((err) => {
+                                    throw err;
+                                });
+                        });
+                } catch (err) {
+                    this.logger.severe("POST request to trusted devices failed:" + err.message);
+                    restOperation.fail(err);
+                }
+            } else {
+                // There are no desired deviecs. Remove all existing trusted devices.
+                this.removeAllDevices()
+                    .then(() => {
+                        // Get the list of currently trusted devices as
+                        // the response to our declaration.
+                        this.getDevices()
+                            .then((devices) => {
+                                restOperation.statusCode = 200;
+                                restOperation.body = {
+                                    devices: devices
+                                };
+                                this.completeRestOperation(restOperation);
+                            })
+                            .catch((err) => {
+                                this.logger.severe('Error returning list of devices:' + err.message);
+                                throw err;
+                            });
+                    })
+                    .catch((err) => {
+                        this.logger.severe('Error removing all trusted devices:' + err.message);
+                        throw err;
+                    });
+            }
+        } catch (err) {
+            this.logger.severe("POST request to update trusted devices failed: \n%s", err);
+            err.httpStatusCode = 400;
+            restOperation.fail(err);
+        }
+    }
+   
     /**
      * Request to create the well known device group on the ASG
      * @returns Promise when request completes
@@ -51,7 +179,7 @@ class TrustedDevicesWorker {
                 .then((response) => {
                     resolve(response);
                 })
-                .catch(err => {
+                .catch((err) => {
                     throw err;
                 });
         });
@@ -122,7 +250,7 @@ class TrustedDevicesWorker {
                             .then(() => {
                                 wait(500).then(() => {
                                     resolve();
-                                })
+                                });
                             })
                             .catch(err => {
                                 throw err;
@@ -157,9 +285,9 @@ class TrustedDevicesWorker {
                                 }
                             })
                             .catch((err) => {
-                                this.logger.severe('could not remove ASG certificate from trusted device.')
+                                this.logger.severe('could not remove ASG certificate from trusted device.');
                                 throw err;
-                            })
+                            });
                     }
                     // Remove the trusted device from the device group.
                     deletePromises.push(this.removeDevice(device));
@@ -169,7 +297,7 @@ class TrustedDevicesWorker {
                         resolve();
                     })
                     .catch((err) => {
-                        this.logger.severe('could not remove trusted device from the ASG')
+                        this.logger.severe('could not remove trusted device from the ASG');
                         throw err;
                     });
             } else {
@@ -202,9 +330,9 @@ class TrustedDevicesWorker {
                                         }
                                     })
                                     .catch((err) => {
-                                        this.logger.severe('could not remove ASG certificate from trusted device.')
+                                        this.logger.severe('could not remove ASG certificate from trusted device.');
                                         throw err;
-                                    })
+                                    });
                             }
                             // Remove the trusted device from the device group.
                             deletePromises.push(this.removeDevice(device));
@@ -323,49 +451,49 @@ class TrustedDevicesWorker {
     removeCertificateFromTrustedDevice(device, machineId) {
         return new Promise((resolve) => {
             this.logger.info('removing certificate for machineId: ' + machineId + ' from device ' + device.targetHost + ':' + device.targetPort);
+            const certificatePromises = [];
             const certPath = '/mgmt/shared/device-certificates';
             const certUrl = 'https://' + device.targetHost + ":" + device.targetPort + certPath;
-            const certGetRequest = this.restOperationFactory.createRestOperationInstance()
-                .setIdentifiedDeviceRequest(true)
-                .setUri(this.url.parse(certUrl))
-                .setReferer(this.getUri().href);
-            const certificateGetPromise = this.restRequestSender.sendGet(certGetRequest)
-                .then((response) => {
-                    const certsBody = response.getBody();
-                    if (certsBody.hasOwnProperty('items')) {
-                        const certs = certsBody.items;
-                        certs.map((cert) => {
-                            if (cert.machineId == machineId) {
-                                const certDelUrl = certUrl + '/' + cert.certificateId;
-                                const certDelRequest = this.restOperationFactory.createRestOperationInstance()
-                                    .setIdentifiedDeviceRequest(true)
-                                    .setUri(this.url.parse(certDelUrl))
-                                    .setReferer(this.getUri().href);
-                                const certDeletePromise = this.restRequestSender.sendDelete(certDelRequest)
-                                    .then(() => {
-                                        resolve();
-                                    })
-                                    .catch((err) => {
-                                        this.logger.severe('Error deleting certificate from remote device:' + err.message);
-                                        throw err;
-                                    });
-                                Promise.all([certDeletePromise])
-                                    .then(() => {
-                                        resolve();
-                                    })
-                                    .catch((err) => {
-                                        throw err;
-                                    });
+            certificatePromises.push(new Promise( (resolve) => {
+                const certGetRequest = this.restOperationFactory.createRestOperationInstance()
+                    .setIdentifiedDeviceRequest(true)
+                    .setUri(this.url.parse(certUrl))
+                    .setReferer(this.getUri().href)
+                    .setMethod('Get');
+                    this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certGetRequest,
+                        (response) => {
+                            const certsBody = response.getBody();
+                            if (certsBody.hasOwnProperty('items')) {
+                                const certs = certsBody.items;
+                                certs.map((cert) => {
+                                    certificatePromises.push( new Promise( (resolve) => {
+                                        if (cert.machineId == machineId) {
+                                            const certDelUrl = certUrl + '/' + cert.certificateId;
+                                            const certDelRequest = this.restOperationFactory.createRestOperationInstance()
+                                                .setIdentifiedDeviceRequest(true)
+                                                .setUri(this.url.parse(certDelUrl))
+                                                .setReferer(this.getUri().href)
+                                                .setMethod('Delete');
+                                            this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certDelRequest,
+                                                (response) => {
+                                                    resolve();
+                                                },
+                                                (err) => {
+                                                    this.logger.severe('Error deleting certificate from remote device:' + err.message);
+                                                    throw err;
+                                                });
+                                        }
+                                    }));
+                                });
+                                resolve();
                             }
-                        });
-                    }
-                    resolve();
-                })
-                .catch((err) => {
-                    this.logger.severe('Error getting certificates from remote device:' + err.message);
-                    throw err;
-                });
-            Promise.all([certificateGetPromise])
+                        },
+                        (err) => {
+                            throw err;
+                        }
+                    );
+            }));
+            Promise.all([certificatePromises])
                 .then(() => {
                     resolve();
                 })
@@ -397,7 +525,6 @@ class TrustedDevicesWorker {
                             if (cert.machineId == machineId) {
                                 const certDelUrl = certUrl + '/' + cert.certificateId;
                                 const certDelRequest = this.restOperationFactory.createRestOperationInstance()
-                                    .setIdentifiedDeviceRequest(true)
                                     .setUri(this.url.parse(certDelUrl))
                                     .setReferer(this.getUri().href);
                                 const certDeletePromise = this.restRequestSender.sendDelete(certDelRequest);
@@ -434,148 +561,22 @@ class TrustedDevicesWorker {
                 });
         });
     }
-
-    /**
-     * handle onGet HTTP request to get trusted devices
-     * @param {Object} restOperation
-     */
-    onGet(restOperation) {
-        try {
-            this.getDevices()
-                .then((devices) => {
-                    restOperation.statusCode = 200;
-                    restOperation.body = {
-                        devices: devices
-                    };
-                    this.completeRestOperation(restOperation);
-                })
-                .catch((err) => {
-                    throw err;
-                });
-        } catch (err) {
-            this.logger.severe("GET request to retrieve trusted devices failed: \n%s", err);
-            err.httpStatusCode = 400;
-            restOperation.fail(err);
-        }
-    }
-
-    /**
-     * handle onPost HTTP request
-     * @param {Object} restOperation - body is the declared devices to trust
-     */
-    onPost(restOperation) {
-        try {
-            // get the post body from the request
-            const declaration = restOperation.getBody();
-            if (!declaration || !declaration.hasOwnProperty('devices')) {
-                // there was no declaration body submitted, return an error
-                const err = new Error();
-                err.message = 'declaration missing';
-                err.httpStatusCode = 400;
-                this.logger.severe("POST request to trusted devices failed: declaration missing");
-                restOperation.fail(err);
-            }
-            const desiredDevices = declaration.devices;
-
-            if (desiredDevices.length > 0) {
-                // Create comparison collections.
-                const desiredDeviceDict = {};
-                const existingDeviceDict = {};
-                // Populate desired comparison collection with targetHost:targetPort as the key.
-                desiredDevices.map((device) => {
-                    if (!device.hasOwnProperty('targetPort')) {
-                        device.targetPort = 443;
-                    }
-                    desiredDeviceDict[device.targetHost + ":" + device.targetPort] = device;
-                });
-                try {
-                    this.getDevices(true)
-                        .then((existingDevices) => {
-                            // Populate existing comparison collection with targetHost:targetPort as the key.
-                            existingDevices.map((device) => {
-                                existingDeviceDict[device.targetHost + ":" + device.targetPort] = device;
-                            });
-                            for (let device in desiredDeviceDict) {
-                                if (existingDeviceDict.hasOwnProperty(device)) {
-                                    if (existingDeviceDict[device].state === ACTIVE) {
-                                        // Device is desired, exists already, and is active. Don't remove it.
-                                        existingDevices.pop(existingDeviceDict[device]);
-                                        // Device is desired, exists alerady, and is active. Don't add it.
-                                        desiredDevices.pop(desiredDeviceDict[device]);
-                                    } else {
-                                        // Device is desired, exists already, but trust is not active. Reset it.
-                                        this.logger.info('resetting ' + device.targetHost + ':' + device.targetPort + ' because its state is:' + device.state);
-                                    }
-                                } else {
-                                    // Assure that the device declaration has the needed attributed to add.
-                                    if (!desiredDeviceDict[device].hasOwnProperty('targetUsername') ||
-                                        !desiredDeviceDict[device].hasOwnProperty('targetPassphrase')) {
-                                        const err = new Error();
-                                        err.message = 'declared device missing targetUsername or targetPassphrase';
-                                        err.httpStatusCode = 400;
-                                        restOperation.fail(err);
-                                    }
-                                }
-                            }
-                            // Serially remove devices not desired in the declaration.
-                            Promise.all([this.removeDevices(existingDevices)])
-                                .then(() => {
-                                    Promise.all([this.addDevices(desiredDevices)])
-                                        .then(() => {
-                                            // Get the list of currently trusted devices as 
-                                            // the response to our declaration.
-                                            this.getDevices()
-                                                .then((devices) => {
-                                                    restOperation.statusCode = 200;
-                                                    restOperation.body = {
-                                                        devices: devices
-                                                    };
-                                                    this.completeRestOperation(restOperation);
-                                                })
-                                                .catch((err) => {
-                                                    this.logger.severe('Error returning list of devices:' + err.message);
-                                                    throw err;
-                                                });
-                                        });
-                                })
-                                .catch((err) => {
-                                    throw err;
-                                })
-                        })
-                } catch (err) {
-                    this.logger.severe("POST request to trusted devices failed:" + err.message);
-                    restOperation.fail(err);
-                }
-            } else {
-                // There are no desired deviecs. Remove all existing trusted devices.
-                this.removeAllDevices()
-                    .then(() => {
-                        // Get the list of currently trusted devices as 
-                        // the response to our declaration.
-                        this.getDevices()
-                            .then((devices) => {
-                                restOperation.statusCode = 200;
-                                restOperation.body = {
-                                    devices: devices
-                                };
-                                this.completeRestOperation(restOperation);
-                            })
-                            .catch((err) => {
-                                this.logger.severe('Error returning list of devices:' + err.message);
-                                throw err;
-                            });
-                    })
-                    .catch((err) => {
-                        this.logger.severe('Error removing all trusted devices:' + err.message);
-                        throw err;
-                    });
-            }
-        } catch (err) {
-            this.logger.severe("POST request to update trusted devices failed: \n%s", err);
-            err.httpStatusCode = 400;
-            restOperation.fail(err);
-        }
-    }
 }
+
+/**
+ * return back the ASG machine ID
+ * @returns string machine UUID
+ */
+const getASGMachineId = () => {
+    return String(fs.readFileSync('/machineId', 'utf8')).replace(/[^ -~]+/g, "");
+};
+
+/**
+ * delay timer
+ * @returns Promise which resolves after timer expires
+ */
+const wait = (ms) => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+});
 
 module.exports = TrustedDevicesWorker;
