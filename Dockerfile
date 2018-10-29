@@ -4,6 +4,7 @@ WORKDIR /
 
 # copy application into container
 COPY dist/ /dist/
+COPY static/ /static/
 COPY package.json /
 COPY .babelrc /
 COPY .eslintrc.js /
