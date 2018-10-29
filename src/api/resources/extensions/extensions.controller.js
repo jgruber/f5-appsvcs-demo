@@ -1,9 +1,6 @@
 import Extension from './extensions.model';
 import extensionsServices from './extensions.services';
 import devicesController from '../devices/devices.controller';
-import {
-    unwatchFile
-} from 'fs';
 
 const appconf = require('../../../config/app');
 const url = require('url');
@@ -511,7 +508,7 @@ export default {
             throw err;
         }
     },
-    async findByURL(url) {
+    async getByUrl(url) {
         try {
             const extension = await Extension.findOne({
                 url: url
@@ -527,7 +524,7 @@ export default {
             throw err;
         }
     },
-    async findByFilename(filename) {
+    async getByFilename(filename) {
         try {
             const extension = await Extension.findOne({
                 filename: filename

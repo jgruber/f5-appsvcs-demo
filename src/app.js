@@ -1,5 +1,6 @@
 const appconf = require('./config/app');
 const f5Gateway = require('./config/f5apigateway');
+const path = require('path');
 
 import express from 'express';
 import logger from 'morgan';
@@ -7,6 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import devicesServices from './api/resources/devices/devices.services';
 import extensionsServices from './api/resources/extensions/extensions.services';
 import swaggerDocument from './config/swagger.json';
+
 import {
     connect
 } from './config/db';
@@ -29,6 +31,9 @@ app.use('/api-docs',
         explorer: true
     })
 );
+//app.use('/static', express.static(path.join(__dirname, '../static')));
+app.use('/html', express.static(path.join(__dirname, '../')));
+
 // default route handlers
 app.use((req, res, next) => {
     const error = new Error('Not found');
@@ -52,8 +57,7 @@ app.listen(PORT, () => {
 connect()
     .then(() => {
         extensionsServices.clearGatewayExtensionTasks();
-        extensionsServices.clearTrustedHostExtensionTasks('172.13.1.103', 443);
-        extensionsServices.clearTrustedHostExtensionTasks('172.13.1.107', 443);
+        extensionsServices.clearAllTrustedHostTasks();
         // list of unique urls
         const extensionsUrlIndexed = {};
         appconf.install_extensions.map((rpm) => {
@@ -90,7 +94,7 @@ connect()
                                 try {
                                     devicesServices.getTrustedDevice(target.targetHost, target.targetPort)
                                         .then((trustedDevice) => {
-                                            if ('id' in trustedDevice) {
+                                            if (trustedDevice && 'id' in trustedDevice) {
                                                 extensionsServices.installExtensionOnTrustedDevice(rpmFile, target.targetHost, target.targetPort)
                                                     .then((installed) => {
                                                         if(installed) {
@@ -109,5 +113,4 @@ connect()
                     }
                 });
         };
-        devicesServices.updateTrustedDevices();
     });

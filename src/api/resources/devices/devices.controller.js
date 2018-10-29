@@ -320,7 +320,12 @@ export default {
     },
     async getAll() {
         try {
-            return await Device.find();
+            const all = await Device.find();
+            if(all) {
+                return all;
+            } else {
+                return [];
+            }
         } catch (err) {
             console.error(err.message);
             throw err;

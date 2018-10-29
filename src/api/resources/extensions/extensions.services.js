@@ -3,6 +3,7 @@
 
 import extensionsController from './extensions.controller';
 import devicesController from '../devices/devices.controller';
+import devicesServices from '../devices/devices.services';
 
 const f5Gateway = require('../../../config/f5apigateway');
 const appconf = require('../../../config/app');
@@ -19,7 +20,7 @@ const STORAGE_PATH = appconf.extension_storage_path;
 const DOWNLOADING = appconf.extension_downloading_status;
 const ERROR = appconf.extension_error_status;
 
-const rpmQueryCmd = '/usr/bin/rpm -qp --queryformat "\%{NAME}:%{VERSION}:%{RELEASE}" ';
+const rpmQueryCmd = '/bin/rpm -qp --queryformat "\%{NAME}:%{VERSION}:%{RELEASE}" ';
 
 const FINISHED = 'FINISHED';
 const FAILED = 'FAILED';
@@ -48,35 +49,26 @@ const syncExtensionDevices = () => {
             .then((gatewayextensions) => {
                 gatewayextensions.map((extension) => {
                     const rpmFile = extension.packageName + '.rpm';
-                    if(rpmFileExits(rpmFile)) {
-                        updateExtensionByFileName(rpmFIle, extension.packageName, extension.name, extension.version, extension.release);
-                    }
+                    addExtensionByFileName(rpmFile);
                 })
             })
             .catch((err) => {
                 console.error('error updating extension on gateway - ' + err.message);
             });
-
-        extensionsController.getAll()
-            .then( (existingExtensions) => {
-                getExtensions()
-                    .then((gatewayextensions) => {
-                        
-                    })
-                devicesController.getAll()
-                    .then((existingDevices) => {
-                        existingDevices.map((device) => {
-                            getExtensions()
-                        });
-                    })
-                    .catch((err) => {
-                        console.err('error querying trusted devices - ' + err.message);
-                        resolve();
-                    })
+        devicesController.getAll()
+            .then((existingDevices) => {
+                existingDevices.map((device) => {
+                    getExtensions(device.targetHost, device.targetPort)
+                        .then((deviceExtensions) => {
+                            deviceExtensions.map((extension) => {
+                                const rpmFile = extension.packageName + '.rpm';
+                                addExtensionByFileName(rpmFile, device.targetHost, device.targetPort);
+                            })
+                        })
+                });
             })
             .catch((err) => {
-                console.error('error querying existing extension - ' + err.message);
-                resolve();
+                console.err('error querying trusted devices - ' + err.message);
             });
     });
 }
@@ -136,6 +128,14 @@ const copyRpmFileToStorageLocation = (rpmFilePath, symlink = false) => {
         return false;
     }
 };
+
+const listStorage = () => {
+    if(validateStorageDir()) {
+        return fs.readdirSync(STORAGE_PATH).filter(fn => fn.includes('.rpm'));
+    } else {
+        return [];
+    }
+}
 
 const rpmFileExits = (rpmFile) => {
     if (validateStorageDir()) {
@@ -706,11 +706,33 @@ const getExtensions = (targetHost, targetPort) => {
 };
 
 export default {
+    async inventoryExtensionsFromStorage() {
+        try {
+            console.log('taking inventory of rpm files in ' + STORAGE_PATH);
+            const inventoryPromises = [];
+            listStorage().map((rpmFile) => {
+                inventoryPromises.push(
+                    extensionsController.getByFilename(rpmFile)
+                        .then((extension) => {
+                            if(!extension) {
+                                console.log('adding extension ' + rpmFile + ' from storage');
+                                inventoryPromises.push(createExtension('file://' + STORAGE_PATH + '/' + rpmFile, rpmFile));
+                            }
+                        })
+                );
+            });
+            return await Promise.all(inventoryPromises);
+        } catch (ex) {
+            const err = 'error building inventory of extensions from storage - ' + ex.message;
+            console.error(err);
+            throw Error(err);
+        }
+    },
     async downloadExtensionToStorage(url) {
         try {
             return await storageDownload(url);
         } catch (ex) {
-            const err = 'error downloading rpm file ' + url + ' to storage - ' + ex;
+            const err = 'error downloading rpm file ' + url + ' to storage - ' + ex.message;
             console.error(err);
             throw Error(err);
         }
@@ -719,9 +741,45 @@ export default {
         try {
             return await removeFileFromStorage(rpmFile);
         } catch (ex) {
-            const err = 'error removing rpm file ' + rpmFile + ' from storage - ' + ex;
+            const err = 'error removing rpm file ' + rpmFile + ' from storage - ' + ex.message;
             console.error(err);
             throw Error(err);
+        }
+    },
+    async inventoryExtensionsOnGateway() {
+        try {
+            const onGatewayExtensions = await getExtensions();
+            const inventoryPromises = [];
+            onGatewayExtensions.map((extension) => {
+                inventoryPromises.push(addExtensionByFileName(extension.packageName + '.rpm'));
+            })
+            await Promise.all(inventoryPromises);
+        } catch (ex) {
+            const err = 'error getting inventory of existing extensions on gateway - ' + ex.message;
+        }
+    },
+    async inventoryExtensionsOnTrustedDevice(targetHost, targetPort) {
+        try {
+            const onTargetExtensions = await getExtensions(targetHost, targetPort);
+            const inventoryPromises = [];
+            onTargetExtensions.map((extension) => {
+                inventoryPromises.push(addExtensionByFileName(extension.packageName + '.rpm', targetHost, targetPort));
+            })
+            await Promise.all(inventoryPromises);
+        } catch (ex) {
+            const err = 'error getting inventory of existing extensions on trusted device ' + targetHost + ':' + targetPort + ' - ' + ex.message;
+        }
+    },
+    async inventoryExtensionsOnAllTrustedDevices() {
+        try {
+            const allDevices = await devicesController.getAll();
+            const inventoryPromises = [];
+            allDevices.map((device) => {
+                inventoryPromises.push(this.inventoryExtensionsOnTrustedDevice(device.targetHost, device.targetPort));
+            })
+            await Promise.all(inventoryPromises);
+        } catch (ex) {
+            const err = 'error getting inventory of existing extensions on trusted device ' + targetHost + ':' + targetPort + ' - ' + ex.message;
         }
     },
     async installExtensionOnGateway(rpmFile) {
@@ -750,9 +808,9 @@ export default {
                 }
             }
             return false;
-        } catch (err) {
-            console.error('error installing extension on gateway - ' + err.message);
-            throw err;
+        } catch (ex) {
+            console.error('error installing extension on gateway - ' + ex.message);
+            throw ex;
         }
     },
     async uninstallExtensionOnGateway(rpmFile) {
@@ -768,9 +826,9 @@ export default {
                 }
             });
             return true;
-        } catch (err) {
-            console.error('error uninstalling extension on gateway - ' + err.message);
-            throw err;
+        } catch (ex) {
+            console.error('error uninstalling extension on gateway - ' + ex.message);
+            throw ex;
         }
     },
     async uninstallAllExtensionsOnGateway() {
@@ -784,9 +842,9 @@ export default {
                 }
             });
             return true;
-        } catch (err) {
-            console.error('error uninstalling extension on gateway - ' + err.message);
-            throw err;
+        } catch (ex) {
+            console.error('error uninstalling extension on gateway - ' + ex.message);
+            throw ex;
         }
     },
     async installExtensionOnTrustedDevice(rpmFile, targetHost, targetPort) {
@@ -817,9 +875,9 @@ export default {
                 }
             }
             return false;
-        } catch (err) {
-            console.error('error installing extension on trusted device - ' + err.message);
-            throw err;
+        } catch (ex) {
+            console.error('error installing extension on trusted device - ' + ex.message);
+            throw ex;
         }
     },
     async uninstallExtensionOnTrustedDevice(rpmFile, targetHost, targetPort) {
@@ -835,9 +893,9 @@ export default {
                 }
             });
             return true;
-        } catch (err) {
-            console.error('error uninstalling extension on gateway - ' + err.message);
-            throw err;
+        } catch (ex) {
+            console.error('error uninstalling extension on gateway - ' + ex.message);
+            throw ex;
         }
     },
     async uninstallAllExtensionsOnTrustedDevice(targetHost, targetPort) {
@@ -858,6 +916,7 @@ export default {
     },
     async clearGatewayExtensionTasks() {
         try {
+            console.log('clearing FINISHED extensions tasks on gateway');
             return await deleteTasks();
         } catch (ex) {
             const err = 'error deleting all FINISHED gateway tasks - ' + ex.message;
@@ -870,6 +929,21 @@ export default {
             return await deleteTasks('', targetHost, targetPort)
         } catch (ex) {
             const err = 'error deleting all FINISHED tusted host tasks - ' + ex.message;
+            console.error(err);
+            throw Error(err);
+        }
+    },
+    async clearAllTrustedHostTasks() {
+        try {
+            const devices = await devicesServices.updateTrustedDevices();
+            const clearPromises = [];
+            devices.map((device) => {
+                console.log('clearing FINISHED extensions tasks on ' + device.targetHost + ':' + device.targetPort);
+                clearPromises.push(deleteTasks('', device.targetHost, device.targetPort));
+            })
+            await Promise.all(clearPromises);
+        } catch (ex) {
+            const err = 'error deleting all FINISHED tasks on trusted devices - ' + ex.message;
             console.error(err);
             throw Error(err);
         }

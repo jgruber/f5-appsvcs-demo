@@ -17,11 +17,19 @@ const extension_error_status = 'ERROR';
 const extension_storage_path = process.env['EXTENSION_STORAGE_PATH'] || '/tmp/extensions';
 const extension_valid_protocols = ['file:', 'http:', 'https:'];
 
+const fs = require('fs');
+
+// dev evn for npm start
+let filebase = process.cwd() + '/src';
+// prod container from dist npm prune production
+if(fs.existsSync('/dist/icontrollx')) {
+   filebase = '/dist'; 
+}
+
 const install_extensions = [
-    {url: 'file://' + process.cwd() + '/src/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm'},
-    {url: 'file://' + process.cwd() + '/src/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm'},
-    {url: 'file://' + process.cwd() + '/src/icontrollx/TrustedUploader/build/RPMS/noarch/TrustedUploader-1.0.0-0001.noarch.rpm'},
-    {url: 'file://' + process.cwd() + '/src/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm'},
+    {url: 'file://' + filebase + '/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm'},
+    {url: 'file://' + filebase + '/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm'},
+    {url: 'file://' + filebase + '/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm'},
     {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm'},
     {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm', targetHost: '172.13.1.107', targetPort: 443},
     {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm', targetHost: '172.13.1.103', targetPort: 443}

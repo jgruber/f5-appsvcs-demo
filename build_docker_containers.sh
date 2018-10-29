@@ -2,6 +2,7 @@
 
 npm install --save
 if [ -d "./dist" ]; then rm -rf ./dist; fi
+npm prune production
 npm run-script build
 
 docker build -t f5-appsvcs-demo:latest .
@@ -22,8 +23,6 @@ echo "    -e F5_API_GW_HTTP_PORT=$F5_API_GW_HTTP_PORT \ "
 echo "    f5-appsvcs-demo:latest "
 echo ""
 
-cd static
-
-docker build -t f5-appsvcs-demo-web:latest .
+./build_documentation_docker_container.sh
 
 
