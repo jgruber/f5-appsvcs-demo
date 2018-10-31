@@ -571,11 +571,11 @@ export default {
                             const err = 'could not save extension with url: ' + url + ' with filename ' + filename;
                             throw Error(err);
                         } else {
-                            return true;
+                            return extension;
                         }
                     });
                 } else {
-                    return true;
+                    return extension;
                 }
             }
         } catch (err) {
@@ -608,7 +608,7 @@ export default {
                         const err = 'could not save extension with url: ' + url + ' to status ' + newstatus + ' - ' + err;
                         throw Error(err);
                     } else {
-                        return true;
+                        return extension;
                     }
                 });
             }
@@ -629,7 +629,7 @@ export default {
                         const err = 'could not save extension with filename: ' + filename + ' to status ' + newstatus;
                         throw Error(err);
                     } else {
-                        return true;
+                        return extension;
                     }
                 });
             }
@@ -656,7 +656,7 @@ export default {
                     const err = 'could not save extension with filename: ' + filename;
                     throw Error(err);
                 } else {
-                    return true;
+                    return extension;
                 }
             });
         } catch (err) {
@@ -689,7 +689,7 @@ export default {
                     const err = 'could not save extension with filename: ' + filename + ' - ' + err.message;
                     throw Error(err);
                 } else {
-                    return true;
+                    return extension;
                 }
             });
         } catch (err) {
@@ -719,7 +719,7 @@ export default {
                     const err = 'could not save extension with packagename: ' + packagename + ' - ' + err.message;
                     throw Error(err);
                 } else {
-                    return true;
+                    return extension;
                 }
             });
         } catch (err) {

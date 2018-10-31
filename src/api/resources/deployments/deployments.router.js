@@ -3,6 +3,11 @@ import deploymentsController from './deployments.controller';
 import usersServices from '../users/users.services';
 export const deploymentsRouter = express.Router();
 
+
+const { OpenApiValidator } = require("express-openapi-validate");
+import swaggerDocument from '../../../config/swagger.json';
+const validator = new OpenApiValidator(swaggerDocument);
+
 deploymentsRouter
     .route('/:id/proxy*')
     .get(usersServices.isAuthenticated, deploymentsController.get)
@@ -19,6 +24,6 @@ deploymentsRouter
 
 deploymentsRouter
     .route('/')
-    .post(usersServices.isAuthenticated, deploymentsController.createDeployment)
+    .post(usersServices.isAuthenticated, validator.validate("post", "/deployments"), deploymentsController.createDeployment)
     .get(usersServices.isAuthenticated, deploymentsController.findAll)
     

@@ -11,7 +11,7 @@ const validateRequest = (id, req) => {
                 if (device) {
                     try {
                         const r_url = new url.URL(req.url, 'http://localhost');
-                        const device_uri = decodeURIComponent(r_url.pathname.substring(r_url.pathname.indexOf('proxy')+5)) + r_url.search;
+                        const device_uri = decodeURIComponent(r_url.pathname.substring(r_url.pathname.indexOf('proxy') + 5)) + r_url.search;
                         const request = {
                             valid: true,
                             targetHost: device.targetHost,
@@ -50,9 +50,9 @@ export default {
             if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
                 const device = req.body;
                 if (device.hasOwnProperty('targetHost') &&
-                        device.hasOwnProperty('targetUsername') &&
-                        device.hasOwnProperty('targetPassword')) {
-                    if(!device.hasOwnProperty('targetPort')) {
+                    device.hasOwnProperty('targetUsername') &&
+                    device.hasOwnProperty('targetPassword')) {
+                    if (!device.hasOwnProperty('targetPort')) {
                         device.targetPort = 443;
                     }
                     const trustedDevice = await devicesServices.createTrustedDevice(
@@ -72,11 +72,8 @@ export default {
                             console.error('error in creating trusted device:' + err.message);
                             throw err;
                         }
-                        return res.status(400).json({
-                            err: 'error creating device:' + err.message
-                        })
+                        return res.status(200).json(newDevice);
                     });
-                    return res.status(200).json(newDevice);
                 } else {
                     return res.status(400).json({
                         err: 'invalid device ' + device
@@ -152,7 +149,7 @@ export default {
                 } = req.params;
                 const device = await Device.findById(id);
                 if (device) {
-                    await devicesServices.removeTrustedDevice(device.targetHost, device.targetPort);   
+                    await devicesServices.removeTrustedDevice(device.targetHost, device.targetPort);
                 }
                 await Device.findByIdAndRemove({
                     _id: id
@@ -177,137 +174,112 @@ export default {
     },
     async get(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const {
-                    id
-                } = req.params;
-                validateRequest(id, req).then( async (request) => {
-                    if (request.valid) {
-                        const proxyResponse = await devicesServices.proxyGet(request.uri, request.targetHost, request.targetPort, req.headers);
-                        res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
-                    } else {
-                        return res.status(400).json({
-                            err: request.reason
-                        })
-                    }
-                });
-            } else {
-                return res.status(401)
-                    .json({
-                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
-                    });
-            }
+            const {
+                id
+            } = req.params;
+            validateRequest(id, req).then(async (request) => {
+                if (request.valid) {
+                    const proxyResponse = await devicesServices.proxyGet(request.uri, request.targetHost, request.targetPort, req.headers);
+                    res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
+                } else {
+                    return res.status(400).json({
+                        err: request.reason
+                    })
+                }
+            });
         } catch (err) {
             console.error(err);
-            return res.status(500).send({err: err});
+            return res.status(500).send({
+                err: err
+            });
         }
     },
     async post(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const {
-                    id
-                } = req.params;
-                validateRequest(id, req).then( async (request) => {
-                    if (request.valid) {
-                        const proxyResponse = await devicesServices.proxyPost(request.uri, request.targetHost, request.targetPort, req.headers, req.body);
-                        res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
-                    } else {
-                        return res.status(400).json({
-                            err: request.reason
-                        })
-                    }
-                });
-            } else {
-                return res.status(401)
-                    .json({
-                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
-                    });
-            }
+            const {
+                id
+            } = req.params;
+            validateRequest(id, req).then(async (request) => {
+                if (request.valid) {
+                    const proxyResponse = await devicesServices.proxyPost(request.uri, request.targetHost, request.targetPort, req.headers, req.body);
+                    res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
+                } else {
+                    return res.status(400).json({
+                        err: request.reason
+                    })
+                }
+            });
         } catch (err) {
             console.error(err);
-            return res.status(500).send({err: err});
+            return res.status(500).send({
+                err: err
+            });
         }
     },
     async put(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const {
-                    id
-                } = req.params;
-                validateRequest(id, req).then( async (request) => {
-                    if (request.valid) {
-                        const proxyResponse = await devicesServices.proxyPut(request.uri, request.targetHost, request.targetPort, req.headers, req.body);
-                        res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
-                    } else {
-                        return res.status(400).json({
-                            err: request.reason
-                        })
-                    }
-                });
-            } else {
-                return res.status(401)
-                    .json({
-                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
-                    });
-            }
+            const {
+                id
+            } = req.params;
+            validateRequest(id, req).then(async (request) => {
+                if (request.valid) {
+                    const proxyResponse = await devicesServices.proxyPut(request.uri, request.targetHost, request.targetPort, req.headers, req.body);
+                    res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
+                } else {
+                    return res.status(400).json({
+                        err: request.reason
+                    })
+                }
+            });
         } catch (err) {
             console.error(err);
-            return res.status(500).send({err: err});
+            return res.status(500).send({
+                err: err
+            });
         }
     },
     async patch(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const {
-                    id
-                } = req.params;
-                validateRequest(id, req).then( async (request) => {
-                    if (request.valid) {
-                        const proxyResponse = await devicesServices.proxyPatch(request.uri, request.targetHost, request.targetPort, req.headers, req.body);
-                        res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
-                    } else {
-                        return res.status(400).json({
-                            err: request.reason
-                        })
-                    }
-                });
-            } else {
-                return res.status(401)
-                    .json({
-                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
-                    });
-            }
+            const {
+                id
+            } = req.params;
+            validateRequest(id, req).then(async (request) => {
+                if (request.valid) {
+                    const proxyResponse = await devicesServices.proxyPatch(request.uri, request.targetHost, request.targetPort, req.headers, req.body);
+                    res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
+                } else {
+                    return res.status(400).json({
+                        err: request.reason
+                    })
+                }
+            });
         } catch (err) {
             console.error(err);
-            return res.status(500).send({err: err});
+            return res.status(500).send({
+                err: err
+            });
         }
     },
     async del(req, res) {
         try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const {
-                    id
-                } = req.params;
-                validateRequest(id, req).then( async (request) => {
-                    if (request.valid) {
-                        const proxyResponse = await devicesServices.proxyDelete(request.uri, request.targetHost, request.targetPort, req.headers);
-                        res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
-                    } else {
-                        return res.status(400).json({
-                            err: request.reason
-                        })
-                    }
-                });
-            } else {
-                return res.status(401)
-                    .json({
-                        "err": "authenticated user must have " + BIGIP_ADMIN_ROLE + " role"
-                    });
-            }
+            const {
+                id
+            } = req.params;
+            validateRequest(id, req).then(async (request) => {
+                if (request.valid) {
+                    const proxyResponse = await devicesServices.proxyDelete(request.uri, request.targetHost, request.targetPort, req.headers);
+                    res.status(proxyResponse.status).set(proxyResponse.headers).send(proxyResponse.body);
+                } else {
+                    return res.status(400).json({
+                        err: request.reason
+                    })
+                }
+            });
         } catch (err) {
             console.error(err);
-            return res.status(500).send({err: err});
+            return res.status(500).send({
+                err: err
+            });
         }
     },
     async getById(deviceId) {
@@ -321,7 +293,7 @@ export default {
     async getAll() {
         try {
             const all = await Device.find();
-            if(all) {
+            if (all) {
                 return all;
             } else {
                 return [];
@@ -345,8 +317,11 @@ export default {
     },
     async removeByTargetHostAndTargetPort(targetHost, targetPort) {
         try {
-            await Device.deleteMany({ targetHost: targetHost, targetPort: targetPort}, function(err) {
-                if(err) {
+            await Device.deleteMany({
+                targetHost: targetHost,
+                targetPort: targetPort
+            }, function (err) {
+                if (err) {
                     console.error('could not find extension with filename: ' + filename + ' - ' + err.message);
                     throw err;
                 } else {
@@ -366,7 +341,7 @@ export default {
             throw Error(err);
         }
     },
-    async updateStateByTargetHostAndTargetPort(targetHost, targetPort, state, isbigip=true) {
+    async updateStateByTargetHostAndTargetPort(targetHost, targetPort, state, isbigip = true) {
         try {
             let device = await Device.findOne({
                 targetHost: targetHost,

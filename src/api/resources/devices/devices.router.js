@@ -14,9 +14,7 @@ devicesRouter
 devicesRouter
     .route('/:id')
     .get(usersServices.isAuthenticated, devicesController.findById)
-    .delete(usersServices.isAuthenticated, devicesController.delete)
 
 devicesRouter
     .route('/')
-    .post(usersServices.isAuthenticated, devicesController.create)
     .get(usersServices.isAuthenticated, devicesController.findAll)

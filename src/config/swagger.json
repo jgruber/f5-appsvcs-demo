@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "F5 Application Services Demostration API",
-        "description": "<h2>Building Cloud Ready F5 Controller Services</h2><p>A node <a href='https://expressjs.com/' class='link' target='_blank'>express</a> application which functions as part of a micro services framework. The application persistes to mongodb and accesses F5 BIG-IP devices through the <a href='https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/' class='link' target='_blank'>API Services Gateway</a>. The application\\'s core function is to remove the concerns of BIG-IP authorization and roles by utilizing the <a href='https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/' class='link' target='_blank'>API Services Gateway</a> to establish device trusts. </p><p><img src='../html/static/assets/images/f5-appsvcs-demo-microservices-diagram.png'></p><p>The API implements an <a href='http://localhost:3000/html/src/config/swagger.json' class='link' target='_blank'>OpenAPI 3.0 schema</a>. The main API interface is the <a href='http://localhost:3000/api/deployments' class='link' target='_blank'>deployments endpoint</a> which can create groups of BIG-IP trusted devices and publishing iControl LX extensions to those devices.</p><p></p><p>To illustrate how a third part application framework can hold the authorization concern, instead of the BIG-IP, the application requires a user to be created with the <i><b>users</b></i> API endpoint. The first user created will automatically have the <i><b>User Administrator</b></i> application role tag applied. To create the first user, you are not required to provide credentials.<h4>HTTP POST /users unauthenticate</h4><pre>{\\\"username\\\":\\\"admin\\\", \\\"password\\\":\\\"F5RocksAPIs!\\\"}</pre>Once that user is created, the user name and password  must be supplied with HTTP BASIC authentication thereafter.</p><p>To be able to add BIG-IPs or iControl LX extensions to <i><b>deployments</b></i>, the API requests made to the <i>deployments</i> API endpoint must be authenticated by a user with the <i><b>BIG-IP Administrator</b></i> role tag applied.</p><h4>HTTP PUT /users/{userId} with HTTP BASIC authentication</h4><pre>{\\\"roles\\\":[\\\"User Administrator\\\", \\\"BIG-IP Administrator\\\"]}</pre><p>Once the appropriate application users and roles are defined, <i><b>deployments</b></i> can be created, which will use the <a href='https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/' class='link' target='_blank'>API Services Gateway</a> to establish trust with remote BIG-IPs. The deployment can also be used to install iControl LX extensions on the trusted BIG-IP devices. The application\\'s <i><b>devices</b></i> and <i><b>deployments</b></i> API endpoints also and expose trusted access to any iControl REST endpoint. The endpoints can be used to administer individual trusted devices or have the iControl REST requests replicated across a multi-device deployment.</p><h2>Utilizing the Swagger Generated API User Interface</h2><p>Since we generated or APIs using an OpenAPI schema, the swagger-ui-express module has generated this interface for us. The interface uses your browser's XHR javascript client to provide access to the deployed API endpoints.</p><p>The <i>Authorize</i> button allows you to enter your HTTP BASIC credentials once and have them applied on all requests made through the user interface.</p><p>Each API endpoint has a user interface for make requests as well as generating curl cli syntax.</p>",
+        "description":"<h2>Building Cloud Ready F5 Controller Services</h2><p>A node <a href='https://expressjs.com/' class='link' target='_blank'>express</a> application which functions as part of a micro services framework. The application persistes to mongodb and accesses F5 BIG-IP devices through the <a href='https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/' class='link' target='_blank'>API Services Gateway</a>. The application\\'s core function is to remove the concerns of BIG-IP authorization and roles by utilizing the <a href='https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/' class='link' target='_blank'>API Services Gateway</a> to establish device trusts. </p><p><img src='/html/static/assets/images/f5-appsvcs-demo-microservices-diagram.png'></p><p>The API implements an <a href='/html/src/config/swagger.json' class='link' target='_blank'>OpenAPI 3.0 schema</a>. The main API interface is the <a href='#/Deployments' class='link'>deployments endpoint</a> which can create groups of BIG-IP trusted devices and publishing iControl LX extensions to those devices.</p><p></p><p>To illustrate how a third part application framework can hold the authorization concern, instead of the BIG-IP, the application requires a user to be created with the <a href='#/Users' class='link'>users</a> API endpoint. The first user created will automatically have the <i><b>User Administrator</b></i> application role tag applied. To create the first user, you are not required to provide credentials.<h4>HTTP POST /users unauthenticate</h4><pre>{\\\"username\\\":\\\"admin\\\", \\\"password\\\":\\\"F5RocksAPIs!\\\"}</pre>Once that user is created, the user name and password must be supplied with HTTP BASIC authentication thereafter.</p><p>To be able to add BIG-IPs or iControl LX extensions to <i><b>deployments</b></i>, the API requests made to the <i>deployments</i> API endpoint must be authenticated by a user with the <i><b>BIGIP Administrator</b></i> role tag applied.</p><h4>HTTP PUT /users/{userId} with HTTP BASIC authentication</h4><pre>{\\\"roles\\\":[\\\"User Administrator\\\", \\\"BIGIP Administrator\\\"]}</pre><p>Once the appropriate application users and roles are defined, <i><b>deployments</b></i> can be created, which will use the <a href='https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/' class='link' target='_blank'>API Services Gateway</a> to establish trust with remote BIG-IPs. The deployment can also be used to install iControl LX extensions on the trusted BIG-IP devices. The application\\'s <i><b>devices</b></i> and <i><b>deployments</b></i> API endpoints also and expose trusted access to any iControl REST endpoint. The endpoints can be used to administer individual trusted devices or have the iControl REST requests replicated across a multi-device deployment.</p><h2>Utilizing the Swagger Generated API User Interface</h2><p>Since we generated or APIs using an OpenAPI schema, the swagger-ui-express module has generated this interface for us. The interface uses your browser's XHR javascript client to provide interactive access to the API endpoints.</p><p><span style='line-height: 2.0;'>The <b>Servers</b> drop down selection and the <span class='btn authorize unlocked'>Authorize</span> button at the beginning of the API endpoints section allow you to specify which server to issue your API calls and what credentials to use for all requests made through the user interface.</span></p><p><span style='line-height: 2.0;'>Each API endpoint has a <span class='btn try-out__btn'>Try it out</span> button which allows you to create API requests as well as generate curl cli cut-n-paste examples.</span></p><h4>Wow.. all our APIs should use OpenAPI schema so we could self document and test everything.</h4><p>To get started, create a query to the <a href='#/Users' class='link'>users <span class='opblock-summary opblock-summary-post opblock-summary-method'>POST</span> endpoint</a> and follow the example post to create your <i><b>User Administrator</b></i> user. </p><p>Next, add your new user name and password in the form displayed when you click the <span class='btn authorize unlocked'>Authorize</span> button.</p><p>Next, use the <a href='#/Users' class='link'>users <span class='opblock-summary opblock-summary-put opblock-summary-method'>PUT</span> endpoint</a> to add the <i><b>BIGIP Administrator</b> role to your new user.</p>",
         "version": "1.0.0",
         "license": {
             "name": "Apache 2.0",
@@ -14,7 +14,8 @@
         }
     },
     "servers": [{
-        "url": "http://localhost:3000/api"
+        "url": "http://localhost:3000/api",
+        "description": "F5 Application Services Demonstration Server"
     }],
     "tags": [{
         "name": "Users",
@@ -47,7 +48,11 @@
                         "type": "string"
                     },
                     "password": {
-                        "type": "string"
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8,
+                        "maxLength": 128,
+                        "pattern": "^(?=.*[A-Z].*[a-z])(?=.*[!@#$&*:])(?=.*[0-9].*[0-9]).{8,128}$"
                     },
                     "roles": {
                         "type": "array",
@@ -69,7 +74,8 @@
                     "roles": {
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["User Administrator", "BIGIP Administrator"]
                         }
                     }
                 },
@@ -375,7 +381,6 @@
             "DeviceRequest": {
                 "required": [
                     "targetHost",
-                    "targetPort",
                     "targetUsername",
                     "targetPassphrase"
                 ],
@@ -384,13 +389,17 @@
                         "type": "string"
                     },
                     "targetPort": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65534,
+                        "default": 443
                     },
                     "targetUsername": {
                         "type": "string"
                     },
                     "targetPassphrase": {
-                        "type": "string"
+                        "type": "string",
+                        "format": "password"
                     }
                 },
                 "example": {
@@ -796,6 +805,7 @@
                 "security": [{
                     "BasicAuth": []
                 }],
+                "parameters": [],
                 "summary": "API endpoint to create a deployment of BIG-IP trusted devices",
                 "description": "Create a new target deployment for the demonstration application",
                 "requestBody": {
@@ -889,7 +899,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to delete"
@@ -936,7 +947,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to update"
@@ -992,21 +1004,15 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to delete"
                 }],
                 "responses": {
                     "200": {
-                        "description": "The deleted deployment",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/DeploymentResponse"
-                                }
-                            }
-                        }
+                        "description": "Deployment object deleted"
                     },
                     "401": {
                         "description": "Request requires user authentication"
@@ -1041,7 +1047,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to place iControl GET Request"
@@ -1099,7 +1106,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to place iControl POST Request"
@@ -1166,7 +1174,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to place iControl PUT Request"
@@ -1233,7 +1242,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to place iControl PATCH Request"
@@ -1300,7 +1310,8 @@
                     "in": "path",
                     "name": "deploymentId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the deployment to place iControl DELETE Request"
@@ -1400,7 +1411,8 @@
                     "in": "path",
                     "name": "deviceId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP trusted device to list"
@@ -1449,7 +1461,8 @@
                     "in": "path",
                     "name": "deviceId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP trusted device to place iControl GET Request"
@@ -1507,7 +1520,8 @@
                     "in": "path",
                     "name": "deviceId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP trusted device to place iControl POST Request"
@@ -1574,7 +1588,8 @@
                     "in": "path",
                     "name": "deviceId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP trusted device to place iControl PUT Request"
@@ -1641,7 +1656,8 @@
                     "in": "path",
                     "name": "deviceId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP trusted device to place iControl PATCH Request"
@@ -1708,7 +1724,8 @@
                     "in": "path",
                     "name": "deviceId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP trusted device to place iControl DELETE Request"
@@ -1808,7 +1825,8 @@
                     "in": "path",
                     "name": "extensionId",
                     "schema": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern":"^[0-9a-fA-F]{24}$"
                     },
                     "required": true,
                     "description": "ID of the BIG-IP iControl LX extension to list"

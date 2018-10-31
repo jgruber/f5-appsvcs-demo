@@ -75,7 +75,7 @@ const syncExtensionDevices = () => {
 
 const updateExtensionStatusByURL = async (url, status) => {
     try {
-        await extensionsController.updateStatusByURL(url, status);
+        return await extensionsController.updateStatusByURL(url, status);
     } catch (err) {
         console.error('can not update extension state: ' + err.message);
     }
@@ -83,7 +83,7 @@ const updateExtensionStatusByURL = async (url, status) => {
 
 const addExtensionByFileName = async (filename, targetHost, targetPort) => {
     try {
-        await extensionsController.addExtensionByFileName(filename, targetHost, targetPort);
+        return await extensionsController.addExtensionByFileName(filename, targetHost, targetPort);
     } catch (err) {
         console.error('can not add extension with targetHost:' + targetHost + ' targetPort:' + targetPort + ' filename:' + filename + ' - ' + err.message);
     }
@@ -130,7 +130,7 @@ const copyRpmFileToStorageLocation = (rpmFilePath, symlink = false) => {
 };
 
 const listStorage = () => {
-    if(validateStorageDir()) {
+    if (validateStorageDir()) {
         return fs.readdirSync(STORAGE_PATH).filter(fn => fn.includes('.rpm'));
     } else {
         return [];
@@ -208,7 +208,7 @@ const downloadFile = (url) => {
 };
 
 const removeFileFromStorage = async (rpmFile) => {
-    if(rpmFile && rpmFileExits(rpmFile)) {
+    if (rpmFile && rpmFileExits(rpmFile)) {
         removeRpmFile(rpmFile);
     }
 }
@@ -492,8 +492,8 @@ const deleteTasks = (taskId, targetHost, targetPort) => {
                             if (resp.statusCode < 400) {
                                 resolve(true);
                             } else {
-                                if(resp.statusCode == 404) {
-                                   resolve(true);
+                                if (resp.statusCode == 404) {
+                                    resolve(true);
                                 } else {
                                     console.log('could not delete task ' + taskId + ' status returned:' + resp.statusCode + ' - ');
                                     resolve(false);
@@ -548,7 +548,7 @@ const install = (rpmFile, targetHost, targetPort) => {
                 "packageFilePath": "/var/config/rest/downloads/" + rpmFile
             }
         }
-        if(targetHost) {
+        if (targetHost) {
             installOptions = {
                 method: 'POST',
                 url: f5Gateway.f5_api_gw_proxy_url,
@@ -573,14 +573,14 @@ const install = (rpmFile, targetHost, targetPort) => {
                 pollTask(taskId, 20000, targetHost, targetPort)
                     .then((results) => {
                         if (results) {
-                            if(results.status != FINISHED) {
-                                if(results.hasOwnProperty('errorMessage') && results.errorMessage.includes('already installed')) {
+                            if (results.status != FINISHED) {
+                                if (results.hasOwnProperty('errorMessage') && results.errorMessage.includes('already installed')) {
                                     addExtensionByFileName(rpmFile);
                                     resolve(true);
                                 } else {
                                     resolve(false);
                                 }
-                            } else { 
+                            } else {
                                 addExtensionByFileName(rpmFile);
                                 resolve(true);
                             }
@@ -609,7 +609,7 @@ const uninstall = (packageName, targetHost, targetPort) => {
                 "packageName": packageName
             }
         }
-        if(targetHost) {
+        if (targetHost) {
             uninstallOptions = {
                 method: 'POST',
                 url: f5Gateway.f5_api_gw_proxy_url,
@@ -622,7 +622,7 @@ const uninstall = (packageName, targetHost, targetPort) => {
                     }
                 },
                 json: true
-            } 
+            }
         }
         request(uninstallOptions, function (err, resp, body) {
             if (err) {
@@ -633,7 +633,7 @@ const uninstall = (packageName, targetHost, targetPort) => {
                 let taskId = body.id;
                 pollTask(taskId, 20000, targetHost, targetPort)
                     .then((results) => {
-                        if(results.status != FINISHED) {
+                        if (results.status != FINISHED) {
                             console.error('uninstall task did not reach the FINISHED state - ' + JSON.stringify(results));
                             resolve(false);
                         } else {
@@ -686,7 +686,7 @@ const getExtensions = (targetHost, targetPort) => {
                     let taskId = body.id;
                     pollTask(taskId, 20000, targetHost, targetPort)
                         .then((results) => {
-                            if(results.status != FINISHED) {
+                            if (results.status != FINISHED) {
                                 console.error('query task did not reach the FINISHED state - ' + JSON.stringify(results));
                                 resolve([]);
                             } else {
@@ -713,12 +713,12 @@ export default {
             listStorage().map((rpmFile) => {
                 inventoryPromises.push(
                     extensionsController.getByFilename(rpmFile)
-                        .then((extension) => {
-                            if(!extension) {
-                                console.log('adding extension ' + rpmFile + ' from storage');
-                                inventoryPromises.push(createExtension('file://' + STORAGE_PATH + '/' + rpmFile, rpmFile));
-                            }
-                        })
+                    .then((extension) => {
+                        if (!extension) {
+                            console.log('adding extension ' + rpmFile + ' from storage');
+                            inventoryPromises.push(createExtension('file://' + STORAGE_PATH + '/' + rpmFile, rpmFile));
+                        }
+                    })
                 );
             });
             return await Promise.all(inventoryPromises);
@@ -786,25 +786,34 @@ export default {
         try {
             if (rpmFile) {
                 const existingExtensions = await getExtensions();
+                let needToInstall = true;
                 existingExtensions.map((extension) => {
                     if (rpmFile && rpmFile.startsWith(extension.packageName)) {
-                        addExtensionByFileName(rpmFile);
-                        return true;
+                        needToInstall = false;
                     }
                 })
-                if (!rpmFileExits(rpmFile)) {
-                    throw Error('file: ' + rpmFile + ' does not exist in storage.');
-                }
-                const uploaded = await gatewayUpload(rpmFile);
-                if (uploaded) {
-                    const installed = await install(rpmFile);
-                    if (installed) {
-                        return true;
+                if (needToInstall) {
+                    if (!rpmFileExits(rpmFile)) {
+                        throw Error('file: ' + rpmFile + ' does not exist in storage.');
+                    }
+                    const uploaded = await gatewayUpload(rpmFile);
+                    if (uploaded) {
+                        const installed = await install(rpmFile);
+                        if (installed) {
+                            return await extensionsController.getByFilename(rpmFile);
+                        } else {
+                            const err = 'file ' + rpmFile + ' did not successfully install on the ASG';
+                            console.error(err);
+                            throw Error(err);
+                        }
+                    } else {
+                        const err = 'file ' + rpmFile + ' did not successfully upload to the ASG';
+                        console.error(err);
+                        throw Error(err);
                     }
                 } else {
-                    const err = 'file ' + rpmFile + ' did not successfully upload to the ASG';
-                    console.error(err);
-                    throw Error(err);
+                    console.log('extension ' + rpmFile + ' is installed on the ASG');
+                    return await addExtensionByFileName(rpmFile);
                 }
             }
             return false;
@@ -851,27 +860,34 @@ export default {
         try {
             if (rpmFile) {
                 const existingExtensions = await getExtensions(targetHost, targetPort);
+                let needToInstall = true;
                 existingExtensions.map((extension) => {
                     if (rpmFile && rpmFile.startsWith(extension.packageName)) {
-                        addExtensionByFileName(rpmFile, targetHost, targetPort);
-                        return true;
+                        needToInstall = false;
                     }
                 })
-                if (!rpmFileExits(rpmFile)) {
-                    throw Error('file: ' + rpmFile + ' does not exist in storage.');
-                }
-                const uploaded = await trustedDeviceUpload(rpmFile, targetHost, targetPort);
-                if (uploaded) {
-                    const installed = await install(rpmFile, targetHost, targetPort);
-                    if (installed) {
-                        return true;
+                if (needToInstall) {
+                    if (!rpmFileExits(rpmFile)) {
+                        throw Error('file: ' + rpmFile + ' does not exist in storage.');
+                    }
+                    const uploaded = await trustedDeviceUpload(rpmFile, targetHost, targetPort);
+                    if (uploaded) {
+                        const installed = await install(rpmFile, targetHost, targetPort);
+                        if (installed) {
+                            return await extensionsController.getByFilename(rpmFile);;
+                        } else {
+                            const err = 'file ' + rpmFile + ' did not successfully install on the trusted device ' + targetHost + ':' + targetPort;
+                            console.error(err);
+                            throw Error(err);
+                        }
                     } else {
-                        return false;
+                        const err = 'file ' + rpmFile + ' did not successfully upload to the trusted device ' + targetHost + ':' + targetPort;
+                        console.error(err);
+                        throw Error(err);
                     }
                 } else {
-                    const err = 'file ' + rpmFile + ' did not successfully upload to the trusted device ' + targetHost + ':' + targetPort;
-                    console.error(err);
-                    throw Error(err);
+                    console.log('extension ' + rpmFile + ' is installed on the trusted device ' + targetHost + ':' + targetPort);
+                    return await addExtensionByFileName(rpmFile, targetHost, targetPort);
                 }
             }
             return false;
