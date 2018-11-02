@@ -18,13 +18,16 @@ const extension_storage_path = process.env['EXTENSION_STORAGE_PATH'] || '/tmp/ex
 const extension_valid_protocols = ['file:', 'http:', 'https:'];
 
 const fs = require('fs');
+const path = require('path');
 
 // dev evn for npm start
 let filebase = process.cwd() + '/src';
 // prod container from dist npm prune production
-if(fs.existsSync('/dist/icontrollx')) {
-   filebase = '/dist'; 
+if(fs.existsSync(path.join(process.cwd(), '/dist/icontrollx'))) {
+   filebase = path.join(process.cwd(), '/dist'); 
 }
+
+console.log('filebase is:' + filebase);
 
 const install_extensions = [
     {url: 'file://' + filebase + '/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm'},

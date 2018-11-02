@@ -2542,25 +2542,23 @@ In these exercises you will need:
 
 **Step 4. Adding the BIGIP Administrator role to our demonstration application user**
 
-**Step 5. Adding a remote BIG-IP as a Trusted Device**
+**Step 5. Creating a BIG-IP Deployment for AS3**
 
-**Step 6. Making a trusted iControl REST to the our application Device**
+**Step 6. Exploring Trusted Devices**
 
-**Step 7. Adding a Deployment including our Device**
-
-**Step 8. Making a trusted iControl REST to our application Deployment**
+**Step 7. Exploring Available Extensions**
 
 
-### Exercise #12 - Installing iControl LX Extensions On Multiple Remote BIG-IPs
+### Exercise #12 - Making Trusted iControl REST Request to Remote BIG-IPs
 
-**Step 9, Uploading the AS3 iControl LX Extension to the demonstration application**
+**Step 8. Making a Trusted iControl REST Request to a Single Device**
 
-**Step 10. Uploading the AS3 iControl LX Extension to a Deployment**
+**Step 9. Make a Trusted iControl REST Request to All Devices in A Deployment**
 
 
 ### Exercise #13 - Making Trusted Declarations to Multiple Remote BIG-IPs
 
-**Step 11. Get the version of the AS3 iControl LX Extension on all the Devices in your Deployment**
+**Step 10. Make a Declaration to All Devices in A Deployment**
 
 ---
 

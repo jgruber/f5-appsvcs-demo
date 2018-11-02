@@ -1,13 +1,15 @@
 FROM node:8.11-alpine
 
-WORKDIR /
+RUN mkdir /app
+
+WORKDIR /app
 
 # copy application into container
-COPY dist/ /dist/
-COPY static/ /static/
-COPY package.json /
-COPY .babelrc /
-COPY .eslintrc.js /
+COPY dist/ /app/dist/
+COPY static/ /app/static/
+COPY package.json /app/
+COPY .babelrc /app/
+COPY .eslintrc.js /app/
 
 # install required applications
 RUN apk --update add bash rpm curl nodejs-npm
