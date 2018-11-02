@@ -57,8 +57,9 @@ class TrustedDevicesWorker {
                 err.httpStatusCode = 400;
                 this.logger.severe("POST request to trusted devices failed: declaration missing");
                 restOperation.fail(err);
+                return;
             }
-            const desiredDevices = declaration.devices;
+            let desiredDevices = declaration.devices;
 
             if (desiredDevices.length > 0) {
                 // Create comparison collections.
@@ -79,15 +80,23 @@ class TrustedDevicesWorker {
                                 existingDeviceDict[device.targetHost + ":" + device.targetPort] = device;
                             });
                             for (let device in desiredDeviceDict) {
-                                if (existingDeviceDict.hasOwnProperty(device)) {
+                                if (device in existingDeviceDict) {
                                     if (existingDeviceDict[device].state === ACTIVE) {
                                         // Device is desired, exists already, and is active. Don't remove it.
-                                        existingDevices.pop(existingDeviceDict[device]);
+                                        existingDevices = existingDevices.filter( t => t.targetHost + ':' + t.targetPort !== device ); // jshint ignore:line
                                         // Device is desired, exists alerady, and is active. Don't add it.
-                                        desiredDevices.pop(desiredDeviceDict[device]);
+                                        desiredDevices = desiredDevices.filter( t => t.targetHost + ':' + t.targetPort !== device ); // jshint ignore:line
                                     } else {
                                         // Device is desired, exists already, but trust is not active. Reset it.
                                         this.logger.info('resetting ' + device.targetHost + ':' + device.targetPort + ' because its state is:' + device.state);
+                                        if (!desiredDeviceDict[device].hasOwnProperty('targetUsername') ||
+                                            !desiredDeviceDict[device].hasOwnProperty('targetPassphrase')) {
+                                            const err = new Error();
+                                            err.message = 'declared device missing targetUsername or targetPassphrase';
+                                            err.httpStatusCode = 400;
+                                            restOperation.fail(err);
+                                            return;
+                                        }
                                     }
                                 } else {
                                     // Assure that the device declaration has the needed attributed to add.
@@ -97,9 +106,11 @@ class TrustedDevicesWorker {
                                         err.message = 'declared device missing targetUsername or targetPassphrase';
                                         err.httpStatusCode = 400;
                                         restOperation.fail(err);
+                                        return;
                                     }
                                 }
                             }
+
                             // Serially remove devices not desired in the declaration.
                             Promise.all([this.removeDevices(existingDevices)])
                                 .then(() => {
@@ -159,7 +170,7 @@ class TrustedDevicesWorker {
             restOperation.fail(err);
         }
     }
-   
+
     /**
      * Request to create the well known device group on the ASG
      * @returns Promise when request completes
@@ -454,44 +465,44 @@ class TrustedDevicesWorker {
             const certificatePromises = [];
             const certPath = '/mgmt/shared/device-certificates';
             const certUrl = 'https://' + device.targetHost + ":" + device.targetPort + certPath;
-            certificatePromises.push(new Promise( (resolve) => {
+            certificatePromises.push(new Promise((resolve) => {
                 const certGetRequest = this.restOperationFactory.createRestOperationInstance()
                     .setIdentifiedDeviceRequest(true)
                     .setUri(this.url.parse(certUrl))
                     .setReferer(this.getUri().href)
                     .setMethod('Get');
-                    this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certGetRequest,
-                        (response) => {
-                            const certsBody = response.getBody();
-                            if (certsBody.hasOwnProperty('items')) {
-                                const certs = certsBody.items;
-                                certs.map((cert) => {
-                                    certificatePromises.push( new Promise( (resolve) => {
-                                        if (cert.machineId == machineId) {
-                                            const certDelUrl = certUrl + '/' + cert.certificateId;
-                                            const certDelRequest = this.restOperationFactory.createRestOperationInstance()
-                                                .setIdentifiedDeviceRequest(true)
-                                                .setUri(this.url.parse(certDelUrl))
-                                                .setReferer(this.getUri().href)
-                                                .setMethod('Delete');
-                                            this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certDelRequest,
-                                                (response) => {
-                                                    resolve();
-                                                },
-                                                (err) => {
-                                                    this.logger.severe('Error deleting certificate from remote device:' + err.message);
-                                                    throw err;
-                                                });
-                                        }
-                                    }));
-                                });
-                                resolve();
-                            }
-                        },
-                        (err) => {
-                            throw err;
+                this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certGetRequest,
+                    (response) => {
+                        const certsBody = response.getBody();
+                        if (certsBody.hasOwnProperty('items')) {
+                            const certs = certsBody.items;
+                            certs.map((cert) => {
+                                certificatePromises.push(new Promise((resolve) => {
+                                    if (cert.machineId == machineId) {
+                                        const certDelUrl = certUrl + '/' + cert.certificateId;
+                                        const certDelRequest = this.restOperationFactory.createRestOperationInstance()
+                                            .setIdentifiedDeviceRequest(true)
+                                            .setUri(this.url.parse(certDelUrl))
+                                            .setReferer(this.getUri().href)
+                                            .setMethod('Delete');
+                                        this.eventChannel.emit(this.eventChannel.e.sendRestOperation, certDelRequest,
+                                            (response) => {
+                                                resolve();
+                                            },
+                                            (err) => {
+                                                this.logger.severe('Error deleting certificate from remote device:' + err.message);
+                                                throw err;
+                                            });
+                                    }
+                                }));
+                            });
+                            resolve();
                         }
-                    );
+                    },
+                    (err) => {
+                        throw err;
+                    }
+                );
             }));
             Promise.all([certificatePromises])
                 .then(() => {

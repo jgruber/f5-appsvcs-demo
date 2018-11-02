@@ -834,6 +834,9 @@
                     "403": {
                         "description": "Request requires BIGIP Administrator role"
                     },
+                    "409" :{
+                        "description": "Resource conflict exists"
+                    },
                     "500": {
                         "description": "Application Error",
                         "content": {

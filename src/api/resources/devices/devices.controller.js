@@ -45,6 +45,9 @@ const validateRequest = (id, req) => {
 }
 
 export default {
+    async validateRequest(id, req) {
+        return await validateRequest(id, req);
+    },
     async create(req, res) {
         try {
             if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {

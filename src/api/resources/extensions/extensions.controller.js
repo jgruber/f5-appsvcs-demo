@@ -8,6 +8,7 @@ const url = require('url');
 const BIGIP_ADMIN_ROLE = appconf.f5_device_admin_role;
 const CREATE_STATE = appconf.extension_create_status;
 const AVAILABLE = 'AVAILABLE';
+const ACTIVE = 'ACTIVE';
 const VALID_PROTOCOLS = appconf.extension_valid_protocols;
 
 export default {
@@ -38,7 +39,7 @@ export default {
                                     .then((device) => {
                                         if (!device) {
                                             throw new Error('invalide deviceIds');
-                                        } else if (device.state != 'ACTIVE') {
+                                        } else if (device.state != ACTIVE) {
                                             throw new Error('all devices must be in the ACTIVE state');
                                         } else {
                                             deviceTargets.push({
@@ -508,6 +509,14 @@ export default {
             throw err;
         }
     },
+    async getById(id) {
+        try {
+            return await Extension.findById(id);
+        } catch (err) {
+            console.error(err.message);
+            throw err;
+        }
+    },
     async getByUrl(url) {
         try {
             const extension = await Extension.findOne({
@@ -533,8 +542,9 @@ export default {
                 const err = 'could not find extension for filename:' + filename;
                 console.error(err);
                 return null;
+            } else {
+                return extension;
             }
-            return extension
         } catch (err) {
             console.error(err.message);
             throw Error(err);
@@ -612,6 +622,30 @@ export default {
                     }
                 });
             }
+        } catch (err) {
+            console.error(err.message);
+            throw Error(err);
+        }
+    },
+    async trimToActiveDevices() {
+        try {
+            const devices = await devicesController.getAll();
+            const deviceIds = []
+            devices.map((device) => {
+                if(device.state == ACTIVE) {
+                    deviceIds.push(device.id);
+                }
+            });
+            const extensions = await Extension.find();
+            extensions.map((extension) => {
+                extension.deviceIds = extension.deviceIds.filter( d => deviceIds.includes(d));
+                extension.save(function (err) {
+                    if (err) {
+                        const err = 'could not save extension ' + id + ' with deviceIds ' + extension.deviceIds + ' - ' + err;
+                        throw Error(err);
+                    }
+                });
+            })
         } catch (err) {
             console.error(err.message);
             throw Error(err);

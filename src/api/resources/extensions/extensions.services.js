@@ -410,12 +410,12 @@ const pollTask = (taskId, timeout, targetHost, targetPort) => {
                     stop = 0;
                 }
                 if (body.status === FAILED) {
-                    deleteTasks(taskId, targetHost, targetPort);
+                    //deleteTasks(taskId, targetHost, targetPort);
                     resolve(body);
                     stop = 0;
                 }
                 if (body.status === FINISHED) {
-                    deleteTasks(taskId, targetHost, targetPort);
+                    //deleteTasks(taskId, targetHost, targetPort);
                     resolve(body);
                     stop = 0;
                 }
@@ -423,7 +423,7 @@ const pollTask = (taskId, timeout, targetHost, targetPort) => {
                     await wait(2000);
                     getStatus();
                 } else {
-                    deleteTasks(taskId, targetHost, targetPort);
+                    //deleteTasks(taskId, targetHost, targetPort);
                     resolve();
                 }
             });
@@ -899,15 +899,11 @@ export default {
     async uninstallExtensionOnTrustedDevice(rpmFile, targetHost, targetPort) {
         try {
             const installed = await (getExtensions(targetHost, targetPort));
-            installed.map(async (extension) => {
-                if (rpmFile && rpmFile.startsWith(extension.packageName)) {
-                    if (await uninstall(extension.packageName, targetHost, targetPort)) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+            for(let i=0; i<installed.length; i++) {
+                if (rpmFile && rpmFile.startsWith(installed[i].packageName)) {
+                    return await uninstall(installed[i].packageName, targetHost, targetPort);
                 }
-            });
+            }
             return true;
         } catch (ex) {
             console.error('error uninstalling extension on gateway - ' + ex.message);

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./build_icontrollx_extensions.sh
+
 npm install --save
 if [ -d "./dist" ]; then rm -rf ./dist; fi
 npm prune production

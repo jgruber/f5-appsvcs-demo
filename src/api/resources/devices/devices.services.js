@@ -147,6 +147,7 @@ const removeDeviceFromASG = (targetHost, targetPort) => {
                 if (err) {
                     resolve([]);
                 }
+                devicesController.removeByTargetHostAndTargetPort(targetHost, targetPort);
                 resolve(body.devices);
             });
         });
@@ -267,7 +268,7 @@ export default {
         const existingDevice = await devicesController.getByTargetHostAndTargetPort(targetHost, targetPort);
         if (!existingDevice) {
             await addDeviceToASG(targetHost, targetPort, targetUsername, targetPassphrase);
-            return trustedDevice = getTrustedDevice(targetHost, targetPort);
+            return syncTrustedDevices(targetHost, targetPort);
         } else {
             return existingDevice;
         }

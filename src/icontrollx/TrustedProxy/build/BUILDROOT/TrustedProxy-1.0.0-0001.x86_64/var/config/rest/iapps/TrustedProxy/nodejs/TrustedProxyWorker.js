@@ -96,10 +96,9 @@ class TrustedProxyWorker {
 
     /**
      * handle trusted devices request - all trusted devices.
-     * @param {Object} restOperation
+     * @param {Array} trusted devices
      */
     getTrustedDevices() {
-        const refThis = this;
         const trustedDeviceUrl = 'http://localhost:8100/mgmt/shared/resolver/device-groups/dockerContainers/devices';
         return new Promise((resolve) => {
             http.get(trustedDeviceUrl, (res) => {
@@ -111,12 +110,12 @@ class TrustedProxyWorker {
                     if (res.statusCode < 400) {
                         resolve(JSON.parse(body).items);
                     } else {
-                        refThis.logger.severe('no trusted devices in dockerContainer device group');
+                        this.logger.severe('no trusted devices in dockerContainer device group');
                         resolve([]);
                     }
                 });
                 res.on('error', (err) => {
-                    refThis.logger.severe('error getting trusted devices:' + err.message);
+                    this.logger.severe('error getting trusted devices:' + err.message);
                     resolve([]);
                 });
             });
@@ -124,11 +123,10 @@ class TrustedProxyWorker {
     }
 
     /**
-     * handle getToken equest - get the query paramater token for a trusted device.
-     * @param {Object} restOperation
+     * handle getToken request - get the query paramater token for a trusted device.
+     * @param {String} trust token good for 10 minutes
      */
     getToken(targetHost) {
-        const refThis = this;
         return new Promise((resolve) => {
             const tokenBody = JSON.stringify({ address: targetHost });
             let body = '';
@@ -151,7 +149,7 @@ class TrustedProxyWorker {
                     resolve(null);
                 });
                 res.on('error', (err) => {
-                    refThis.logger.severe('error: ' + err);
+                    this.logger.severe('error: ' + err);
                     resolve(null);
                 });
             });
