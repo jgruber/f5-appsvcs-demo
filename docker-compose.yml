@@ -15,7 +15,7 @@ services:
       - MONGO_INITDB_DATABASE=f5_appsvcs_demo
 
   f5appsvcsdemo:
-    image: f5-appsvcs-demo:latest
+    image: jgruber/f5-appsvcs-demo:latest
     restart: unless-stopped
     ports:
       - "3000:3000"
