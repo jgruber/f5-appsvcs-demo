@@ -2124,10 +2124,77 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </ul>
 <h3 id="exercise-11-launching-the-micro-services-deployment-with-docker-compose">Exercise #11 - Launching The Micro Services Deployment with <code>docker-compose</code></h3>
 <p><strong>Step 1. Running <code>docker-compose</code></strong></p>
+<p>Start your ssh client and login with the username, password, and host shown on the console.</p>
+<div id='asg-ssh-login'>
+
+<p><strong><code>ssh f5admin@[Your F5 Container Demonstration Device IP]</code></strong></p>
+<pre><code>f5admin@[Your F5 Container Demonstration Device IP]
+f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</code></pre></div>
+
+<p>Once you are loggeg in, use the <code>docker-compose</code> orchestrator to launch our micro services. We will start our docker containers by issueing the <code>up</code> command in our home directory.</p>
+<pre><code>f5admin@containerhost:~$ docker-compose up</code></pre><p>This command will start a flurry of activity in your terminal session as three servies intialize and gradually communicate with each other to reach a ready state for external API access.</p>
+<p><strong>Note:</strong> watch some of what&#39;s going on. Do you see anything familiar? You should see many iControl REST URIs that you recognize as our application installes our TrustedDevices, TrustedProxy, and TrustedExtensions extensions to the Application Services Gateway. </p>
+<p>In the home directory there is a <code>docker-compose.yaml</code> file which details what container images to start and their relationship with each other. Our example deployment is comprised of 3 service, each in their own container. </p>
+<ul>
+<li><code>f5-api-services-gateway</code> stock container with no configuration</li>
+<li><code>mongodb</code> stock container with only authentication sepcified</li>
+<li><code>f5-appsvcs-demo</code> our OpenAPI application which handles our API endpoints and initializes our ecosystem to a ready state.</li>
+</ul>
+<p>Feel free to examine the <code>/home/f5admin/docker-compose.yaml</code> file which describes our services. Our deployment uses <code>linked</code> containers, meaning they have access to each other by name, and are available to each other over a private network.</p>
+<p>Only our <code>f5-appsvcs-demo</code> container will have inbound access via an exposed port. Our micro servies ecosystem is effectively firewalled from external access. This is how we mitagate the need to secure the <code>f5-api-services-gateway</code>. It simply can not be access because it has no exposed ports. By our <code>docker-compose.yaml</code> declaration, our <code>f5-appsvcs-demo</code> alone exposes a port and then only one, TCP port 3000.</p>
+<p><img src="./assets/images/f5-appsvcs-demo-microservices-diagram.png" alt="An Example Micro Service Orchestration Application"></p>
+<p><strong>Note:</strong> This is a very simple example. Our customers have Kubernetes orchestrated deployments which can be auto-scaled to load. It is not uncommon for a micro services architecture to be comprised of dozens of containerized services, each dynamically provised by a container orchestrator. We&#39;re just using <code>docker-compose</code> to aquaint you with the concepts and where the F5 API Services Gateway fits into a micro services deployment.</p>
 <p><strong>Step 2. Validate the Demonstration app is running querying the OpenAPI Documentation user interface</strong></p>
+<p>Our <code>f5-appsvcs-demo</code> application implements our OpenAPI schema in the <code>/api</code> namespace. The schema derived user interface can be reached at <code>/api-docs/</code>.</p>
+<p>Open a web browser and navigate to:</p>
+<p><code>http://[Your F5 Container Demonstration Device IP]:3000/api-docs</code></p>
+<p>You should see the OpenAPI generated UI being served by our application container.</p>
+<p><img src="./assets/images/f5-apps-openapi-app-initial.png" alt="OpenAPI Generated GUI"></p>
+<p>Feel free to read the introduction text. This text is embedded in our schema document. In fact the schema document is linked in the description text. Open the schema document and examine it.</p>
 <p><strong>Step 3. Adding a initial User Administrator user to our demonstration application</strong></p>
+<p>One of our primary goals was to eliminate the TMOS authentication and authorization concerns. That doesn&#39;t mean we do without authentication or authorization. It simply means our customer&#39;s build the authentication and authorization schemes into their application they want. Our example application uses a very common authenication plugin <a href="http://www.passportjs.org/">Passport JS</a>. Passport JS supports hundreds of password schemes from OAUTH2, Google, Facebook, Twitter, AWS, Azure, OpenStack Keystone, to RADIUS, LDAP, and Active Directory.</p>
+<p>Our application uses a simple HTTP BASIC authentication strategy.</p>
+<p>Our application is clever enough to only require a password after the first user has been created through the API by issuing a <code>POST</code> request to the <code>/api/users</code> API endpoint. When the first user is created, that user automatically is give the <em>User Administrator</em> role, which can then create other users and change their roles. </p>
+<p>Scroll down in our OpenAPI interface to the <code>POST /users</code> GUI widget. Expand the widget and using the <code>Try it out</code> button, create our first user by using the example input supplied and clicking the blue <code>Execute</code> bar. This will create the <code>admin</code> user with the password <code>F5RocksAPIs!</code>.</p>
+<p><img src="./assets/images/f5-apps-openapi-app-user-post.png" alt="POST to /users"></p>
+<hr>
+<p><strong>What Just Happened?</strong> </p>
+<p>The example input was specified as par to the schema. The OpenAPI user interface uses your browser XHR (XMLHttpRequest) client to issue a request to our API endpoint. </p>
+<p>If you scroll down the page you will see the <em>Responses</em> section. That&#39;s a live response to your API request.</p>
+<p>The section gives you curl syntax to duplicate your request as well.</p>
+<p><img src="./assets/images/f5-apps-openapi-app-user-post-response.png" alt="POST response to /users"></p>
+<p>Neat! This OpenAPI stuff is pretty cool.</p>
+<hr>
+<p>All further access to <code>/api/users</code> or <code>/api/deployments</code> API endpoints will require HTTP BASIC authentication. The OpenAPI UI makes this easy by giving a way to include the HTTP BASIC authentication headers in all request. Look for the <code>Authorize</code> button about the API endpoint widgets. Click the button and fill in the credentials for your <code>admin</code> users with the <code>F5RocksAPIs!</code> password. </p>
+<p><img src="./assets/images/f5-apps-openapi-app-input-credentials.png" alt="Add credentials"></p>
+<p>Notice that the <em>roles</em> associated with our users are defined by the application. The <em>roles</em> have nothing to do with TMOS roles. There are micro services middleware and API security proxies available which restrict API endpoint access and force full IAM RBAC. That&#39;s their job. For us, we are simply <em>not</em> concerned wtih that. Our job is to provision services on TMOS devices. <em>Separation of Concerns</em> is a very import thing to implement in micro services.</p>
+<p>Our application has a simple tag based roles system. A user account aquires a role by have their <code>roles</code> attribute include the role name. Our simple application has only two roles:</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th align="left">Role Tag</th>
+<th align="left">Explanation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">User Administrator</td>
+<td align="left">This role allows for the management of users in our application</td>
+</tr>
+<tr>
+<td align="left">BIGIP Administrator</td>
+<td align="left">This role allows for the management of Deployments of BIG-IPs</td>
+</tr>
+</tbody></table>
+<hr>
+<p>Once a <em>Deployment</em> of BIG-IPs is created, in our app, we&#39;ve decided that no authentication or roles is requires to issue iControl REST requests to trusted BIG-IPs through our application. Not a smart thing to do, but it&#39;s making the point that the concern for TMOS secured access is taken care of integrating our application with the API Services Gateway!</p>
 <p><strong>Step 4. Adding the BIGIP Administrator role to our demonstration application user</strong></p>
-<p><strong>Step 5. Creating a BIG-IP Deployment for AS3</strong></p>
+<p>Let&#39;s update (in REST that&#39;s a <code>PUT</code> request) our <code>admin</code> user to have the <code>BIGIP Administrator</code> role.</p>
+<p>See if you can figure out how to make the <code>PUT</code> request to the <code>/users/{userId}</code> API endpoint. You&#39;ll notice our schema example already has what you need. You will need get the <code>id</code> of the <code>user</code> from the response to our <code>POST</code> request. Copy that from our <code>Responses</code> section.</p>
+<p><img src="./assets/images/f5-apps-openapi-app-user-put-request.png" alt="Adding the BIGIP Administrator role"></p>
+<p><strong>Step 5. Creating a BIG-IP Deployment</strong></p>
+<p>Our application is going to tie all three of our iControl LX extensions, TrustedDevices, TrustedProxy, and TrustedExtensions from our previous exercises and tie them all into one simplified API experience. </p>
+<p>We are going to define a <code>Deployment</code> of BIG-IPs. Each deployment will have <code>id</code> and <code>name</code> attributes to help us keep track of them. A <code>Deployment</code> will also have a list of BIG-IP targets to establish trust and issue iControl requests. Lastly our <code>Deployment</code> will allow you to input a list of <code>url</code> attributes for iControl LX extensions that will be downloaded to our services, uploaded to the <code>Deployment&#39;s</code> BIG-IP targets and installed. </p>
 <p><strong>Step 6. Exploring Trusted Devices</strong></p>
 <p><strong>Step 7. Exploring Available Extensions</strong></p>
 <h3 id="exercise-12-making-trusted-icontrol-rest-request-to-remote-big-ips">Exercise #12 - Making Trusted iControl REST Request to Remote BIG-IPs</h3>
