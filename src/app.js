@@ -28,7 +28,7 @@ app.use('/api', restRouter);
 app.use('/api-docs',
     swaggerUi.serve,
     swaggerUi.setup(swaggerDocument, {
-        explorer: true
+        explorer: false
     })
 );
 //app.use('/static', express.static(path.join(__dirname, '../static')));
