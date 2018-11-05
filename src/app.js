@@ -33,6 +33,11 @@ app.use('/api-docs',
     })
 );
 //app.use('/static', express.static(path.join(__dirname, '../static')));
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+  });
 app.use('/html', express.static(path.join(__dirname, '../')), serveIndex(path.join(__dirname, '../'), {'icons': false}));
 console.log('adding /storage route for ' + appconf.extension_storage_path);
 app.use('/storage', express.static(appconf.extension_storage_path), serveIndex(appconf.extension_storage_path, {'icons': false}));
