@@ -2524,12 +2524,12 @@ Now, let's move into the real world. Let's examine and use a simplified micro se
 Demonstration Integration Exercises
 -------------------
 
-In the following exercises we are going to illustrate the use of your trusted device through an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using ```docker-compose```
+In the following exercises we are going to illustrate the use of the API Services Gateway as part of an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using ```docker-compose```
 
 In these exercises you will need:
 
-- At least one target BIG-IP system whose management address is reachable from the container
-- Administrative role credentials to the BIG-IP
+- At least one target BIG-IP system whose management address is reachable from the API Services Gateway container
+- Administrative role credentials to the BIG-IP in order to create a device trust with the API Services Gateway
 - The ability to launch a deployment of containers using ```docker-compose```
 
 ### Exercise #11 - Launching The Micro Services Deployment with ```docker-compose```
@@ -2549,15 +2549,15 @@ f5admin@[Your F5 Container Demonstration Device IP]'s password: f5admin
 
 </div>
 
-Once you are loggeg in, use the `docker-compose` orchestrator to launch our micro services. We will start our docker containers by issueing the `up` command in our home directory.
+Once you are logged in, use the `docker-compose` orchestrator to launch our micro services. We will start our docker containers by issueing the `up` command in our home directory.
 
 ```
 f5admin@containerhost:~$ docker-compose up
 ```
 
-This command will start a flurry of activity in your terminal session as three servies intialize and gradually communicate with each other to reach a ready state for external API access.
+This command will start a flurry of activity in your terminal session as three services intialize and gradually communicate with each other to reach a ready state for external API access.
 
-**Note:** watch some of what's going on. Do you see anything familiar? You should see many iControl REST URIs that you recognize as our application installes our TrustedDevices, TrustedProxy, and TrustedExtensions extensions to the Application Services Gateway. 
+**Note:** watch some of what's going on. Do you see anything familiar? You should see many iControl REST URIs that you recognize as our application installs our TrustedDevices, TrustedProxy, and TrustedExtensions iControl LX extensions to the Application Services Gateway. Our application will use these extensions to provision the BIG-IPs.
 
 In the home directory there is a `docker-compose.yaml` file which details what container images to start and their relationship with each other. Our example deployment is comprised of 3 service, each in their own container. 
 
@@ -2567,7 +2567,7 @@ In the home directory there is a `docker-compose.yaml` file which details what c
 
 Feel free to examine the `/home/f5admin/docker-compose.yaml` file which describes our services. Our deployment uses `linked` containers, meaning they have access to each other by name, and are available to each other over a private network.
 
-Only our `f5-appsvcs-demo` container will have inbound access via an exposed port. Our micro servies ecosystem is effectively firewalled from external access. This is how we mitagate the need to secure the `f5-api-services-gateway`. It simply can not be access because it has no exposed ports. By our `docker-compose.yaml` declaration, our `f5-appsvcs-demo` alone exposes a port and then only one, TCP port 3000.
+Only our `f5-appsvcs-demo` container will have inbound access via an exposed TCP port. Our micro services ecosystem is effectively firewalled. This is how we mitagate the need to secure the `f5-api-services-gateway`. It simply can not be access because the container has no exposed ports. By our `docker-compose.yaml` declaration, our `f5-appsvcs-demo` alone exposes a port and then only one, TCP port 3000.
 
 ![An Example Micro Service Orchestration Application](./assets/images/f5-appsvcs-demo-microservices-diagram.png)
 
@@ -2585,13 +2585,15 @@ You should see the OpenAPI generated UI being served by our application containe
 
 ![OpenAPI Generated GUI](./assets/images/f5-apps-openapi-app-initial.png)
 
-Feel free to read the introduction text. This text is embedded in our schema document. In fact the schema document is linked in the description text. Open the schema document and examine it.
+Feel free to read the introduction text. This text is embedded in our schema document. In fact the schema document is linked in the description text. Open the schema document and examine it. Or you can just click on the link below to examine our application's schema.
 
-**Step 3. Adding a initial User Administrator user to our demonstration application**
+[Demonstration Application OpenAPI Schema](./swagger.json)
 
-One of our primary goals was to eliminate the TMOS authentication and authorization concerns. That doesn't mean we do without authentication or authorization. It simply means our customer's build the authentication and authorization schemes into their application they want. Our example application uses a very common authenication plugin [Passport JS](http://www.passportjs.org/). Passport JS supports hundreds of password schemes from OAUTH2, Google, Facebook, Twitter, AWS, Azure, OpenStack Keystone, to RADIUS, LDAP, and Active Directory.
+**Step 3. Adding a initial user which will automatically get the User Administrator role**
 
-Our application uses a simple HTTP BASIC authentication strategy.
+One of our primary goals was to eliminate the TMOS authentication and authorization concerns. That doesn't mean we do without authentication or authorization. It simply means our customer's choose what authentication and authorization schemes fits their services. Our example application uses a very common authenication plugin [Passport JS](http://www.passportjs.org/). Passport JS supports hundreds of password schemes from OAUTH2, Google, Facebook, Twitter, AWS, Azure, OpenStack Keystone, to RADIUS, LDAP, and Active Directory.
+
+For ease of demonstration, our application uses a simple HTTP BASIC authentication strategy.
 
 Our application is clever enough to only require a password after the first user has been created through the API by issuing a `POST` request to the `/api/users` API endpoint. When the first user is created, that user automatically is give the *User Administrator* role, which can then create other users and change their roles. 
 
@@ -2602,11 +2604,11 @@ Scroll down in our OpenAPI interface to the `POST /users` GUI widget. Expand the
 ---
 **What Just Happened?** 
 
-The example input was specified as par to the schema. The OpenAPI user interface uses your browser XHR (XMLHttpRequest) client to issue a request to our API endpoint. 
+The example input from the schema definition was submitted to the API endpoint. The OpenAPI user interface uses your browser XHR (XMLHttpRequest) client to issue requests to defined API endpoints. 
 
-If you scroll down the page you will see the *Responses* section. That's a live response to your API request.
+If you scroll down the page you will see the *Responses* section. That's a live response to your browser's API request.
 
-The section gives you curl syntax to duplicate your request as well.
+The section also gives you curl syntax to duplicate the request from a command line script.
 
 ![POST response to /users](./assets/images/f5-apps-openapi-app-user-post-response.png)
 
@@ -2614,14 +2616,14 @@ Neat! This OpenAPI stuff is pretty cool.
 
 ---
 
-All further access to `/api/users` or `/api/deployments` API endpoints will require HTTP BASIC authentication. The OpenAPI UI makes this easy by giving a way to include the HTTP BASIC authentication headers in all request. Look for the `Authorize` button about the API endpoint widgets. Click the button and fill in the credentials for your `admin` users with the `F5RocksAPIs!` password. 
+Since we have created the first user, the application is built to require all further access to `/api/users` or `/api/deployments` endpoints to require HTTP BASIC authentication. The OpenAPI UI makes this easy by giving a way to include the HTTP BASIC authentication headers in all browser XHR requests. Look for the `Authorize` button above the API endpoint widgets. Click the `Authorize` button and fill in the credentials for your `admin` user with the `F5RocksAPIs!` password. 
 
 ![Add credentials](./assets/images/f5-apps-openapi-app-input-credentials.png)
 
 
-Notice that the *roles* associated with our users are defined by the application. The *roles* have nothing to do with TMOS roles. There are micro services middleware and API security proxies available which restrict API endpoint access and force full IAM RBAC. That's their job. For us, we are simply *not* concerned wtih that. Our job is to provision services on TMOS devices. *Separation of Concerns* is a very import thing to implement in micro services.
+Notice that the *roles* associated with our users are defined by the application. The *roles* have nothing to do with TMOS roles. There are open and closed source micro services middleware and API security products available which restrict API endpoint access and force full IAM RBAC. We can add those services through either our application framework's middleware interfaces or with by force traffic through a security proxy using our container orchestrator. For TMOS device orchestration, we are *not* concerned wtih providing framework middleware or containerized proxies. Our job is to provision services on TMOS devices. *Separation of Concerns* is a very importand thing to implement in micro services. We play our role.
 
-Our application has a simple tag based roles system. A user account aquires a role by have their `roles` attribute include the role name. Our simple application has only two roles:
+Our example application has a primitive tag based roles system. A user account aquires a role by having the user's `roles` attribute include the role tag name. Our example application has only two roles:
 
 ---
 | Role Tag      | Explanation                                                               |
@@ -2631,40 +2633,83 @@ Our application has a simple tag based roles system. A user account aquires a ro
 
 ---
 
-Once a *Deployment* of BIG-IPs is created, in our app, we've decided that no authentication or roles is requires to issue iControl REST requests to trusted BIG-IPs through our application. Not a smart thing to do, but it's making the point that the concern for TMOS secured access is taken care of integrating our application with the API Services Gateway!
-
 **Step 4. Adding the BIGIP Administrator role to our demonstration application user**
 
 Let's update (in REST that's a `PUT` request) our `admin` user to have the `BIGIP Administrator` role.
 
-See if you can figure out how to make the `PUT` request to the `/users/{userId}` API endpoint. You'll notice our schema example already has what you need. You will need get the `id` of the `user` from the response to our `POST` request. Copy that from our `Responses` section.
+See if you can't figure out how to make the `PUT` request to the `/users/{userId}` API endpoint. You'll notice our schema example already has what you need built in. You will need the `id` of the `user` created by your `POST` request. You can copy that from the response section of our `POST` request.
 
 ![Adding the BIGIP Administrator role](./assets/images/f5-apps-openapi-app-user-put-request.png)
 
-**Step 5. Creating a BIG-IP Deployment**
+**Step 5. Managing BIG-IP Deployments**
 
-Our application is going to tie all three of our iControl LX extensions, TrustedDevices, TrustedProxy, and TrustedExtensions from our previous exercises and tie them all into one simplified API experience. 
+Our application is going to tie all three of our iControl LX extensions, TrustedDevices, TrustedProxy, and TrustedExtensions, from our previous exercises together into one simplified API user experience. 
 
-We are going to define a `Deployment` of BIG-IPs. Each deployment will have `id` and `name` attributes to help us keep track of them. A `Deployment` will also have a list of BIG-IP targets to establish trust and issue iControl requests. Lastly our `Deployment` will allow you to input a list of `url` attributes for iControl LX extensions that will be downloaded to our services, uploaded to the `Deployment's` BIG-IP targets and installed. 
+We are going to define a `Deployment` of BIG-IPs. Each deployment will have an `id` and `name` attribute to help us identify them. A `Deployment` will also have a list of BIG-IP targets to establish trust. Our `Deployment` will allow you to input a list of `url` attributes for iControl LX extensions which will be downloaded to our services, uploaded to the `Deployment's` BIG-IP targets, and installed. Once a `Deployment` is created, anyone can use either the `/api/deployments/{deploymentId}/proxy/` or the `/api/devices/{deviceId}/proxy/` API endpoints to issue iControl REST calls to our trusted BIG-IP devices.
 
+In our application, we've decided that no authentication or roles are requires to issue iControl REST requests to trusted BIG-IPs through either the `/api/deployments/{deploymentId}` or `/api/devices/{deviceId}` API endpoints. It's not what you would want to do in real life, but it's making the point that the concern for TMOS secured access is provided by integrating our application with the API Services Gateway!
 
+The various models and objects defined in our OpenAPI schema for our application can be examined here:
 
+[Demonstration Application OpenAPI Schema](./swagger.json)
+
+The basic format of a deployment request can be seen from the example presented in the OpenAPI user interface for the `POST` request on the `/api/deployments` endpoint.
+
+Fill in the IP address(es) and port(s) for the BIG-IP(s) you want to add to the deployment. List only the ones you wanted included. It is only when creating a trusted device that the `targetUsername` and `targetPassphrase` are required. Once the trust is established the TMOS credentials are not stored in the application nor on the API Services Gateway.
+
+You can leave the AS3 `url` attributed in the example `extensions` list of your `/api/deployments` `POST`.  Make sure and clean up the rest of the example, removing anything that would not be correct for you deployment. 
+
+If you follow the example deployment, trust will be established between the API Services Gateway and the specified devices. The AS3 iControl LX extension will be downloaded to our application, then uploaded to the trusted devices, and installed on each device in the deployment. We made this process sychronous. AS3 is huge, weighing in at almost 50M bytes. It's a good stress test for uploading and install timing.
+
+After editing the content of the `POST` request, submit the request to create a deployment.
+
+[Creating a Deployment]
+
+Navigate to the `PUT` `/api/deployments/{deploymentId}` endpoint. You can use this endpoint to update your deployment. If you remove a trusted device, the deployment will no longer include that device. However, if that device was also a member of a different deployment, the trust will remain on the API Services Gateway. You can also choose to add or remove extensions by URL to a deployment through the `PUT` `/api/deployments/{deploymentId}` API endpoint.
+
+While we are not adding security in our example, it is important to note that security boundaries are often enforced by URL namespaces. Having a means to anchor methods on a specific set of devices is a great way to design for API security.
+
+Navigate to the `DELETE` `/api/deployments/{deploymentId}` API endpoint. A deployment can quickly be discarded. Again, if devices joined to a deployment are present in other deployments, they will remain trusted on the API Services Gateway. Only then a device is no longer in any deployments will the `DELETE` `/api/deployments/{deploymentId}` API endpoint remove the extensions and the device trust from the API Services Gateway.
+
+So far every API endpoint associated with the API Services Gateway has required authentication and the authenticated use to have the `BIGIP Administrator` role. 
 
 **Step 6. Exploring Trusted Devices**
 
+Scroll down the page until you see the `GET` `/api/devices` API endpoint. This endpoint will help you catalog your devices, regardless of the deployment to which they are joined. 
+
 **Step 7. Exploring Available Extensions**
 
+Scroll down the page until you see the `GET` `/api/extensions` API endpoint. This enpoint will help you inventory which extensions have previously been downloaded into our application. Once they are available in the application, that specific verison of our iControl LX extension does not need to be downloaded again.
 
 ### Exercise #12 - Making Trusted iControl REST Request to Remote BIG-IPs
 
-**Step 8. Making a Trusted iControl REST Request to a Single Device**
+**Step 8. Make a Trusted iControl REST Request to All Devices in A Deployment**
 
-**Step 9. Make a Trusted iControl REST Request to All Devices in A Deployment**
+Issuing iControl REST requests to trusted devices through our application requires no authentication nor role. You can prove this to yourself by navigating to the top of the OpenAPI widgets and removing your authentication credentials. 
 
+Let's perform some iControl REST requests which you might want to invoke on whole deployments of BIG-IPs at the same time. You can probably imagine many tasks which regularly need to be done on sets of BIG-IPs as part of regular operations. Let's select tasks that would likely require data from another part of your ecosystem. Most SDN controllers dynamically generate and manage VLANs. Let's manage a VLAN on multiple BIG-IPs at once through our deployment.
 
-### Exercise #13 - Making Trusted Declarations to Multiple Remote BIG-IPs
+[Listing VLANs]
+
+[creating a VLAN on multiple BIG-IPs]
+
+[Removing a VLAN on multiple BIG-IPs]
+
+**Note:** Why wouldn't we just do this through *Ansible* modules? You can. Our application could easily be replaced by *Ansible*, but you still need to build the support in the ecosystem for removing BIG-IP concerns through the API Services Gateway. This is just an example of how this could be done using a container based micro services approach. We opted for a containerized approach because the API Services Gateway is a container.
+
+**Step 9. Making a Trusted iControl REST Request to a Single Device**
+
+For completeness we will issue an iControl REST request to a single device. Naviagate to the `GET` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint and issue the `/mgmt/shared/identified-devices/config/device-info` as supplied in the example. Note, again, that this request can be issued with concern for TMOS role.
+
+### Exercise #13 - Making Trusted Declarations without Concern for TMOS Roles
 
 **Step 10. Make a Declaration to All Devices in A Deployment**
+
+What good would this less be if we didn't issue a declaration without concern for TMOS roles? Make sure you have deployed AS3 to your trusted devices in a deployment, and let's issue an AS3 declaration to a specific device using the `POST` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint.
+
+
+We'll stop here for now, but we'll enhance our library of iControl LX extensions to include many other compoents which will prove useful to our partner and community ecosystem orchestrations. There are future development efforts begining which will make use of the API Serviecs Gateway to improve the reuse and supportability of our orchestrations across ecosystems.
+
 
 ---
 

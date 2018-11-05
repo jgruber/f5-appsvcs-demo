@@ -4,6 +4,7 @@ npm run-script build-doc
 
 mkdir -p ./static/icontrollx
 cp -R ./src/icontrollx ./static/
+cp ./src/config/swagger.json ./static/swagger.json
 
 #cd static
 

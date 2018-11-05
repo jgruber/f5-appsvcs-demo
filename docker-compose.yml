@@ -24,8 +24,9 @@ services:
       - f5apigateway
     links:
       - mongo
-      - f5apigateway  
+      - f5apigateway
     environment:
+      - MY_NAME=f5appsvcsdemo
       - F5_API_GW_HOST=f5apigateway
       - F5_API_GW_HTTP_PORT=80
       - MONGODB_URL=mongodb://root:secret@mongo/f5_appsvcs_demo?authSource=admin

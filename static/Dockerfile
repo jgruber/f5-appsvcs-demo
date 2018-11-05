@@ -9,5 +9,6 @@ WORKDIR /usr/share/nginx/html
 COPY ./assets ./assets
 COPY ./index.html ./index.html
 COPY ./icontrollx ./icontrollx
+COPY ./swagger.json ./swagger.json
 
 EXPOSE 80
