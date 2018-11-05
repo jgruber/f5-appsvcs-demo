@@ -33,8 +33,8 @@ Integration Exercises
 --------------------
 8. [Demonstration Integration Exercises](#demonstration-integration-exercises)
     - [Exercise #11 - Launching The Micro Services Deployment with docker-compose](#exercise-11-launching-the-micro-services-deployment-with-docker-compose)
-    - [Exercise #12 - Installing iControl LX Extensions On Multiple Remote BIG-IPs](#exercise-12-installing-icontrol-lx-extensions-on-multiple-remote-big-ips)
-    - [Exercise #13 - Making Trusted Declarations to Multiple Remote BIG-IPs](#exercise-13-making-trusted-declarations-to-multiple-remote-big-ips)
+    - [Exercise #12 - Making Trusted iControl REST Request to Remote BIG-IPs](#exercise-12-making-trusted-icontrol-rest-request-to-remote-big-ips)
+    - [Exercise #13 - Making Trusted Declarations without Concern for TMOS Roles](#exercise-13-making-trusted-declarations-without-concern-for-tmos-roles)
 
 Summary
 --------------------
@@ -2655,15 +2655,39 @@ The various models and objects defined in our OpenAPI schema for our application
 
 The basic format of a deployment request can be seen from the example presented in the OpenAPI user interface for the `POST` request on the `/api/deployments` endpoint.
 
-Fill in the IP address(es) and port(s) for the BIG-IP(s) you want to add to the deployment. List only the ones you wanted included. It is only when creating a trusted device that the `targetUsername` and `targetPassphrase` are required. Once the trust is established the TMOS credentials are not stored in the application nor on the API Services Gateway.
+```
+{
+    "name": "dmzProxies",
+    "devices": [{
+            "targetHost": "172.13.1.103",
+            "targetPort": 443,
+            "targetUsername": "admin",
+            "targetPassphrase": "admin"
+        },
+        {
+            "targetHost": "172.13.1.103",
+            "targetPort": 443,
+            "targetUsername": "admin",
+            "targetPassphrase": "admin"
+        }
+    ],
+    "extensions": [{
+        "url": "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm"
+    }]
+}
+```
 
-You can leave the AS3 `url` attributed in the example `extensions` list of your `/api/deployments` `POST`.  Make sure and clean up the rest of the example, removing anything that would not be correct for you deployment. 
+Chances are, without looking at the schema or knowing much about BIG-IPs, you can figure this out.
 
-If you follow the example deployment, trust will be established between the API Services Gateway and the specified devices. The AS3 iControl LX extension will be downloaded to our application, then uploaded to the trusted devices, and installed on each device in the deployment. We made this process sychronous. AS3 is huge, weighing in at almost 50M bytes. It's a good stress test for uploading and install timing.
+Fill in the IP address(es) and port(s) for the BIG-IP(s) you want to add to your deployment. List only the ones you wanted included. Creating a trusted device requires the `targetUsername` and `targetPassphrase` attributes. Once the trust is established with the API Servies Gateway, the TMOS credentials are not stored in the application nor on the API Services Gateway. We loose concern for them.
+
+You can leave the AS3 `url` attributed in the example `extensions` list of your `/api/deployments` `POST`.  Make sure and clean up the rest of the example, removing anything that would not be correct for your deployment. 
+
+If you follow the example deployment, trust will be established between the API Services Gateway and the specified devices. The AS3 iControl LX extension will be downloaded to our application, uploaded to the trusted devices, and installed on each device in the deployment. We made this process sychronous. AS3 is huge, weighing in at almost 50M bytes. It's a good stress test for uploading and install timing.
 
 After editing the content of the `POST` request, submit the request to create a deployment.
 
-[Creating a Deployment]
+![Creating a Deployment](./assets/images/f5-apps-openapi-app-deployments-post.png)
 
 Navigate to the `PUT` `/api/deployments/{deploymentId}` endpoint. You can use this endpoint to update your deployment. If you remove a trusted device, the deployment will no longer include that device. However, if that device was also a member of a different deployment, the trust will remain on the API Services Gateway. You can also choose to add or remove extensions by URL to a deployment through the `PUT` `/api/deployments/{deploymentId}` API endpoint.
 
@@ -2689,11 +2713,34 @@ Issuing iControl REST requests to trusted devices through our application requir
 
 Let's perform some iControl REST requests which you might want to invoke on whole deployments of BIG-IPs at the same time. You can probably imagine many tasks which regularly need to be done on sets of BIG-IPs as part of regular operations. Let's select tasks that would likely require data from another part of your ecosystem. Most SDN controllers dynamically generate and manage VLANs. Let's manage a VLAN on multiple BIG-IPs at once through our deployment.
 
-[Listing VLANs]
+To cememnt our understanding, let's assume that a Cisco APIC SDN controller dynamically provisions a VLAN with segmentation ID `2018` which needs to be bound to every BIG-IP in our deployment on interface 1.2.
 
-[creating a VLAN on multiple BIG-IPs]
+The iControl REST API endpoint to manage VLANs is `/mgmt/tm/net/vlan`. Let's start by listing our VLANs on all devices in our deployment using `GET` `/api/deployments/{deploymentId}` API endpoint.
 
-[Removing a VLAN on multiple BIG-IPs]
+![Listing VLANs](./assets/images/f5-apps-openapi-app-deployments-icontrol-list-vlans.png)
+
+Notice the deployment is returned as an list of responses with an `id` attributes matching the trusted device `id`, `status` attribute representing the HTTP status code returned from our request, `responseHeaders` attribute which details the headers returned from the request, and a `body` attribute which is the request response.  
+
+We can then use the `POST` `/api/deployments/{deploymentId}` API endpoint to create the VLAN on each trusted device. 
+
+Again, the iControl REST API enpoint to manage VLANs is `/mgmt/tm/net/vlan`. Here is the request body we will use to create our VLAN:
+
+```
+{
+	"name": "apic2018",
+	"tag": "2018",
+	"interfaces": [{
+		"name": "1.2",
+		"tagged": true
+	}]
+}
+```
+
+![creating a VLAN on multiple BIG-IPs](./assets/images/f5-apps-openapi-app-deployments-icontrol-create-vlans.png)
+
+To complete the lifecycle of our VLAN management, when we need demonstrate removing the VLAN. We can use the `DELETE` `/api/deployments/{deploymentId}`. You will need the `fullPath` attribute from our VLAN modifying the path slashes with tildas (`~`). That is iControl REST's URL namespace syntax. 
+
+![Removing a VLAN on multiple BIG-IPs](./assets/images/f5-apps-openapi-app-deployments-icontrol-delete-vlans.png)
 
 **Note:** Why wouldn't we just do this through *Ansible* modules? You can. Our application could easily be replaced by *Ansible*, but you still need to build the support in the ecosystem for removing BIG-IP concerns through the API Services Gateway. This is just an example of how this could be done using a container based micro services approach. We opted for a containerized approach because the API Services Gateway is a container.
 
@@ -2701,15 +2748,90 @@ Let's perform some iControl REST requests which you might want to invoke on whol
 
 For completeness we will issue an iControl REST request to a single device. Naviagate to the `GET` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint and issue the `/mgmt/shared/identified-devices/config/device-info` as supplied in the example. Note, again, that this request can be issued with concern for TMOS role.
 
+![Making iControl REST Request to a Single Trusted Device](./assets/images/f5-apps-openapi-app-devices-icontrol-get-device-info.png)
+
+Most provisioning tasks are trusted device specific. This means the majority of the iControl REST requests will be made though the `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoints.
+
+Because requests made to the `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoints are made to specific iControl REST API endpoints on a trusted device, the HTTP status code, response headers, and body are directly proxied to the client. What you see as a status code, response headers, and body returned to your client is exactly what was recieved from the trusted request. Sticking to this direct proxy pattern will make the migration of existing iControl REST applications into part of our micro services orchestration ecosystem easier.
+
 ### Exercise #13 - Making Trusted Declarations without Concern for TMOS Roles
 
-**Step 10. Make a Declaration to All Devices in A Deployment**
+**Step 10. Make a Declaration to A Devices in A Deployment**
 
-What good would this less be if we didn't issue a declaration without concern for TMOS roles? Make sure you have deployed AS3 to your trusted devices in a deployment, and let's issue an AS3 declaration to a specific device using the `POST` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint.
+What good would our examples be if we didn't come full circle and issue a declaration without concern for TMOS roles? Make sure you have included AS3 ny `url` in the `extensions` attribute of your deployment. Let's issue an AS3 declaration to a specific device using the `POST` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint.
 
+We will deploy the sample AS3 declaration from the [AS3 clouddocs example](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/userguide/composing-a-declaration.html#sample-declaration).
+
+The AS3 iControl LX extension iControl REST API endpoint to make a declarations is `/mgmt/shared/appsvcs/declare`.
+
+Our sample `POST` body is:
+
+```
+{
+     "class": "AS3",
+     "action": "deploy",
+     "persist": true,
+     "declaration": {
+         "class": "ADC",
+         "schemaVersion": "3.0.0",
+         "id": "example-declaration-01",
+         "label": "Sample 1",
+         "remark": "Simple HTTP application with round robin pool",
+         "Sample_01": {
+             "class": "Tenant",
+             "defaultRouteDomain": 0,
+             "Application_1": {
+                 "class": "Application",
+                 "template": "http",
+             "serviceMain": {
+                 "class": "Service_HTTP",
+                 "virtualAddresses": [
+                     "10.0.1.10"
+                 ],
+                 "pool": "web_pool"
+                 },
+                 "web_pool": {
+                     "class": "Pool",
+                     "monitors": [
+                         "http"
+                     ],
+                     "members": [
+                         {
+                             "servicePort": 80,
+                             "serverAddresses": [
+                                 "192.0.1.10",
+                                 "192.0.1.11"
+                             ]
+                         }
+                     ]
+                 }
+             }
+         }
+     }
+ }
+```
+
+![Making an AS3 Declaration through the API Services Gateway](./assets/images/f5-apps-openapi-app-devices-icontrol-post-as3-deploy.png)
+
+In declarative fashion, Let's remove our declaration using the the `POST` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint.
+
+![Removing an AS3 Declaration through the API Services Gateway](./assets/images/f5-apps-openapi-app-devices-icontrol-post-as3-remove.png)
 
 We'll stop here for now, but we'll enhance our library of iControl LX extensions to include many other compoents which will prove useful to our partner and community ecosystem orchestrations. There are future development efforts begining which will make use of the API Serviecs Gateway to improve the reuse and supportability of our orchestrations across ecosystems.
 
+If you want you can go back to `DELETE` on the `/deployments/{deploymentId}` API endpoint and remove your deployment. If it was the only one you created, you should see your extensions uninstalled from your remote trusted devices, and then the device trusts removed from the API Services Gateway.
+
+![Delete our Deployment](./assets/images/f5-apps-openapi-app-deployments-delete.png)
+
+**Step 10. Removing the Application**
+
+The is just one more thing to do, stop your micro services.
+
+Use the docker-compose orchestrator to remove our micro services. We will start our docker containers by issueing the up command in our home directory.
+
+```
+f5admin@containerhost:~$ docker-compose down
+```
 
 ---
 
@@ -2729,6 +2851,6 @@ There are multiple ways:
 
 - Wait for F5 to release API Service Gateway controller services for specific ecosystems like APIC and OpenStack
 
-- Present the API Service Gateway to your customers who need to develop deep integration for BIG-IP provisioning now.
+- Present the API Service Gateway to your customers who need to develop deep integrations with BIG-IP provisioning now.
 
 The exercises above were your introduction to ready yourself for cloud native orchestration. Some customers are already expecting you to understand these concepts. Other customers' migration to cloud services might still be simply a plan. Either way, you can be ready to help them now.
