@@ -6,6 +6,7 @@ WORKDIR /app
 
 # copy application into container
 COPY dist/ /app/dist/
+COPY src /app/src/
 COPY static/ /app/static/
 COPY package.json /app/
 COPY .babelrc /app/
