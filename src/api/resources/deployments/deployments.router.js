@@ -10,11 +10,11 @@ const validator = new OpenApiValidator(swaggerDocument);
 
 deploymentsRouter
     .route('/:id/proxy*')
-    .get(usersServices.isAuthenticated, deploymentsController.get)
-    .post(usersServices.isAuthenticated, deploymentsController.post)
-    .put(usersServices.isAuthenticated, deploymentsController.put)
-    .patch(usersServices.isAuthenticated, deploymentsController.patch)
-    .delete(usersServices.isAuthenticated, deploymentsController.del)
+    .get(deploymentsController.get)
+    .post(deploymentsController.post)
+    .put(deploymentsController.put)
+    .patch(deploymentsController.patch)
+    .delete(deploymentsController.del)
 
 deploymentsRouter
     .route('/:id')
@@ -24,6 +24,6 @@ deploymentsRouter
 
 deploymentsRouter
     .route('/')
-    .post(usersServices.isAuthenticated, validator.validate("post", "/deployments"), deploymentsController.createDeployment)
-    .get(usersServices.isAuthenticated, deploymentsController.findAll)
+    .post(usersServices.isAuthenticated, validator.validate("post", "/deployments"), deploymentsController.declareDeployment)
+    .get(usersServices.isAuthenticated, validator.validate("get", "/deployments"), deploymentsController.findAll)
     

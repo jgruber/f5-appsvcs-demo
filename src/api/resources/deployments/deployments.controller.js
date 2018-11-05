@@ -1,12 +1,15 @@
 import Deployment from './deployments.model';
+import Device from '../devices/devices.model';
+import Extension from '../extensions/extensions.model';
+import deploymentsServices from './deployments.services';
 import devicesController from '../devices/devices.controller';
 import devicesServices from '../devices/devices.services';
 import extensionsController from "../extensions/extensions.controller";
 import extensionsServices from '../extensions/extensions.services';
-
 const appconf = require('../../../config/app');
 
 const BIGIP_ADMIN_ROLE = appconf.f5_device_admin_role;
+const CREATE_STATE = appconf.CREATE_STATE;
 
 const extendedOutput = async (deployment) => {
     const dataPromises = []
@@ -41,102 +44,210 @@ const extendedOutput = async (deployment) => {
     };
 }
 
+const populateDeploymentDevices = async (deployment) => {
+    let returnDevices = [];
+    if ('devices' in deployment && deployment.devices.length > 0) {
+        const extensionUrls = [];
+        if ('extensions' in deployment && deployment.extensions.length > 0) {
+            for (let j = 0; j < deployment.extensions.length; j++) {
+                const extension = deployment.extensions[j];
+                if ('id' in extension) {
+                    const knownExtension = await extensionsController.getById(extension.id);
+                    if (knownExtension) {
+                        extensionUrls.push(knownExtension.url);
+                    }
+                } else if ('url' in extension) {
+                    const knownExtension = await extensionsController.getByUrl(extension.url);
+                    if (knownExtension) {
+                        extensionUrls.push(knownExtension.url);
+                    } else {
+                        extensionUrls.push(extension.url);
+                    }
+                }
+            }
+        }
+        for (let i = 0; i < deployment.devices.length; i++) {
+            const device = deployment.devices[i];
+            if ('id' in device) {
+                const knownDevice = await devicesController.getById(device.id);
+                if (!knownDevice) {
+                    const error = 'device id ' + device.id + ' is not a known device';
+                    throw new Error(error);
+                } else {
+                    knownDevice.extensionUrls = extensionUrls;
+                    returnDevices.push(knownDevice);
+                }
+            } else {
+                if (!('targetHost' in device)) {
+                    const error = 'device missing requried targetHost attribute';
+                    throw new Error(error);
+                }
+                if (!('targetPort' in device)) {
+                    device.targetPort = 443;
+                }
+                const knownDevice = await devicesController.getByTargetHostAndTargetPort(device.targetHost, device.targetPort);
+                if (knownDevice) {
+                    knownDevice.extensionUrls = extensionUrls;
+                    returnDevices.push(knownDevice);
+                } else {
+                    if ((!('targetUsername' in device)) && (!('targetPassphrase' in device))) {
+                        const error = 'new device in deployment, but it is missing required attributes targetUsername and targetPassphrase';
+                        throw new Error(error);
+                    } else {
+                        const newDevice = new Device({
+                            targetHost: device.targetHost,
+                            targetPort: device.targetPost,
+                            isBigIP: true,
+                            state: CREATE_STATE
+                        });
+                        await newDevice.save();
+                        device.id = newDevice.id;
+                        device.extensionUrls = extensionUrls;
+                        returnDevices.push(device);
+                    }
+                }
+            }
+        }
+    }
+    return returnDevices;
+}
+
+const populateDeploymentExtensions = async (deployment) => {
+    let returnExensions = [];
+    if ('extensions' in deployment && deployment.extensions.length > 0) {
+        for (let i = 0; i < deployment.extensions.length; i++) {
+            const extension = deployment.extensions[i];
+            if ('id' in extension) {
+                const knownExtension = await extensionsController.getById(device.id);
+                if (!knownExtension) {
+                    const error = 'extension id ' + extension.id + ' is not a known extension';
+                    throw new Error(error);
+                } else {
+                    returnExensions.push(knownExtension);
+                }
+            } else {
+                if (!'url' in extension) {
+                    const error = 'extension missing requried url attribute';
+                    throw new Error(error);
+                }
+                const knownExtension = await extensionsController.getByUrl(extension.url);
+                if (knownExtension) {
+                    returnExensions.push(knownExtension);
+                } else {
+                    const newExtension = await new Extension({
+                        url: extension.url,
+                        status: CREATE_STATE
+                    });
+                    returnExensions.push(await newExtension.save());
+                }
+            }
+        }
+    }
+    return returnExensions;
+}
+
 export default {
-    async createDeployment(req, res) {
+    async declareDeployment(req, res) {
         try {
             if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                try {
-                    const deployment = req.body;
-                    const existingDeployment = await Deployment.find({
-                        name: deployment.name
+                const returnDeviceIds = [];
+                const returnExtensionIds = [];
+                const declaredDevices = {};
+
+                let populatedDevices;
+                let populatedExtensions;
+
+                const deployment = req.body;
+                const existingDeployment = await Deployment.find({
+                    name: deployment.name
+                })
+                if (existingDeployment.length > 0) {
+                    const error = 'a deployment with name: ' + existingDeployment[0].name + ' already exists with id: ' + existingDeployment[0].id;
+                    return res.status(409).json({
+                        err: error
                     })
-                    if (existingDeployment.length > 0) {
-                        const error = 'a deployment with name: ' + existingDeployment[0].name + ' already exists with id: ' + existingDeployment[0].id;
-                        return res.status(409).json({
-                            err: error
-                        })
-                    }
-                    const deviceIds = [];
-                    const extensionIds = [];
-                    if ('devices' in deployment && deployment.devices.length > 0) {
-                        const addDevicePromises = [];
-                        // force a sync between the ASG trusted devices and the application controller
-                        await devicesServices.updateTrustedDevices()
-                        deployment.devices.map((device) => {
-                            addDevicePromises.push(new Promise((resolve) => {
-                                if (!('targetPort' in device)) {
-                                    device.targetPort = 443;
+                }
+
+                try {
+                    // see if we already know about the declared device by id or targetHost and targetPort
+                    // so add the aleady known host to the declaration (devices are immutable in the app)
+                    // if not, add a new device to trust to the declaration
+
+                    populatedDevices = await populateDeploymentDevices(deployment);
+                    populatedDevices.map((device) => {
+                        returnDeviceIds.push(device.id);
+                        declaredDevices[device.id] = device;
+                    })
+
+                    // get all existing deviceIds for all deployments so we can declare all trusteded devices
+                    const deployments = await Deployment.find();
+                    for (let i = 0; i < deployments.length; i++) {
+                        const deploymentDevicesIds = deployments[i].devicesIds;
+                        for (let j = 0; j < deploymentDevicesIds.length; j++) {
+                            const deviceId = deploymentDevicesIds[j];
+                            if (!returnDeviceIds.includes(deviceId)) {
+                                const knownDevice = await Device.getById(deviceId)
+                                if (knownDevice) {
+                                    knownDevice.extensionUrls = [];
+                                    for (let j = 0; j < deployments[i].extensionIds.length; j++) {
+                                        const extension = extensionsController.getById(deployments[i].extensionIds[j]);
+                                        knownDevice.extensionUrls.push(extension.url);
+                                    }
+                                    declaredDevices[deviceId] = knownDevice;
                                 }
-                                // note if the device is already in the controller, it just returns, othewise creates a trust
-                                const addDevicePromise = devicesServices.createTrustedDevice(device.targetHost, device.targetPort, device.targetUsername, device.targetPassphrase)
-                                    .then((device) => {
-                                        deviceIds.push(device.id);
-                                        resolve();
-                                    })
-                                addDevicePromises.push(addDevicePromise);
-                            }));
-                        });
-                        await Promise.all(addDevicePromises)
-                        const addExtensionPromises = [];
-                        if ('extensions' in deployment && Array.isArray(deployment.extensions) && deployment.extensions.length > 0) {
-                            deployment.extensions.map((extension) => {
-                                addExtensionPromises.push(new Promise((resolve) => {
-                                    // make sure we have that extension to upload and install
-                                    extensionsServices.downloadExtensionToStorage(extension.url)
-                                        .then((rpmFile) => {
-                                            // loop through and validate extension on requested devices
-                                            const installPromises = []
-                                            deployment.devices.map((device) => {
-                                                installPromises.push(new Promise((resolve => {
-                                                    extensionsServices.installExtensionOnTrustedDevice(rpmFile, device.targetHost, device.targetPort)
-                                                        .then(() => {
-                                                            extensionsController.getByFilename(rpmFile)
-                                                                .then((extension) => {
-                                                                    if (!(extensionIds.includes(extension.id))) {
-                                                                        extensionIds.push(extension.id);
-                                                                    }
-                                                                    resolve();
-                                                                })
-                                                        })
-                                                        .catch((err) => {
-                                                            throw err;
-                                                        });
-                                                })));
-                                            })
-                                            Promise.all(installPromises)
-                                                .then(() => {
-                                                    resolve()
-                                                })
-                                        })
-                                        .catch((err) => {
-                                            throw err;
-                                        });
-                                }));
-                            });
+                            }
                         }
-                        await Promise.all(addExtensionPromises)
-                        const newDeployment = {
-                            "name": deployment.name,
-                            "deviceIds": deviceIds,
-                            "extensionIds": extensionIds
-                        }
-                        const returnDeployment = await Deployment.create(newDeployment)
-                        return res.status(201).json(await extendedOutput(returnDeployment));
-                    } else {
-                        const addExtensionPromises = []
-                        if ('extensions' in deployment && Array.isArray(deployment.extensions) && deployment.extensions.length > 0) {
-                            deployment.extensions.map((extension) => {
-                                const downloadPromise = extensionsServices.downloadExtensionToStorage(extension.url)
-                                addExtensionPromises.push(downloadPromise);
-                            });
-                        }
-                        await Promise.all(addExtensionPromises)
-                        const returnDeployment = await Deployment.create(newDeployment)
-                        return res.status(201).json(await extendedOutput(returnDeployment));
                     }
+                    // populate all extensions in the declaration
+                    populatedExtensions = await populateDeploymentExtensions(deployment);
+                    populatedExtensions.map((extension) => {
+                        returnExtensionIds.push(extension.id);
+                    })
+                } catch (err) {
+                    const error = 'error in validating deployment devices and extensions - ' + err.message;
+                    console.error(error);
+                    return res.status(400).json({
+                        err: error
+                    });
+                }
+
+                // get extensions figure out for devices in the declaration
+                try {
+                    await deploymentsServices.declareTrustedDevices(Object.values(declaredDevices));
+                } catch (err) {
+                    const error = 'error in declaring trusted devices: ' + err.message;
+                    console.error(error);
+                    return res.status(400).json({
+                        err: error
+                    })
+                }
+
+                const extensionUpdates = [];
+                try {
+                    populatedDevices.map((device) => {
+                        extensionUpdates.push(
+                            deploymentsServices.declareExtensionsOnTrustedDevice(device.targetHost, device.targetPort, device.extensionUrls)
+                            .then(() => {
+                                extensionsServices.inventoryExtensionsOnTrustedDevice(device.targetHost, device.targetPort);
+                            })
+                        );
+                    });
+                } catch (err) {
+                    throw err;
+                }
+
+                try {
+                    await Promise.all(extensionUpdates)
+                    const newDeployment = {
+                        "name": deployment.name,
+                        "deviceIds": returnDeviceIds,
+                        "extensionIds": returnExtensionIds
+                    }
+                    const returnDeployment = await Deployment.create(newDeployment);
+                    return res.status(201).json(await extendedOutput(returnDeployment));
                 } catch (err) {
                     return res.status(500).json({
-                        err: 'error in creating deploymet - ' + err.message
+                        err: 'error in creating deployment - ' + err.message
                     })
                 }
             } else {
@@ -145,9 +256,129 @@ export default {
                 });
             }
         } catch (ex) {
-            console.error('error creating deployment: ' + ex);
+            console.error('error creating deployment: ' + ex.message);
             return res.status(500).json({
-                err: ex
+                err: ex.message
+            });
+        }
+    },
+    async updateDeployment(req, res) {
+        try {
+            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
+                const returnDeviceIds = [];
+                const returnExtensionIds = [];
+                const declaredDevices = {};
+
+                let populatedDevices;
+                let populatedExtensions;
+
+                const deployment = req.body;
+
+                const {
+                    id
+                } = req.params;
+
+                // existing state
+                const existingDeployment = await Deployment.findById(id);
+                if (!existingDeployment) {
+                    return res.status(404).json({
+                        err: 'could not find deployment for ID:' + id
+                    });
+                }
+
+                try {
+                    // see if we already know about the declared device by id or targetHost and targetPort
+                    // so add the aleady known host to the declaration (devices are immutable in the app)
+                    // if not, add a new device to trust to the declaration
+
+                    populatedDevices = await populateDeploymentDevices(deployment);
+                    populatedDevices.map((device) => {
+                        returnDeviceIds.push(device.id);
+                        declaredDevices[device.id] = device;
+                    })
+
+                    // get all existing deviceIds for all deployments so we can declare all trusteded devices
+                    const deployments = await Deployment.find();
+                    for (let i = 0; i < deployments.length; i++) {
+                        if (deployments[i].id !== id) {
+                            const deploymentDeviceIds = deployments[i].deviceIds;
+                            for (let j = 0; j < deploymentDeviceIds.length; j++) {
+                                const deviceId = deploymentDeviceIds[j];
+                                if (!returnDeviceIds.includes(deviceId)) {
+                                    const knownDevice = await devicesController.getById(deviceId)
+                                    if (knownDevice) {
+                                        knownDevice.extensionUrls = [];
+                                        for (let j = 0; j < deployments[i].extensionIds.length; j++) {
+                                            const extension = extensionsController.getById(deployments[i].extensionIds[j]);
+                                            knownDevice.extensionUrls.push(extension.url);
+                                        }
+                                        declaredDevices[deviceId] = knownDevice;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // populate all extensions in the declaration
+                    populatedExtensions = await populateDeploymentExtensions(deployment);
+                    populatedExtensions.map((extension) => {
+                        returnExtensionIds.push(extension.id);
+                    })
+                } catch (err) {
+                    console.error(err);
+                    const error = 'error in validating deployment devices and extensions - ' + err.message;
+                    console.error(error);
+                    return res.status(400).json({
+                        err: error
+                    });
+                }
+
+                // get extensions figure out for devices in the declaration
+                try {
+                    await deploymentsServices.declareTrustedDevices(Object.values(declaredDevices));
+                } catch (err) {
+                    const error = 'error in declaring trusted devices: ' + err.message;
+                    console.error(error);
+                    return res.status(400).json({
+                        err: error
+                    })
+                }
+
+                const extensionUpdates = [];
+                try {
+                    populatedDevices.map((device) => {
+                        extensionUpdates.push(
+                            deploymentsServices.declareExtensionsOnTrustedDevice(device.targetHost, device.targetPort, device.extensionUrls)
+                            .then(() => {
+                                extensionsServices.inventoryExtensionsOnTrustedDevice(device.targetHost, device.targetPort);
+                            })
+                        );
+                    });
+                } catch (err) {
+                    throw err;
+                }
+
+                try {
+                    await Promise.all(extensionUpdates)
+                    existingDeployment.name = deployment.name;
+                    existingDeployment.deviceIds = returnDeviceIds;
+                    existingDeployment.extensionIds = returnExtensionIds;
+                    await existingDeployment.save();
+                    return res.status(201).json(await extendedOutput(existingDeployment));
+                } catch (err) {
+                    return res.status(500).json({
+                        err: 'error in creating deployment - ' + err.message
+                    })
+                }
+
+            } else {
+                return res.status(403).json({
+                    err: 'updates to deployments required ' + BIGIP_ADMIN_ROLE + ' role'
+                })
+            }
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({
+                err: err
             });
         }
     },
@@ -205,289 +436,6 @@ export default {
             });
         }
     },
-    async updateDeployment(req, res) {
-        try {
-            if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
-                const {
-                    id
-                } = req.params;
-
-                // existing state
-                const existingDeployment = await Deployment.findById(id);
-                if (!existingDeployment) {
-                    return res.status(404).json({
-                        err: 'could not find deployment for ID:' + id
-                    });
-                }
-
-                //return await new Promise(async (resolve) => {
-                // requested state
-                let deployment = req.body;
-
-                // serialization of workflow
-                const createPromises = [];
-                const removeDevicePromises = [];
-                const installPromises = [];
-
-                // algo state
-                let hasErrors = false;
-                const errors = [];
-                const needToAddDevice = [];
-                const needToAddExtension = [];
-                let needToRemoveDeviceById = [];
-                let needToRemoveExtensionById = [];
-                const deviceIdsIndexed = {};
-                const extensionIdsIndexed = {};
-
-                // return state
-                const returnDeviceIds = [];
-                const returnExtensionIds = [];
-
-                if ('devices' in deployment && Array.isArray(deployment.devices) && deployment.devices.length > 0) {
-                    const inventoryDevicesPromises = [];
-                    // requested device is a trusted device and validate if it needs to be added
-                    deployment.devices.map((device) => {
-                        const deviceInventoryPromise = new Promise((resolve) => {
-                            if ('id' in device) {
-                                devicesController.getById(device.id)
-                                    .then((knownDevice) => {
-                                        if (!knownDevice) {
-                                            hasErrors = true;
-                                            errors.push("deployment " + deployment.name + " deviceId " + device.id + " is not a trusted device");
-                                        } else {
-                                            deviceIdsIndexed[device.id] = knownDevice;
-                                            if (!device.id in existingDeployment.deviceIds) {
-                                                needToAddDevice.push(knownDevice);
-                                            }
-                                        }
-                                        resolve();
-                                    })
-                            } else if ('targetHost' in device) {
-                                if (!('targetPort' in device)) {
-                                    device.targetPort = 443;
-                                }
-                                devicesController.getByTargetHostAndTargetPort(device.targetHost, device.targetPort)
-                                    .then((knownDevice) => {
-                                        if (!knownDevice) {
-                                            needToAddDevice.push(device);
-                                        } else {
-                                            deviceIdsIndexed[knownDevice.id] = knownDevice;
-                                            if (!(existingDeployment.deviceIds.includes(knownDevice.id))) {
-                                                needToAddDevice.push(knownDevice);
-                                            }
-                                        }
-                                        resolve();
-                                    });
-
-                            } else {
-                                hasErrors = true;
-                                errors.push("deployment " + deployment.name + " has an invalid device " + JSON.parse(device));
-                                resolve();
-                            }
-                        })
-                        inventoryDevicesPromises.push(deviceInventoryPromise);
-                    });
-                    await Promise.all(inventoryDevicesPromises);
-                    if ('deviceIds' in existingDeployment) {
-                        // validate if any need to be remove from existing to match request
-                        existingDeployment.deviceIds.map((deviceId) => {
-                            if (!(deviceId in deviceIdsIndexed)) {
-                                needToRemoveDeviceById.push(deviceId);
-                            }
-                        })
-                    }
-                } else {
-                    for (let i = 0; i < existingDeployment.deviceIds.length; i++) {
-                        deviceIdsIndexed[existingDeployment.deviceIds[i]] = await devicesController.getById(existingDeployment.deviceIds[i]);
-                    }
-                    // no device Ids specified, we need to remove them all
-                    needToRemoveDeviceById = existingDeployment.deviceIds;
-                }
-                // figure out the list of devices we need to retain.
-                if ('deviceIds' in existingDeployment) {
-                    existingDeployment.deviceIds.map((deviceId) => {
-                        if (!(needToRemoveDeviceById.includes(deviceId))) {
-                            returnDeviceIds.push(deviceId);
-                        }
-                    })
-                }
-                // create trusts for all devices we need to add
-                needToAddDevice.map(async (device) => {
-                    const createDevicePromise = devicesServices.createTrustedDevice(device.targetHost, device.targetPort, device.targetUsername, device.targetPassphrase)
-                        .then((device) => {
-                            deviceIdsIndexed[device.id] = device;
-                            returnDeviceIds.push(device.id);
-                        })
-                        .catch((err) => {
-                            throw err;
-                        });
-                    createPromises.push(createDevicePromise);
-                })
-
-                if ('extensions' in deployment && Array.isArray(deployment.extensions) && deployment.extensions.length > 0) {
-                    const inventoryExtensionsPromises = [];
-                    // check requested extension are validate if it needs to be added
-                    deployment.extensions.map((extension) => {
-                        const extensionInventoryPromise = new Promise((resolve) => {
-                            if ('id' in extension) {
-                                extensionsController.getById(extension.id)
-                                    .then((knownExtension) => {
-                                        if (!knownExtension) {
-                                            hasErrors = true;
-                                            errors.push("deployment " + deployment.name + " extension id " + extension.Id + " is not a known extension");
-                                        } else {
-                                            if (!extension.id in existingDeployment.extensionIds) {
-                                                needToAddExtension.push(knownExtension);
-                                            }
-                                            extensionIdsIndexed[extension.id] = knownExtension;
-                                        }
-                                        resolve();
-                                    });
-                            } else if ('url' in extension) {
-                                extensionsController.getByUrl(extension.url)
-                                    .then((knownExtension) => {
-                                        if (!knownExtension) {
-                                            needToAddExtension.push(extension);
-                                        } else {
-                                            if (!existingDeployment.extensionIds.includes(knownExtension.id)) {
-                                                needToAddExtension.push(knownExtension);
-                                            }
-                                            extensionIdsIndexed[knownExtension.id] = knownExtension;
-                                        }
-                                        resolve();
-                                    });
-                            } else {
-                                hasErrors = true;
-                                errors.push("deployment " + deployment.name + " has an invalid extension " + JSON.parse(extension));
-                                resolve();
-                            }
-                        })
-                        inventoryExtensionsPromises.push(extensionInventoryPromise);
-                    })
-                    await Promise.all(inventoryExtensionsPromises);
-                    if ('extensionIds' in existingDeployment) {
-                        // validate if any need to be remove from existing to match request
-                        existingDeployment.extensionIds.map((extensionId) => {
-                            if (!extensionId in extensionIdsIndexed) {
-                                needToRemoveExtensionById.push(extensionId);
-                            }
-                        })
-                    }
-                } else {
-                    // no extension Ids specified, we need to remove them all
-                    for (let i = 0; i < existingDeployment.extensionIds.length; i++) {
-                        extensionIdsIndexed[existingDeployment.extensionIds[i]] = await extensionsController.getById(existingDeployment.extensionIds[i]);
-                    }
-                    needToRemoveExtensionById = existingDeployment.extensionIds;
-                }
-                // figure out the list of extension we need to retain
-                if ('extensionIds' in existingDeployment) {
-                    existingDeployment.extensionIds.map((extensionId) => {
-                        if (!(needToRemoveExtensionById.includes(extensionId))) {
-                            returnExtensionIds.push(extensionId);
-                        }
-                    });
-                }
-
-                //download and extensions we need.
-                needToAddExtension.map(async (extension, idx) => {
-                    const downloadExtensionPromise = extensionsServices.downloadExtensionToStorage(extension.url)
-                        .then((rpmFile) => {
-                            const queryExtensionPromise = extensionsController.getByFilename(rpmFile)
-                                .then((knownExtension) => {
-                                    extensionIdsIndexed[knownExtension.id] = knownExtension;
-                                    returnExtensionIds.push(knownExtension.id);
-                                });
-                            createPromises.push(queryExtensionPromise);
-                        })
-                        .catch((err) => {
-                            throw err;
-                        })
-                    createPromises.push(downloadExtensionPromise);
-                })
-                await Promise.all(createPromises);
-
-                //are the devices we would remove in other deployments?
-                const extensionsToRemainByDeviceId = {}
-                const allExistingDeployments = await Deployment.find();
-                allExistingDeployments.map((deployment) => {
-                    deployment.deviceIds.map((deviceId) => {
-                        if (needToRemoveDeviceById.includes(deviceId)) {
-                            needToRemoveDeviceById.filter(id => id !== deviceId);
-                        }
-                        extensionsToRemainByDeviceId[deviceId] = deployment.extensionIds;
-                    })
-                })
-
-                // remove the installed extension, trust from the gateway
-                if ('deviceIds' in existingDeployment) {
-                    needToRemoveDeviceById.map((deviceId) => {
-                        const getDevicePromise = devicesController.getById(deviceId)
-                            .then((device) => {
-                                if (device) {
-                                    const uninstallExtensionPromises = []
-                                    needToRemoveExtensionById.map((extensionId) => {
-                                        console.log(extensionId);
-                                        const extension = extensionIdsIndexed[extensionId];
-                                        console.log('uninstalling on device ' + device.targetHost + ':' + device.targetPort + ' extension: ' + JSON.stringify(extension));
-                                        const uninstallExtensionPromise = extensionsServices.uninstallExtensionOnTrustedDevice(extension.filename, device.targetHost, device.targetPort);
-                                        uninstallExtensionPromises.push(uninstallExtensionPromise);
-                                        removeDevicePromises.push(uninstallExtensionPromise);
-                                    })
-                                    Promise.all(uninstallExtensionPromises)
-                                        .then(() => {
-                                            const removeDevicePromise = devicesServices.removeTrustedDevice(device.targetHost, device.targetPort)
-                                            removeDevicePromises.push(removeDevicePromise);
-                                        })
-                                }
-                            })
-                            .catch((err) => {
-                                throw err;
-                            });
-                        removeDevicePromises.push(getDevicePromise);
-                    })
-                }
-                await Promise.all(removeDevicePromises)
-                await extensionsController.trimToActiveDevices();
-
-                // push install of all extensions on all return devices
-                returnDeviceIds.map((deviceId) => {
-                    const device = deviceIdsIndexed[deviceId];
-                    const deviceInstallPromise = devicesServices.createTrustedDevice(device.targetHost, device.targetPort, device.targetUsername, device.targetPassphrase)
-                        .then(() => {
-                            returnExtensionIds.map((extensionId) => {
-                                const extension = extensionIdsIndexed[extensionId];
-                                console.log('installing extension ' + extension.filename + ' on ' + device.targetHost + ':' + device.targetPort);
-                                const extensionInstallPromise = extensionsServices.installExtensionOnTrustedDevice(extension.filename, device.targetHost, device.targetPort);
-                                installPromises.push(extensionInstallPromise);
-                            })
-                        })
-                    installPromises.push(deviceInstallPromise)
-                })
-                await Promise.all(installPromises)
-                existingDeployment.name = deployment.name;
-                existingDeployment.deviceIds = returnDeviceIds;
-                existingDeployment.extensionIds = returnExtensionIds;
-                await existingDeployment.save((err) => {
-                    if (err) {
-                        console.error('error in saving Deployment:' + err.message);
-                        throw err;
-                    }
-                });
-                return res.status(200).json(await extendedOutput(existingDeployment));
-                // });
-            } else {
-                return res.status(403).json({
-                    err: 'updates to deployments required ' + BIGIP_ADMIN_ROLE + ' role'
-                })
-            }
-        } catch (err) {
-            console.error(err);
-            return res.status(500).json({
-                err: err
-            });
-        }
-    },
     async delete(req, res) {
         try {
             if (req.user.roles.includes(BIGIP_ADMIN_ROLE)) {
@@ -519,50 +467,26 @@ export default {
                 }
 
                 // remove the trust from the gateway
-                const uninstallExtensionPromises = [];
                 const deviceIndexById = {};
-                existingDeployment.deviceIds.map((deviceId) => {
-                    const getDevicePromise = devicesController.getById(deviceId)
-                        .then((device) => {
-                            if (device) {
-                                deviceIndexById[device.id] = device;
-                                existingDeployment.extensionIds.map((extensionId) => {
-                                    const uninstallExtensionPromise = new Promise((resolve) => {
-                                        extensionsController.getById(extensionId)
-                                            .then((extension) => {
-                                                console.log('uninstalling extension ' + extension.filename + ' from ' + device.targetHost + ':' + device.targetPort);
-                                                extensionsServices.uninstallExtensionOnTrustedDevice(extension.filename, device.targetHost, device.targetPort)
-                                                    .then((success) => {
-                                                        console.log('extension uninstalled from ' + device.targetHost + ':' + device.targetPort);
-                                                        resolve(success);
-                                                    })
-                                            })
-                                    });
-                                    uninstallExtensionPromises.push(uninstallExtensionPromise);
-                                });
-                            }
-                        })
-                        .catch((err) => {
-                            throw err;
-                        });
-                    uninstallExtensionPromises.push(getDevicePromise);
-                });
-                await Promise.all(uninstallExtensionPromises)
-                const removeDevicePromises = [];
-                console.log('ext should be gone');
-                existingDeployment.deviceIds.map((deviceId) => {
-                    removeDevicePromises.push(new Promise((resolve) => {
-                        const device = deviceIndexById[deviceId];
-                        if (device) {
-                            console.log('uninstalling device ' + device.targetHost);
-                            devicesServices.removeTrustedDevice(device.targetHost, device.targetPort)
-                                .then(() => {
-                                    resolve()
-                                })
+                for (let i = 0; i < existingDeployment.deviceIds.length; i++) {
+                    const device = await devicesController.getById(existingDeployment.deviceIds[i]);
+                    deviceIndexById[device.id] = device;
+                    for (let j = 0; j < existingDeployment.extensionIds.length; j++) {
+                        const extension = await extensionsController.getById(existingDeployment.extensionIds[j]);
+                        console.log('uninstalling extension ' + extension.filename + ' from ' + device.targetHost + ':' + device.targetPort);
+                        const uninstalled = await extensionsServices.uninstallExtensionOnTrustedDevice(extension.filename, device.targetHost, device.targetPort);
+                        if (uninstalled) {
+                            console.log('extension uninstalled from ' + device.targetHost + ':' + device.targetPort);
                         }
-                    }));
-                });
-                await Promise.all(removeDevicePromises)
+                    }
+                }
+
+                for (let i = 0; i < existingDeployment.deviceIds.length; i++) {
+                    const device = deviceIndexById[existingDeployment.deviceIds[i]];
+                    if (device) {
+                        await devicesServices.removeTrustedDevice(device.targetHost, device.targetPort);
+                    }
+                }
                 await Deployment.findByIdAndRemove({
                     _id: existingDeployment.id
                 })
@@ -844,6 +768,26 @@ export default {
             return res.status(500).json({
                 err: err
             });
+        }
+    },
+    async removeDeviceById(deviceId) {
+        try {
+            const existingDeployments = Deployment.find();
+            for (let i = 0; i < existingDeployments.length; i++) {
+                if (existingDeployments.deviceIds.includes(deviceId)) {
+                    const deployment = existingDeployments[i];
+                    deployment.deviceIds.filter(d => d != deviceId);
+                    await deployment.save((err) => {
+                        if (err) {
+                            console.error('error in saving Deployment:' + err.message);
+                            throw err;
+                        }
+                    });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            throw err;
         }
     }
 };

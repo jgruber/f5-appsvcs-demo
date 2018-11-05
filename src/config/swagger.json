@@ -246,13 +246,13 @@
                     "devices": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/DeviceResponse"
+                            "$ref": "#/components/schemas/DeviceUpdateRequest"
                         }
                     },
                     "extensions": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ExtensionResponse"
+                            "$ref": "#/components/schemas/ExtensionUpdateRequest"
                         }
                     }
                 },
@@ -452,6 +452,36 @@
                     }
                 ]
             },
+            "DeviceUpdateRequest": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "targetHost": {
+                        "type": "string"
+                    },
+                    "targetPort": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65534,
+                        "default": 443
+                    },
+                    "targetUsername": {
+                        "type": "string"
+                    },
+                    "targetPassphrase": {
+                        "type": "string",
+                        "format": "password"
+                    }
+                },
+                "example": {
+                    "id":"5ba06c34c075ca0008ff8653",
+                    "targetHost": "172.13.1.107",
+                    "targetPort": 443,
+                    "targetUsername": "admin",
+                    "targetPassphrase": "admin"
+                }
+            },
             "ExtensionRequest": {
                 "required": [
                     "url"
@@ -518,6 +548,20 @@
                         "5bd6c372b3049d3aaba814d4"
                     ]
                 }]
+            },
+            "ExtensionUpdateRequest": {
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "id": "5bd6c372b3049d3aaba878b4",
+                    "url": "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm"
+                }
             },
             "EmptyDeploymentiControlResponse": {
                 "type": "array",

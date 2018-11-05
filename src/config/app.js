@@ -17,6 +17,8 @@ const extension_error_status = 'ERROR';
 const extension_storage_path = process.env['EXTENSION_STORAGE_PATH'] || '/tmp/extensions';
 const extension_valid_protocols = ['file:', 'http:', 'https:'];
 
+const myname = process.env['MY_NAME'] || 'localhost'
+
 const fs = require('fs');
 const path = require('path');
 
@@ -33,9 +35,7 @@ const install_extensions = [
     {url: 'file://' + filebase + '/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm'},
     {url: 'file://' + filebase + '/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm'},
     {url: 'file://' + filebase + '/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm'},
-    {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm'},
-    {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm', targetHost: '172.13.1.107', targetPort: 443},
-    {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm', targetHost: '172.13.1.103', targetPort: 443}
+    {url: 'https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm'}
 ];
 
 module.exports = {
@@ -54,5 +54,6 @@ module.exports = {
     extension_error_status: extension_error_status,
     extension_storage_path: extension_storage_path,
     extension_valid_protocols: extension_valid_protocols,
+    myname: myname,
     install_extensions: install_extensions
 }

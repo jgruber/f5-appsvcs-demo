@@ -679,7 +679,6 @@ const getExtensions = (targetHost, targetPort) => {
             }
             request(queryOptions, (err, resp, body) => {
                 if (err) {
-                    console.error(err);
                     resolve([]);
                 }
                 if (body.hasOwnProperty('id')) {
@@ -687,7 +686,6 @@ const getExtensions = (targetHost, targetPort) => {
                     pollTask(taskId, 20000, targetHost, targetPort)
                         .then((results) => {
                             if (results.status != FINISHED) {
-                                console.error('query task did not reach the FINISHED state - ' + JSON.stringify(results));
                                 resolve([]);
                             } else {
                                 resolve(results.queryResponse);
@@ -756,6 +754,14 @@ export default {
             await Promise.all(inventoryPromises);
         } catch (ex) {
             const err = 'error getting inventory of existing extensions on gateway - ' + ex.message;
+        }
+    },
+    async getExtensionsOnTrustedDevice(targetHost, targetPort) {
+        try {
+            return await getExtensions(targetHost, targetPort);
+        } catch(ex) {
+            const err = 'error getting existing extensions on trusted device - ' + ex.message;
+            console.error(err);
         }
     },
     async inventoryExtensionsOnTrustedDevice(targetHost, targetPort) {
@@ -834,7 +840,6 @@ export default {
                     }
                 }
             });
-            return true;
         } catch (ex) {
             console.error('error uninstalling extension on gateway - ' + ex.message);
             throw ex;
@@ -859,7 +864,7 @@ export default {
     async installExtensionOnTrustedDevice(rpmFile, targetHost, targetPort) {
         try {
             if (rpmFile) {
-                const existingExtensions = await getExtensions(targetHost, targetPort);
+                let existingExtensions = await getExtensions(targetHost, targetPort);
                 let needToInstall = true;
                 existingExtensions.map((extension) => {
                     if (rpmFile && rpmFile.startsWith(extension.packageName)) {
@@ -904,23 +909,21 @@ export default {
                     return await uninstall(installed[i].packageName, targetHost, targetPort);
                 }
             }
-            return true;
         } catch (ex) {
-            console.error('error uninstalling extension on gateway - ' + ex.message);
+            console.error('error uninstalling extension on trusted device - ' + ex.message);
             throw ex;
         }
     },
     async uninstallAllExtensionsOnTrustedDevice(targetHost, targetPort) {
         try {
             const installed = await (getExtensions(targetHost, targetPort));
-            installed.map(async (extension) => {
-                if (await uninstall(extension.packageName, targetHost, targetPort)) {
+            for(let i=0; i<installed.length; i++) {
+                if (await uninstall(installed[i].packageName, targetHost, targetPort)) {
                     return true;
                 } else {
                     return false;
                 }
-            });
-            return true;
+            }
         } catch (err) {
             console.error('error uninstalling extension on gateway - ' + err.message);
             throw err;

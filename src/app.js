@@ -1,6 +1,7 @@
 const appconf = require('./config/app');
 const f5Gateway = require('./config/f5apigateway');
 const path = require('path');
+const serveIndex = require('serve-index');
 
 import express from 'express';
 import logger from 'morgan';
@@ -32,8 +33,9 @@ app.use('/api-docs',
     })
 );
 //app.use('/static', express.static(path.join(__dirname, '../static')));
-app.use('/html', express.static(path.join(__dirname, '../')));
-
+app.use('/html', express.static(path.join(__dirname, '../')), serveIndex(path.join(__dirname, '../'), {'icons': false}));
+console.log('adding /storage route for ' + appconf.extension_storage_path);
+app.use('/storage', express.static(appconf.extension_storage_path), serveIndex(appconf.extension_storage_path, {'icons': false}));
 // default route handlers
 app.use((req, res, next) => {
     const error = new Error('Not found');

@@ -12,7 +12,8 @@ const f5_api_gw_cert_uri = f5_api_gw_base_uri + '/mgmt/shared/device-certificate
 const f5_api_gw_upload_uri = f5_api_gw_base_uri + '/mgmt/shared/file-transfer/uploads';
 const f5_api_gw_extensions_uri = f5_api_gw_base_uri + '/mgmt/shared/iapp/package-management-tasks';
 const f5_api_gw_proxy_url = f5_api_gw_base_uri + '/mgmt/shared/TrustedProxy';
-const f5_api_gw_trusted_device_url = f5_api_gw_base_uri + '/mgmt/shared/TrustedDevices';
+const f5_api_gw_trusted_devices_url = f5_api_gw_base_uri + '/mgmt/shared/TrustedDevices';
+const f5_api_gw_trusted_extensions_url = f5_api_gw_base_uri + '/mgmt/shared/TrustedExtensions';
 const f5_bigip_base_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port; }
 const f5_bigip_device_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port + '/mgmt/shared/identified-devices/config/device-info'; }
 const f5_bigip_cert_uri = (bigip_host, bigip_port) => { return 'https://' + bigip_host + ':' + bigip_port + '/mgmt/shared/device-certificates'; }
@@ -45,7 +46,8 @@ module.exports = {
     f5_api_gw_upload_uri: f5_api_gw_upload_uri,
     f5_api_gw_extensions_uri: f5_api_gw_extensions_uri,
     f5_api_gw_proxy_url: f5_api_gw_proxy_url,
-    f5_api_gw_trusted_device_url: f5_api_gw_trusted_device_url,
+    f5_api_gw_trusted_devices_url: f5_api_gw_trusted_devices_url,
+    f5_api_gw_trusted_extensions_url: f5_api_gw_trusted_extensions_url,
     f5_bigip_base_uri: f5_bigip_base_uri,
     f5_bigip_device_uri: f5_bigip_device_uri,
     f5_bigip_cert_uri: f5_bigip_cert_uri,

@@ -1,11 +1,8 @@
 /*jslint es6 */
 "use strict";
 
-import Device from './devices.model';
 import devicesController from './devices.controller';
-import {
-    watchFile
-} from 'fs';
+import deploymentsController from '../deployments/deployments.controller';
 
 const f5Gateway = require('../../../config/f5apigateway');
 const request = require('request');
@@ -57,6 +54,7 @@ const syncTrustedDevices = (targetHost, targetPort) => {
                             knownDevices.map((knownDevice) => {
                                 if (knownDevicesIndx.hasOwnProperty(knownDevice.targetHost + ':' + knownDevice.targetPort)) {
                                     console.log('removing known device ' + knownDevice.targetHost + ':' + knownDevice.targetPort + ' which is not trusted by the gateway.');
+                                    deletePromises.push(deploymentsController.removeDeviceById(knownDevice.id));
                                     deletePromises.push(devicesController.removeById(knownDevice.id));
                                 }
                             });
@@ -78,7 +76,7 @@ const syncTrustedDevices = (targetHost, targetPort) => {
 const addDeviceToASG = (targetHost, targetPort, targetUsername, targetPassphrase) => {
     return new Promise((resolve) => {
         const get_options = {
-            url: f5Gateway.f5_api_gw_trusted_device_url,
+            url: f5Gateway.f5_api_gw_trusted_devices_url,
             json: true
         };
         request.get(get_options, (err, resp, body) => {
@@ -99,7 +97,7 @@ const addDeviceToASG = (targetHost, targetPort, targetUsername, targetPassphrase
             };
             existingDevices.push(newDevice);
             const create_options = {
-                url: f5Gateway.f5_api_gw_trusted_device_url,
+                url: f5Gateway.f5_api_gw_trusted_devices_url,
                 body: {
                     "devices": existingDevices
                 },
@@ -122,7 +120,7 @@ const addDeviceToASG = (targetHost, targetPort, targetUsername, targetPassphrase
 const removeDeviceFromASG = (targetHost, targetPort) => {
     return new Promise((resolve) => {
         const get_options = {
-            url: f5Gateway.f5_api_gw_trusted_device_url,
+            url: f5Gateway.f5_api_gw_trusted_devices_url,
             json: true
         };
         request.get(get_options, (err, resp, body) => {
@@ -137,7 +135,7 @@ const removeDeviceFromASG = (targetHost, targetPort) => {
                 }
             });
             const post_options = {
-                url: f5Gateway.f5_api_gw_trusted_device_url,
+                url: f5Gateway.f5_api_gw_trusted_devices_url,
                 body: {
                     "devices": newDevices
                 },

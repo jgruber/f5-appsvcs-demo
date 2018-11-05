@@ -5,11 +5,11 @@ export const devicesRouter = express.Router();
 
 devicesRouter
     .route('/:id/proxy*')
-    .get(usersServices.isAuthenticated, devicesController.get)
-    .post(usersServices.isAuthenticated, devicesController.post)
-    .put(usersServices.isAuthenticated, devicesController.put)
-    .patch(usersServices.isAuthenticated, devicesController.patch)
-    .delete(usersServices.isAuthenticated, devicesController.del)
+    .get(devicesController.get)
+    .post(devicesController.post)
+    .put(devicesController.put)
+    .patch(devicesController.patch)
+    .delete(devicesController.del)
 
 devicesRouter
     .route('/:id')
