@@ -28,9 +28,9 @@ const syncTrustedDevices = (targetHost, targetPort) => {
             const updatePromises = [];
             devicesController.getAll()
                 .then((knownDevices) => {
-                    
+
                     const knownDevicesIndx = {};
-                    if(!Array.isArray(knownDevices)) {
+                    if (!Array.isArray(knownDevices)) {
                         knownDevices = [];
                     }
                     knownDevices.map((knownDevice) => {
@@ -262,6 +262,43 @@ const proxyDeleteThroughASG = (uri, targetHost, targetPort, headers) => {
 }
 
 export default {
+    async awaitGateway() {
+
+        const pollForDeviceInfo = () => {
+            return new Promise((resolve) => {
+                try {
+                    const deviceInfoOptions = {
+                        url: f5Gateway.f5_api_gw_device_uri,
+                        json: true
+                    }
+                    request.get(deviceInfoOptions, (err, resp, body) => {
+                        if (err) {
+                            resolve(false);
+                        }
+                        if (resp.statusCode > 399) {
+                            resolve(false);
+                        }
+                        if (resp.statusCode == 200) {
+                            resolve(true);
+                        }
+                    });
+                } catch (err) {
+                    resolve(false);
+                }
+            });
+        }
+
+        let retries = 100;
+        while ((!await pollForDeviceInfo()) && retries > 0) {
+            retries -= 1;
+            await wait(2000);
+        }
+        if (retries > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    },
     async createTrustedDevice(targetHost, targetPort, targetUsername, targetPassphrase) {
         const existingDevice = await devicesController.getByTargetHostAndTargetPort(targetHost, targetPort);
         if (!existingDevice) {
