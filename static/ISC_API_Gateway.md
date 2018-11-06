@@ -2657,7 +2657,7 @@ One of our primary goals was to eliminate the TMOS authentication and authorizat
 
 For ease of demonstration, our application uses a simple HTTP BASIC authentication strategy.
 
-Our application is clever enough to only require a password after the first user has been created through the API by issuing a `POST` request to the `/api/users` API endpoint. When the first user is created, that user automatically is give the *User Administrator* role, which can then create other users and change their roles. 
+Our application is clever enough to only require a password after the first user has been created through the API by issuing a `POST` request to the `/api/users` API endpoint. When the first user is created, that user automatically is given the *User Administrator* role, which can then create other users and change their roles. 
 
 Scroll down in our OpenAPI interface to the `POST /users` GUI widget. Expand the widget and using the `Try it out` button, create our first user by using the example input supplied and clicking the blue `Execute` bar. This will create the `admin` user with the password `F5RocksAPIs!`.
 
@@ -2678,14 +2678,36 @@ Neat! This OpenAPI stuff is pretty cool.
 
 ---
 
-Since we have created the first user, the application is built to require all further access to `/api/users` or `/api/deployments` endpoints to require HTTP BASIC authentication. The OpenAPI UI makes this easy by giving a way to include the HTTP BASIC authentication headers in all browser XHR requests. Look for the `Authorize` button above the API endpoint widgets. Click the `Authorize` button and fill in the credentials for your `admin` user with the `F5RocksAPIs!` password. 
+Since we have created the first user, the application is built to require all further access to `/api/users`, `/api/{userId}`,`/api/deployments`, `/api/deployments/{deploymentId}`,`/api/devices`, `/api/devices/{deviceId}`, and `/api/extensions/{extensionId}` endpoints be protected with HTTP BASIC authentication.
+
+The OpenAPI UI makes this easy by giving a way to include the HTTP BASIC authentication headers in all browser XHR requests. Look for the `Authorize` button above the API endpoint widgets. Click the `Authorize` button and fill in the credentials for your `admin` user with the `F5RocksAPIs!` password. 
 
 ![Add credentials](./assets/images/f5-apps-openapi-app-input-credentials.png)
 
+---
+***How Do I Add Security to Micro Services?***
 
-Notice that the *roles* associated with our users are defined by the application. The *roles* have nothing to do with TMOS roles. There are open and closed source micro services middleware and API security products available which restrict API endpoint access and force full IAM RBAC. We can add those services through either our application framework's middleware interfaces or with by force traffic through a security proxy using our container orchestrator. For TMOS device orchestration, we are *not* concerned wtih providing framework middleware or containerized proxies. Our job is to provision services on TMOS devices. *Separation of Concerns* is a very importand thing to implement in micro services. We play our role.
+There are open and closed source micro services middleware and API security products available which restrict API endpoint access in many ways. This includes adding authentication and authorization services. 
 
-Our example application has a primitive tag based roles system. A user account aquires a role by having the user's `roles` attribute include the role tag name. Our example application has only two roles:
+API security services can be added by:
+
+1) inclusion in your application code as middleware
+
+or 
+
+2) forcing request and response traffic through a security proxy using our container orchestrator
+
+The *Passport JS* authentication service in our application utilizes *node express'* middleware interfaces. We directly included the *Passport JS* request and response processing in our application code. The OpenAPI schema validation is also included as application middleware. Many applications *chain* together request and response middleware to integrate into ecosystems.
+
+[istio](https://istio.io/) and [F5 Apen Mesh](https://aspenmesh.io/) are examples of products where the container orchestrator is used to force access to micro services through a security proxy. This appoach is also known as having *sidecar* containers. There is a vibrant market place emerging for such *sidecar* containers. The emergence is closely linked to containerized deployment orchestration, as it is the orchestrator which typically deploys the services in a way which forces the traffic through the *sidecar*.
+
+For TMOS device orchestration, we are *not* concerned wtih providing framework middleware or containerized proxies which restrict access to provisioning BIG-IPs. Our job is to make the provisioning of services on our devices as simple as possible. *Separation of concerns* is a very importand thing to implement in micro services. We play our role, others play theirs.
+
+___
+
+Notice that the *roles* associated with our users are defined by the application. The *roles* have nothing to do with TMOS roles. 
+
+Our example application has a primitive tag based roles system. A user account aquires a role by having the user's `roles` attribute include the role's tag name. Our example application has only two roles:
 
 ---
 | Role Tag      | Explanation                                                               |
@@ -2705,12 +2727,14 @@ See if you can't figure out how to make the `PUT` request to the `/users/{userId
 
 **Step 5. Using iControl LX Extensions in Our Application**
 
-Before we start making iControl REST requests through the API Services Gateway, we still need to simplify many aspects of dealing with TMOS devices and extensions. We created a set of iControl LX extensions to do that, so why not use them as part of our micro servies orchestration. When you first started the application there was a fury of iControl REST calls which took place between the application container and the API Services Gateway. Scroll down to the `GET` `/extensions` API endpoint. List the iControl LX extensions our application has already loaded. 
+Before we start making iControl REST requests through the API Services Gateway, we still need to simplify many aspects of dealing with TMOS devices and extensions. We created a set of iControl LX extensions to do that, so why not use them as part of our micro servies orchestration. 
+
+When you first started the application there was a fury of iControl REST calls which took place between the application container and the API Services Gateway. Scroll down to the `GET` `/extensions` API endpoint. List the iControl LX extensions our application has already loaded. See if you don't recognize them.
 
 ![List Gateway Extensions](./assets/images/f5-apps-openapi-app-extensions-get.png)
 
 
-Notice our little toolkit of extensions were loaded from file URLs into the API Servies Gateway. iControl LX extensions become the building blocks of larger orchestrations.
+Notice our little toolkit of extensions were loaded from file URLs into the API Services Gateway. **iControl LX extensions become the building blocks of larger orchestrations.** If you don't understand that by now, we've failed you!
 
 Scroll back up to the `/deployments` API endpoints.
 
@@ -2718,9 +2742,11 @@ Scroll back up to the `/deployments` API endpoints.
 
 Our application is going to tie all three of our iControl LX extensions, TrustedDevices, TrustedProxy, and TrustedExtensions, from our previous exercises together into one simplified API user experience. 
 
-We are going to define a `Deployment` of BIG-IPs. Each deployment will have an `id` and `name` attribute to help us identify them. A `Deployment` will also have a list of BIG-IP targets to establish trust. Our `Deployment` will allow you to input a list of `url` attributes for iControl LX extensions which will be downloaded to our services, uploaded to the `Deployment's` BIG-IP targets, and installed. Once a `Deployment` is created, anyone can use either the `/api/deployments/{deploymentId}/proxy/` or the `/api/devices/{deviceId}/proxy/` API endpoints to issue iControl REST calls to our trusted BIG-IP devices.
+We are going to define a `deployment` of BIG-IPs. Each deployment will have an `id` and `name` attribute to help us identify them. A `deployment` will also have a list of BIG-IP targets to establish trust. Our `deployment` will allow you to input a list of `url` attributes for iControl LX extensions which will be downloaded to our services, uploaded to the `deployment's` BIG-IP targets, and installed. 
 
-In our application, we've decided that no authentication or roles are requires to issue iControl REST requests to trusted BIG-IPs through either the `/api/deployments/{deploymentId}` or `/api/devices/{deviceId}` API endpoints. It's not what you would want to do in real life, but it's making the point that the concern for TMOS secured access is provided by integrating our application with the API Services Gateway!
+Once a `deployment` is created, anyone can use either the `/api/deployments/{deploymentId}/proxy/{iControlRestURIEndpoint}` or the `/api/devices/{deviceId}/proxy/{iControlRestURIEndpoint}` API endpoints to issue iControl REST calls to our trusted BIG-IP devices as the TMOS Administrator role on the BIG-IP. These calls can be done without authentication or authorization.
+
+In our application, we've decided that no authentication or roles are requires to issue iControl REST requests to trusted BIG-IPs. It is not what you would do in real life, but it's making the point that the concern for TMOS secured access is provided by integrating our application with the API Services Gateway. Application Middleware or sidecar proxies can be added to our ecosystem of sevices to properly restrict access to roles defined within the ecosystem, not TMOS.
 
 The various models and objects defined in our OpenAPI schema for our application can be examined here:
 
@@ -2754,21 +2780,19 @@ Chances are, without looking at the schema or knowing much about BIG-IPs, you ca
 
 Fill in the IP address(es) and port(s) for the BIG-IP(s) you want to add to your deployment. List only the ones you wanted included. Creating a trusted device requires the `targetUsername` and `targetPassphrase` attributes. Once the trust is established with the API Servies Gateway, the TMOS credentials are not stored in the application nor on the API Services Gateway. We loose concern for them.
 
-You can leave the AS3 `url` attributed in the example `extensions` list of your `/api/deployments` `POST`.  Make sure and clean up the rest of the example, removing anything that would not be correct for your deployment. 
+You can leave the AS3 `url` attributed in the example `extensions` list of your `/api/deployments` `POST`. Make sure and clean up the rest of the example, removing anything that would not be correct for your deployment. 
 
-If you follow the example deployment, trust will be established between the API Services Gateway and the specified devices. The AS3 iControl LX extension will be downloaded to our application, uploaded to the trusted devices, and installed on each device in the deployment. We made this process sychronous. AS3 is huge, weighing in at almost 50M bytes. It's a good stress test for uploading and install timing.
+If you follow the example deployment, trust will be established between the API Services Gateway and the specified devices. The AS3 iControl LX extension will be downloaded to our application, uploaded to the trusted devices, and installed on each device in the deployment. We made this process sychronous. AS3 is huge, weighing in at almost 50M bytes. It's a good stress test for syncrhonous uploading and install timing.
 
-After editing the content of the `POST` request, submit the request to create a deployment.
+After editing the content of the `POST` request, submit your request to create your deployment.
 
 ![Creating a Deployment](./assets/images/f5-apps-openapi-app-deployments-post.png)
 
 Navigate to the `PUT` `/api/deployments/{deploymentId}` endpoint. You can use this endpoint to update your deployment. If you remove a trusted device, the deployment will no longer include that device. However, if that device was also a member of a different deployment, the trust will remain on the API Services Gateway. You can also choose to add or remove extensions by URL to a deployment through the `PUT` `/api/deployments/{deploymentId}` API endpoint.
 
-While we are not adding security in our example, it is important to note that security boundaries are often enforced by URL namespaces. Having a means to anchor methods on a specific set of devices is a great way to design for API security.
+While we are not adding security in our example, it is important to note that security boundaries are often enforced by URL namespaces. Having a means to anchor methods on a specific set of devices is a great way to design for furture API security.
 
-Navigate to the `DELETE` `/api/deployments/{deploymentId}` API endpoint. A deployment can quickly be discarded. Again, if devices joined to a deployment are present in other deployments, they will remain trusted on the API Services Gateway. Only then a device is no longer in any deployments will the `DELETE` `/api/deployments/{deploymentId}` API endpoint remove the extensions and the device trust from the API Services Gateway.
-
-So far every API endpoint associated with the API Services Gateway has required authentication and the authenticated use to have the `BIGIP Administrator` role. 
+Navigate to the `DELETE` `/api/deployments/{deploymentId}` API endpoint. A deployment can quickly be discarded. Again, if devices joined to a deployment are present in other deployments, they will remain trusted on the API Services Gateway. Only when a device is no longer in any deployments will the `DELETE` `/api/deployments/{deploymentId}` API endpoint remove the extensions from any trusted devices and remove the device trust from the API Services Gateway.
 
 **Step 7. Exploring Trusted Devices**
 
@@ -2778,6 +2802,10 @@ Scroll down the page until you see the `GET` `/api/devices` API endpoint. This e
 
 Scroll down the page until you see the `GET` `/api/extensions` API endpoint. This enpoint will help you inventory which extensions have previously been downloaded into our application. Once they are available in the application, that specific verison of our iControl LX extension does not need to be downloaded again.
 
+We looked at this endpoint before to show you what got installed to the API Services Gateway when our application started. This time we emphasize the endpoint as a way to inventory your ecosystem from other services.
+
+So far every API endpoint in our application has required authentication with a user with the `BIGIP Administrator` role. 
+
 ### Exercise #12 - Making Trusted iControl REST Request to Remote BIG-IPs
 
 **Step 9. Make a Trusted iControl REST Request to All Devices in A Deployment**
@@ -2786,13 +2814,13 @@ Issuing iControl REST requests to trusted devices through our application requir
 
 Let's perform some iControl REST requests which you might want to invoke on whole deployments of BIG-IPs at the same time. You can probably imagine many tasks which regularly need to be done on sets of BIG-IPs as part of regular operations. Let's select tasks that would likely require data from another part of your ecosystem. Most SDN controllers dynamically generate and manage VLANs. Let's manage a VLAN on multiple BIG-IPs at once through our deployment.
 
-To cememnt our understanding, let's assume that a Cisco APIC SDN controller dynamically provisions a VLAN with segmentation ID `2018` which needs to be bound to every BIG-IP in our deployment on interface 1.2.
+To cememnt our understanding, let's assume that a Cisco APIC SDN controller dynamically provisions a VLAN with segmentation ID `2018` which needs to be bound to every BIG-IP in our deployment on interface 1.1.
 
 The iControl REST API endpoint to manage VLANs is `/mgmt/tm/net/vlan`. Let's start by listing our VLANs on all devices in our deployment using `GET` `/api/deployments/{deploymentId}` API endpoint.
 
 ![Listing VLANs](./assets/images/f5-apps-openapi-app-deployments-icontrol-list-vlans.png)
 
-Notice the deployment is returned as an list of responses with an `id` attributes matching the trusted device `id`, `status` attribute representing the HTTP status code returned from our request, `responseHeaders` attribute which details the headers returned from the request, and a `body` attribute which is the request response.  
+Notice the deployment is returned a list of responses with an `id` attributes matching the trusted device `id`, `status` attribute representing the HTTP status code returned from our request, `responseHeaders` attribute which details the headers returned from the request, and a `body` attribute which is the request response.
 
 We can then use the `POST` `/api/deployments/{deploymentId}` API endpoint to create the VLAN on each trusted device. 
 
@@ -2803,7 +2831,7 @@ Again, the iControl REST API enpoint to manage VLANs is `/mgmt/tm/net/vlan`. Her
 	"name": "apic2018",
 	"tag": "2018",
 	"interfaces": [{
-		"name": "1.2",
+		"name": "1.1",
 		"tagged": true
 	}]
 }
@@ -2811,7 +2839,7 @@ Again, the iControl REST API enpoint to manage VLANs is `/mgmt/tm/net/vlan`. Her
 
 ![creating a VLAN on multiple BIG-IPs](./assets/images/f5-apps-openapi-app-deployments-icontrol-create-vlans.png)
 
-To complete the lifecycle of our VLAN management, when we need demonstrate removing the VLAN. We can use the `DELETE` `/api/deployments/{deploymentId}`. You will need the `fullPath` attribute from our VLAN modifying the path slashes with tildas (`~`). That is iControl REST's URL namespace syntax. 
+To complete the lifecycle of our VLAN management, when we need remove the VLAN from our BIG-IPs. We can use the `DELETE` `/api/deployments/{deploymentId}`. You will need the `fullPath` attribute from our iControl REST returned VLAN replacing the path slashes with tildas (`~`). That is iControl REST's URL namespace syntax, don't blame us.
 
 ![Removing a VLAN on multiple BIG-IPs](./assets/images/f5-apps-openapi-app-deployments-icontrol-delete-vlans.png)
 
@@ -2823,15 +2851,21 @@ For completeness we will issue an iControl REST request to a single device. Navi
 
 ![Making iControl REST Request to a Single Trusted Device](./assets/images/f5-apps-openapi-app-devices-icontrol-get-device-info.png)
 
-Most provisioning tasks are trusted device specific. This means the majority of the iControl REST requests will be made though the `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoints.
+Most iControl REST provisioning tasks are device specific. This means the majority of the iControl REST requests will be made though the `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoints, not to a deployment of multiple BIG-IPs.
 
-Because requests made to the `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoints are made to specific iControl REST API endpoints on a trusted device, the HTTP status code, response headers, and body are directly proxied to the client. What you see as a status code, response headers, and body returned to your client is exactly what was recieved from the trusted request. Sticking to this direct proxy pattern will make the migration of existing iControl REST applications into part of our micro services orchestration ecosystem easier.
+Because requests made to the `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoints are issued to specific iControl REST API endpoints on specific device, the HTTP status code, response headers, and body are directly proxied to the client. What you see as a status code, response headers, and body returned to your client is exactly what was recieved device.
+
+Sticking to this direct proxy pattern will make the migration of existing iControl REST applications easier as the responses through our application are the same as they would be with devices today. The request's simply need to be redirected to our application's `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` endpoints.
+
+As existing iControl REST applications are decomposed into containerized services, with proper separation of concerns, using a direct proxy pattern with the API Service Gateway makes it easier to add security middleware or sidecar proxies as well.
 
 ### Exercise #13 - Making Trusted Declarations without Concern for TMOS Roles
 
 **Step 11. Make a Declaration to A Devices in A Deployment**
 
-What good would our examples be if we didn't come full circle and issue a declaration without concern for TMOS roles? Make sure you have included AS3 ny `url` in the `extensions` attribute of your deployment. Let's issue an AS3 declaration to a specific device using the `POST` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint.
+What good would our examples be if we didn't come full circle and issue a declaration without concern for TMOS roles? Make sure you have previously included the AS3 url in the `url` list of the `extensions` attribute of your deployment. 
+
+Let's issue an AS3 declaration to a specific device using the `POST` `/devices/{deviceId}/proxy{iControlRestURIEndpoint}` API endpoint.
 
 We will deploy the sample AS3 declaration from the [AS3 clouddocs example](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/userguide/composing-a-declaration.html#sample-declaration).
 
@@ -2900,7 +2934,7 @@ If you want you can go back to `DELETE` on the `/deployments/{deploymentId}` API
 
 The is just one more thing to do, stop your micro services.
 
-Use the docker-compose orchestrator to remove our micro services. We will start our docker containers by issueing the up command in our home directory.
+Use the docker-compose orchestrator to remove our micro services. We will remove our docker containers by issueing the down command in our home directory.
 
 ```
 f5admin@containerhost:~$ docker-compose down
