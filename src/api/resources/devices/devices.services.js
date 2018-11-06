@@ -28,11 +28,10 @@ const syncTrustedDevices = (targetHost, targetPort) => {
             const updatePromises = [];
             devicesController.getAll()
                 .then((knownDevices) => {
-
-                    const knownDevicesIndx = {};
-                    if (!Array.isArray(knownDevices)) {
+                    if ((!knownDevices) || (!(Array.isArray(knownDevices)))) {
                         knownDevices = [];
                     }
+                    const knownDevicesIndx = {};
                     knownDevices.map((knownDevice) => {
                         knownDevicesIndx[knownDevice.targetHost + ':' + knownDevice.targetPort] = knownDevice;
                     });
