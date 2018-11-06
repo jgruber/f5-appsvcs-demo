@@ -60,12 +60,12 @@
 <p>The <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a> is a docker built container which runs both the iControl REST framework (restjavad) and the iControl LX extension framework (restnoded). </p>
 <p>The API Services Gateway container allows for the installation and operation of iControl LX extensions outside of a BIG-IP.  This enables opportunities for F5, or our customers and partners who are familiar with the iControl LX extensions framework, to run complex iControl REST orchestration workflows in a container, rather then consuming resources on their BIG-IP&#39;s control planes.</p>
 <p>In addition to housing iControl LX extensions, the API Services Gateway can be used to create trusted device groups. These device groups establish a certificate based trust between the container and remote BIG-IP devices. Local iControl LX extensions, running within container, can make signed iControl REST requests to peer BIG-IP device without providing TMOS credentials or establishing separate iControl REST session tokens. </p>
-<p>Typically iControl REST requires the establishment of a disticnt session token with each device. The aquistion of the token requires knowledge of a TMOS username and password which is valid for the remote BIG-IP device. For iControl REST based orchestration projects this has meant the proliferation of TMOS credentials throughout all services requiring access to the BIG-IPs. Too often, these credentials hold TMOS Administrator privledges because of the nature of the iControl REST requests being made. These same TMOS credentials could be use to access the XUI GUI or SSH terminal sessions. An unintended consequence of orchestration has been the expose of TMOS systems to the risk of <em>&#39;leaked&#39;</em> credentials.</p>
-<p>With the API Services Gateweay, trusted REST calls are signed by the container and the signature is validated on the remote target BIG-IP. If the signature is issued from a member of our trusted device group, the request is carried out with Administrator role permissions on the remote BIG-IP. This is the same process and security used to synchronize configurations between peer TMOS devices. The API Service Gateway thus premits a division of labor where, once a BIG-IP administration process creates the device trust with BIG-IP credentials, other subsequent processes running within the container can be trusted to make iControl REST requests without being concerned with TMOS credentials. This confines the requirement for TMOS credentials to only the API Service Gateway, and then only for the processes of creating the device trust group.</p>
+<p>Typically iControl REST requires the establishment of a distinct session token with each device. The acquisition of the token requires knowledge of a TMOS username and password which is valid for the remote BIG-IP device. For iControl REST based orchestration projects this has meant the proliferation of TMOS credentials throughout all services requiring access to the BIG-IPs. Too often, these credentials hold TMOS Administrator privileges because of the nature of the iControl REST requests being made. These same TMOS credentials could be use to access the XUI GUI or SSH terminal sessions. An unintended consequence of orchestration has been the expose of TMOS systems to the risk of <em>&#39;leaked&#39;</em> credentials.</p>
+<p>With the API Services Gateway, trusted REST calls are signed by the container and the signature is validated on the remote target BIG-IP. If the signature is issued from a member of our trusted device group, the request is carried out with Administrator role permissions on the remote BIG-IP. This is the same process and security used to synchronize configurations between peer TMOS devices. The API Service Gateway thus permits a division of labor where, once a BIG-IP administration process creates the device trust with BIG-IP credentials, other subsequent processes running within the container can be trusted to make iControl REST requests without being concerned with TMOS credentials. This confines the requirement for TMOS credentials to only the API Service Gateway, and then only for the processes of creating the device trust group.</p>
 <p><img src="./assets/images/what_is_the_api_gateway_container.png" alt="What is the API Services Gateway Container"></p>
 <p><em>The API Services Gateway container is not a generalized API security proxy.</em> It is simply a way of extending our integration options in a cloud native way.</p>
 <p>In fact, utilizing the API Services Gateway container to establish trusts removes the need for F5 security on each iControl REST call to remote BIG-IPs. When the F5 security is removed from individual requests, third party security should be used to enforce proper access controls to provision BIG-IP services. Securing access to API endpoints is a major role which is already provided for in most service ecosystems. The API Services Gateway increases the ease of integration for provisioning F5 services to an ecosystem, but then relies on the ecosystem&#39;s native security to authorize requests made to the gateway container.</p>
-<p><strong>Note:</strong> The iControl LX extension framework is purpose built to service the orchestration of iControl REST calls issued to TMOS devices. It is <em>NOT</em> suitable as a generalized middleware framework. The iControl LX extension framework filters inbound requests in ways that make it impossible to implement common middleware schemes; such as the injection of identity tokens or anti-tampering measures. The intention of the iControl LX extension framework is to interact with TMOS deviecs, not external systems. The API Services Gateway container is intended to be used with other linked containers which facilitate interaction with other external systems as part of a micro-services deployment.</p>
+<p><strong>Note:</strong> The iControl LX extension framework is purpose built to service the orchestration of iControl REST calls issued to TMOS devices. It is <em>NOT</em> suitable as a generalized middleware framework. The iControl LX extension framework filters inbound requests in ways that make it impossible to implement common middleware schemes; such as the injection of identity tokens or anti-tampering measures. The intention of the iControl LX extension framework is to interact with TMOS devices, not external systems. The API Services Gateway container is intended to be used with other linked containers which facilitate interaction with other external systems as part of a micro-services deployment.</p>
 <p>The API Services Gateway container is available with community support. As the intention of the container is to become F5&#39;s component in a ecosystem of deployed services. The supportability of the complete orchestration would naturally be beyond F5&#39;s scope. We only handle our part of the overall orchestration.</p>
 <p><img src="./assets/images/our_part_of_the_orchestration.png" alt="Our Part in the Orchestration Ecosystem"></p>
 <h2 id="what-is-the-as3-container-">What is the AS3 Container?</h2>
@@ -85,7 +85,7 @@
 <p><a href="https://clouddocs.f5.com/products/iapp/iapp-lx/tmos-14_0/">iControl LX Documentation</a> is part of the clouddocs.f5.com effort.</p>
 <p>We will not discuss iApps  LX graphical presentations, only the API extensions made available with iControl LX.</p>
 <p>Just because a framework exists, like iControl LX extensions, does not mean that the API endpoints exposed by that framework are easy to use. To that end, F5 began to follow a trend in orchestrated provisioning known as <em>&#39;declarative interfaces&#39;</em>. In general, declarative interfaces no longer require the end user to understand the stages and processes by which a system achieves a deployment, but rather simply defines the end service state of a system. </p>
-<p>Here is a an example of a YAML declarative deployment for a containerized proxy using the Kubernetes orchestrator.</p>
+<p>Here is a an example of a YAML declarative deployment for a containerized proxy using the kubernetes orchestrator.</p>
 <pre><code class="language-YAML">apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -136,10 +136,10 @@ spec:
 <p>When complex orchestration tasks can be built into standalone micro services, supported containers, like the AS3 container, can become the release packaging. The AS3 container is an example of a standalone micro service just for AS3. Another example of a proposed standalone micro service we are considering, is a container build which unifies the creation and auto-scaling of TMOS VEs in multiple cloud environments. The intent for all such future standalone container builds is to provide simple <em>&#39;run and then use&#39;</em> orchestrations.</p>
 <p>All of our declarative APIs and micro service container builds follow the same aggressive development process. Our aim is to be able to provide the simplicity necessary for F5 services to function well in orchestrated environments at the agile pass of our customer&#39;s cloud native deployments. </p>
 <h2 id="deep-integration-into-an-orchestration-ecosystem">Deep Integration into an Orchestration Ecosystem</h2>
-<p>When declarative iControl LX services are deployed on existing TMOS platforms, they inherit TMOS&#39; system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS&#39; lack of support for cloud native identity systems, TMOS&#39; notions of roles, and the inflexibility of TMOs&#39; tenancy model make integration in the increasingly opinionated world of cloud orchestation extremely cumbersome.</p>
+<p>When declarative iControl LX services are deployed on existing TMOS platforms, they inherit TMOS&#39; system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS&#39; lack of support for cloud native identity systems, TMOS&#39; notions of roles, and the inflexibility of TMOs&#39; tenancy model make integration in the increasingly opinionated world of cloud orchestration extremely cumbersome.</p>
 <p><img src="./assets/images/bigip_no_oauth_support.png" alt="BIG-IP does not support customers identity or roles services"></p>
 <p>When TMOS forces the exposure of BIG-IP concepts to cloud service API tenants, we are not properly observing <em>&#39;separation of concerns&#39;</em> for our customers. The cloud won&#39;t change for F5, F5 needs to change for the cloud.</p>
-<p>In the past F5 has tried to accommodate specific partner ecosystem deployments, for example Cisco APIC or OpenStack Neutron. We did this by creating dedicated agent processes which work inside of the partner&#39;s controllers to <em>translate</em> requests into the workflows needed to provision BIG-IPs. Partner feature dependencies and multiple version testing have proven extremely fragile and complex to maintain.  Fortunately, the technology world had the same problem we did, that of supporting the lifecycle of their sofrware in the diversity of cloud services. A better way to handle software deployments in complex ecosystems based on process virtualization has take over our industry. <em>Containerization</em>!</p>
+<p>In the past F5 has tried to accommodate specific partner ecosystem deployments, for example Cisco APIC or OpenStack Neutron. We did this by creating dedicated agent processes which work inside of the partner&#39;s controllers to <em>translate</em> requests into the workflows needed to provision BIG-IPs. Partner feature dependencies and multiple version testing have proven extremely fragile and complex to maintain.  Fortunately, the technology world had the same problem we did, that of supporting the life cycle of their software in the diversity of cloud services. A better way to handle software deployments in complex ecosystems based on process virtualization has take over our industry. <em>Containerization</em>!</p>
 <p>What can F5 do to enable deep integration now that ubiquitous containerization has become available in our customer&#39;s environments?</p>
 <p><em>We create our own containers which hides as many of the complexities of integrating with TMOS platforms as possible. That is the reason for the generalized <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a>. The API Service Gateway container can be integrated into micro service based controllers in ways that make orchestrated provisioning of TMOS devices appear native to the customer&#39;s services. Because of containerization, we can combine the simplicity of our new iControl LX extension declarative APIs with partner ecosystems services without forcing a costly and fragile deployment of one-off, ecosystem specific F5 agents.</em> </p>
 <h3 id="the-api-service-gateway-manifesto">The API Service Gateway Manifesto</h3>
@@ -209,7 +209,7 @@ spec:
 <p>You can Obtain the IP address of your booted F5 Container Demonstration Virtual Device by opening its console. </p>
 <p><img src="./assets/images/f5_container_demonstration_virtual_device_console.png" alt="F5 Container Demonstration Virtual Device Console"></p>
 <p>In this example, the IP address would be 192.168.185.129. Your address will likely be different.</p>
-<p>If the Host entry IP address is blank, please assure your network interface is properly conntected to a network.</p>
+<p>If the Host entry IP address is blank, please assure your network interface is properly connected to a network.</p>
 <div class='webcontent'>
 
 <p>Fill in the form below to create your cut-n-paste examples for these exercises.</p>
@@ -218,7 +218,7 @@ spec:
 <thead>
 <tr>
 <th align="left">Attribute</th>
-<th align="left">Explaination</th>
+<th align="left">Explanation</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -234,7 +234,7 @@ spec:
 <td align="left">The iControl REST username on the remote BIG-IP</td>
 </tr>
 <tr>
-<td align="left">targetPaaphrase</td>
+<td align="left">targetPassphrase</td>
 <td align="left">The iControl REST password on the remote BIG-IP</td>
 </tr>
 </tbody></table>
@@ -357,7 +357,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
 }'|json_pp
 `;
 
-    var command_header = `<h4>cut-n-pase command:</h4><code>
+    var command_header = `<h4>cut-n-paste command:</h4><code>
     <div style='white-space: pre; font-weight: bold; display: block; border: 1px solid #ccc; border-radius: 0; margin: 0 0 11px; padding: 10.5px;background-color: #f5f5f5;'>`;
     var command_footer = `</div></code>`;
     var sample_header = `<pre>`;
@@ -424,7 +424,7 @@ Status: Downloaded newer image for f5devcentral/f5-as3-container:latest
 CONTAINER ID        IMAGE                                  COMMAND             CREATED             STATUS              PORTS                                         NAMES
 478d06836ee3        f5devcentral/f5-as3-container:latest   &quot;/etc/runit/boot&quot;   8 seconds ago       Up 7 seconds        0.0.0.0:8080-&gt;80/tcp, 0.0.0.0:8443-&gt;443/tcp   as3_container
 </code></pre><h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
-<p><strong>Step 1. Vaidate the version of the AS3 iControl Extension in the AS3 Container</strong></p>
+<p><strong>Step 1. Validate the version of the AS3 iControl Extension in the AS3 Container</strong></p>
 <p>Issue an iControl REST GET request to the AS3 Container with URL ```/mgmt/shared/appsvcs/info``</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='get-as3-version'>
@@ -456,7 +456,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;</code></pre></div>
 
-<p>If you recieve no response output like this:</p>
+<p>If you receive no response output like this:</p>
 <div id='get-as3-existing-declaration-command-output'>
 
 <pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
@@ -641,7 +641,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 <p>You can Obtain the IP address of your booted F5 Container Demonstration Virtual Device by opening its console. </p>
 <p><img src="./assets/images/f5_container_demonstration_virtual_device_console.png" alt="F5 Container Demonstration Virtual Device Console"></p>
 <p>In this example, the IP address would be 192.168.185.129. Your address will likely be different.</p>
-<p>If the Host entry IP address is blank, please assure your network interface is properly conntected to a network.</p>
+<p>If the Host entry IP address is blank, please assure your network interface is properly connected to a network.</p>
 <div class='webcontent'>
 
 <p>Fill in the form below to create your cut-n-paste examples for these exercises.</p>
@@ -650,7 +650,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 <thead>
 <tr>
 <th align="left">Attribute</th>
-<th align="left">Explaination</th>
+<th align="left">Explanation</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -666,7 +666,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 <td align="left">The iControl REST username on the remote BIG-IP</td>
 </tr>
 <tr>
-<td align="left">targetPaaphrase</td>
+<td align="left">targetPassphrase</td>
 <td align="left">The iControl REST password on the remote BIG-IP</td>
 </tr>
 </tbody></table>
@@ -1017,7 +1017,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
 <p><em>If your remote BIG-IP does not have a <code>configsync-ip</code> set, please configure this before you continue.</em></p>
 <hr>
 <p>To illustrate every step needed to create device trusts, we will ignore the <code>BIGIP_LIST</code> ENV variable and the pre-installed <code>dockerContainers</code> and <code>dockerContainersLegacy116</code> device groups which the API Services Gateway team added to ease this concern.  We will create a new device group and establish trust step by step. We do this so you can learn not only how it works, but understand how to troubleshoot any problems you experence. </p>
-<p>Later we will create an iControl LX extension to allow the addition of tursted devices dynamically through a declarative interface!</p>
+<p>Later we will create an iControl LX extension to allow the addition of trusted devices dynamically through a declarative interface!</p>
 <p><strong>Step 2. Make a iControl REST POST request to add a tusted remote BIG-IP</strong></p>
 <p>You can name your device group any valid TMOS name. We will add a device group named <code>app1</code>.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -1047,7 +1047,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/app1&quot;
 }</code></pre></div>
 
-<p><strong>Note:</strong> <em>The request to create the device group required no authentication or authorization.</em> The API Services Gateway does not, by default, enforce any authentication model. This relieves us from that concern. In fact, we exposed both <code>80</code> and <code>443</code> TCP port from the contanier. We could issue all these requests without encryption too.  We will later mitigate these concerns by limiting network access to the API Service Gateway to only trusted containers on a private network. The idea of restricting access to services as a means to relieve concerns is a basic concept for container orchestrations. It is important to realize that removing concerns, even security concerns, is a goal at this phase of our development process.</p>
+<p><strong>Note:</strong> <em>The request to create the device group required no authentication or authorization.</em> The API Services Gateway does not, by default, enforce any authentication model. This relieves us from that concern. In fact, we exposed both <code>80</code> and <code>443</code> TCP port from the container. We could issue all these requests without encryption too.  We will later mitigate these concerns by limiting network access to the API Service Gateway to only trusted containers on a private network. The idea of restricting access to services as a means to relieve concerns is a basic concept for container orchestrations. It is important to realize that removing concerns, even security concerns, is a goal at this phase of our development process.</p>
 <p><strong>Note:</strong> If your customer would like to add the concern of <em>minimal security</em> to the API Services Gateway, they can enable the requirement for HTTP BASIC authentication for all requests. 
 The API Services Gateway includes an Apache web server, like TMOS does, which can implement the HTTP BASIC authentication scheme. You can config Apache to require <code>htpasswd</code> files (basic passwords) or to use LDAP queries to authenticate requests.</p>
 <p>The Apache configuration directives can be enabled by attaching <code>docker</code> volumes, which mount a directory containing your configuration files, or by building your own container based on the API Services Gateway. When building a container, the authentication configuration files are copied into the container&#39;s file system using the Dockerfile <code>COPY</code> directive.</p>
@@ -1139,7 +1139,7 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
     &quot;kind&quot;: &quot;shared:resolver:device-groups:devicegroupdevicecollectionstate&quot;,
     &quot;lastUpdateMicros&quot;: 1539013178610088,
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/app1/devices&quot;
-}</code></pre><p><strong>Note:</strong> The response shows two devices in our device group. One is the API Services Gatway with a state of <code>ACTIVE</code>. The other is our remote BIG-IP, which should also show its state as <code>ACTIVE</code>. You can continue to add remote BIG-IPs to the device group, thus enabling iControl LX extensions installed on the API Service Gateway to have many remote trusted BIG-IPs as request targets.</p>
+}</code></pre><p><strong>Note:</strong> The response shows two devices in our device group. One is the API Services Gateway with a state of <code>ACTIVE</code>. The other is our remote BIG-IP, which should also show its state as <code>ACTIVE</code>. You can continue to add remote BIG-IPs to the device group, thus enabling iControl LX extensions installed on the API Service Gateway to have many remote trusted BIG-IPs as request targets.</p>
 <p>If your remote BIG-IP does not reach the <code>ACTIVE</code> state, you likely have one of two issues:</p>
 <ol>
 <li>The API Services Gateway can not reach the address and port issued in the <code>POST</code> request to add the device.</li>
@@ -1150,14 +1150,14 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
 <p>To utilize our established trust between the API Services Gateway and a remote BIG-IP, we need to issue iControl REST requests <strong><em>from</em></strong> the API Service Gateway. We are going to create a simple iControl LX extension which will proxy requests from external clients to trusted remote BIG-IPs. </p>
 <p>Our new proxy iControl LX extension will accept only POST requests. The body of our POST will contain the details of the desired iControl REST requests to perform on our remote BIG-IPs. The iControl LX proxy extension will take our request, <strong>1)</strong> use the iControl LX framework to sign the request with the API Services Gateway device key, <strong>2)</strong> send the signed request to the remote BIG-IP. The remote BIG-IP will <strong>3)</strong> validate the signature using its device group copy of the API Services Gateway certificate, <strong>4)</strong> perform the iControl REST requested actions, <strong>5)</strong> sign the response using its own device key and respond back to the API Service Gateway. The API Services Gateway will <strong>6)</strong> validate the response using its device group copy of the remote BIG-IP certificate, and lastly <strong>7)</strong> proxy the iControl REST response to the remote client.</p>
 <p><img src="./assets/images/icontrollx_trusted_proxy_extension.png" alt="Established Trust through iControl LX extensions"></p>
-<p>Most of this process is actully done as part of the iControl REST service. This is how our Enterprise Manager, BIG-IQ, and iWorkflow all securely communicated with TMOS since iControl REST was introduced. By adding the iControl REST framework to the API Services Gateway, we gain this secured communication service.</p>
-<p>Fortuately, the iControl REST framework has made this whole process very simple to use wihtin iControl LX extensions. The key iControl LX framework component which enables us to issued signed requests for members of our trusted device group is the <code>RestOperation</code> eventChannel object class. There are two methods which enable the use of signed requests.</p>
+<p>Most of this process is actually done as part of the iControl REST service. This is how our Enterprise Manager, BIG-IQ, and iWorkflow all securely communicated with TMOS since iControl REST was introduced. By adding the iControl REST framework to the API Services Gateway, we gain this secured communication service.</p>
+<p>Fortunately, the iControl REST framework has made this whole process very simple to use within iControl LX extensions. The key iControl LX framework component which enables us to issued signed requests for members of our trusted device group is the <code>RestOperation</code> eventChannel object class. There are two methods which enable the use of signed requests.</p>
 <hr>
 <table>
 <thead>
 <tr>
 <th align="left">RestOperation method</th>
-<th align="left">Explaination</th>
+<th align="left">Explanation</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -1185,7 +1185,7 @@ class TrustedProxyWorker {
     }
 
     /**
-     * handle onPost HTTP request - proxy reuest to trusted device.
+     * handle onPost HTTP request - proxy request to trusted device.
      * @param {Object} restOperation
      */
     onPost(restOperation) {
@@ -1293,7 +1293,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 {&quot;remainingByteCount&quot;:0,&quot;usedChunks&quot;:{&quot;0&quot;:7728},&quot;totalByteCount&quot;:7728,&quot;localFilePath&quot;:&quot;/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;temporaryFilePath&quot;:&quot;/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;generation&quot;:0,&quot;lastUpdateMicros&quot;:1539099747522073}</code></pre></div>
 
-<p>You can examine what the script above is doing. It is uploading our RPM file to an iControl REST endpoint <em>a chunk at a time</em>. The iControl REST FileWorker is taking these chunks and reassembling the final uploaded file. This is an example of <em>file streaming</em> our RPM to the API Services Gateway over HTTP. <em>File streaming</em> is another fundmental way micro services handle file processing. <em>File Streaming</em> allows for the resumption of uploading along chunk boundaries.</p>
+<p>You can examine what the script above is doing. It is uploading our RPM file to an iControl REST endpoint <em>a chunk at a time</em>. The iControl REST FileWorker is taking these chunks and reassembling the final uploaded file. This is an example of <em>file streaming</em> our RPM to the API Services Gateway over HTTP. <em>File streaming</em> is another fundamental way micro services handle file processing. <em>File Streaming</em> allows for the resumption of uploading along chunk boundaries.</p>
 <p><strong>Step 2. Make a request to initiate an install task for the TrustedProxy iControl LX Extension in the API Services Gateway Container</strong></p>
 <p>iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the <code>rpm</code> utilities and libraries to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install <em>&#39;task&#39;</em> in your behalf. While this breaks our ability to use standard RPM publishing (RPM repository downloads, cloud-init installation, ansible package modules, etc), it does some very micro service friendly things for us. </p>
 <p>The use of iControl REST extension install tasks accomplishes two things. </p>
@@ -1359,8 +1359,8 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </code></pre></div>
 
 <p>The task should reach a status of <code>FINISHED</code>.</p>
-<p><strong>Note:</strong> You should be careful when you decide to install iControl LX extensions. <strong><em>Installing a new extension requires the entire iControl LX framework to be restarted</em></strong>. If you have other runing extensions which keep ephemerial data in memory or are currently handling otehr requests, they will be interupted. The easiest way to assure this does not happen is to start your API Services Gateway and immediately install all required extensions.</p>
-<p>The cloud native way around the framework restart issue would be to decomose such concerns into individual services (containers). You very well could have a separate API Services Gateway for each iControl LX extension. This is currently the case for the AS3 Container. Do you see why we have an AS3 Container now?</p>
+<p><strong>Note:</strong> You should be careful when you decide to install iControl LX extensions. <strong><em>Installing a new extension requires the entire iControl LX framework to be restarted</em></strong>. If you have other running extensions which keep ephemeral data in memory or are currently handling other requests, they will be interrupted. The easiest way to assure this does not happen is to start your API Services Gateway and immediately install all required extensions.</p>
+<p>The cloud native way around the framework restart issue would be to decompose such concerns into individual services (containers). You very well could have a separate API Services Gateway for each iControl LX extension. This is currently the case for the AS3 Container. Do you see why we have an AS3 Container now?</p>
 <p><strong>Step 3. Make a request to initiate a query task to inventory the iControl LX extensions in the API Services Gateway Container</strong></p>
 <p>To see a listing of what iControl LX extensions are installed, you need to create a <em>&#39;task&#39;</em> which will inventory the locally installed extensions and return a report.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -2210,8 +2210,8 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p>or </p>
 <p>2) forcing request and response traffic through a security proxy using our container orchestrator</p>
 <p>The <em>Passport JS</em> authentication service in our application utilizes <em>node express&#39;</em> middleware interfaces. We directly included the <em>Passport JS</em> request and response processing in our application code. The OpenAPI schema validation is also included as application middleware. Many applications <em>chain</em> together request and response middleware to integrate into ecosystems.</p>
-<p><a href="https://istio.io/">istio</a> and <a href="https://aspenmesh.io/">F5 Apen Mesh</a> are examples of products where the container orchestrator is used to force access to micro services through a security proxy. This appoach is also known as having <em>sidecar</em> containers. There is a vibrant market place emerging for such <em>sidecar</em> containers. The emergence is closely linked to containerized deployment orchestration, as it is the orchestrator which typically deploys the services in a way which forces the traffic through the <em>sidecar</em>.</p>
-<p>For TMOS device orchestration, we are <em>not</em> concerned wtih providing framework middleware or containerized proxies which restrict access to provisioning BIG-IPs. Our job is to make the provisioning of services on our devices as simple as possible. <em>Separation of concerns</em> is a very importand thing to implement in micro services. We play our role, others play theirs.</p>
+<p><a href="https://istio.io/">istio</a> and <a href="https://aspenmesh.io/">F5 Apen Mesh</a> are examples of products where the container orchestrator is used to force access to micro services through a security proxy. This approach is also known as having <em>sidecar</em> containers. There is a vibrant market place emerging for such <em>sidecar</em> containers. The emergence is closely linked to containerized deployment orchestration, as it is the orchestrator which typically deploys the services in a way which forces the traffic through the <em>sidecar</em>.</p>
+<p>For TMOS device orchestration, we are <em>not</em> concerned with providing framework middleware or containerized proxies which restrict access to provisioning BIG-IPs. Our job is to make the provisioning of services on our devices as simple as possible. <em>Separation of concerns</em> is a very important thing to implement in micro services. We play our role, others play theirs.</p>
 <hr>
 <p>Notice that the <em>roles</em> associated with our users are defined by the application. The <em>roles</em> have nothing to do with TMOS roles. </p>
 <p>Our example application has a primitive tag based roles system. A user account aquires a role by having the user&#39;s <code>roles</code> attribute include the role&#39;s tag name. Our example application has only two roles:</p>
