@@ -457,8 +457,8 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 </div>
 
 <p>You should see a returned JSON object which shows the version of the AS3 iControl LX Extension which was pre-installed in the AS3 Container. </p>
-<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration informs the AS3 iControl LX extension that is should not issue iControl REST requests to <code>localhost</code>, but should authenticate and issue iControl REST requests to the <code>targetHost</code>. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
-<p><strong>Note:</strong> Since declaration attributes are required to target remote BIG-IPs, we won&#39;t be able to make HTTP GET or DELETE requests, which by RFC can not contain a request body, for any remote declarations. You can query the version from the iControl LX extension with a GET request, but any requests to manage a declaration on a remote BIG-IP must use POST or PATCH methods.</p>
+<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration inform the AS3 iControl LX extension that is should not issue iControl REST requests to the local device, but should authenticate against and issue iControl REST requests to the <code>targetHost</code>. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
+<p><strong>Note:</strong> Since declaration attributes are required to target remote BIG-IPs, we won&#39;t be able to make remote declarations with HTTP GET or DELETE requests, which by RFC can not contain a request body. You can query the version from the iControl LX extension with a GET request, but any requests to manage a declaration on a remote BIG-IP must use HTTP POST or PATCH methods.</p>
 <p><strong>Step 2. Get any existing AS3 declaration on a remote BIG-IP</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='get-as3-existing-declaration-command'>
@@ -484,9 +484,9 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 
 f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 
-<p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> response.</p>
-<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when writing tests. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
-<p>As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get <code>404</code> responses, not the <code>204</code> response returned from the AS3 Container.</p>
+<p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> status code in your response.</p>
+<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
+<p>As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get status code <code>404</code> response, not the <code>204</code> response returned when using AS3 in the container.</p>
 <p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-post-to-remote-bigip'>
 
@@ -517,7 +517,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 
 </div>
 
-<p>iControl LX extension resources are create in the AS3 Container and then a series of iControl REST requests are issued to the target host BIG-IP to provision the services declared. </p>
+<p>iControl LX extension resources are created within the AS3 Container and then a series of iControl REST requests are issued to the target host BIG-IP to provision the services declared. </p>
 <p>Here is what the result should look like. </p>
 <pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
     &quot;class&quot;: &quot;AS3&quot;,
@@ -601,8 +601,8 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
     }
 }
 
-f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes and issuing the same request to the AS3 Container.</p>
-<p><strong>Note:</strong> <em>The declaration is maintained in the AS3 Container, the declared state is implemented on the remote BIG-IP.</em> When our customers use the AS3 container, they can get the advantages of the simplified declarative AS3 API without the need to deploy the AS3 iControl LX extension on fleets of BIG-IPs.</p>
+f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
+<p><strong>Note:</strong> <em>The declaration is maintained in the AS3 Container, however the declared state is implemented on the remote BIG-IP.</em> When our customers use the AS3 container, they can get the advantages of the simplified declarative AS3 API without the need to deploy the AS3 iControl LX extension on fleets of BIG-IPs.</p>
 <p><strong>Step 4. Remove an AS3 declaration from a remote BIG-IP</strong></p>
 <p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -977,7 +977,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
 <ol>
 <li>Querying for device groups present in the API Services Gateway</li>
 <li>Creating a device group on the API Services Gateway</li>
-<li>Populating our newly created device group withe a trusted remote BIG-IP</li>
+<li>Populating our newly created device group with a trusted remote BIG-IP</li>
 </ol>
 <p><strong>Step 1. Query for existing device group trusts</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -1022,10 +1022,17 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
     &quot;lastUpdateMicros&quot;: 1539009502372133,
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups&quot;
 }</code></pre><p><strong>Note:</strong> The API Services Gateway automatically creates two device groups <code>dockerContainers</code> and <code>dockerCOntainersLegacy116</code>. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for <code>docker</code>) <code>BIGIP_LIST</code>. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the <code>BIGIP_LIST</code> ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the <code>dockerContainers</code> device group. If the BIG-IP device is running TMOS v11.6, it will create a trust for the device by adding it to the <code>dockerContainers116</code> device group. </p>
-<p><strong>Note:</strong> <em>It is not recommended that you use the API Services Gateway with TMOS versions less than 13.1.\</em></p>
-<p><strong>Note:</strong> <em>Becuase trusted device requests use the same mechanisms associated with TMOS configuration synchronization, there is a limitation in TMOS which requires our remote BIG-IP device to have its <code>configsync-ip</code> interface populated with a non-floating SelfIP. You must at least create one non-floating SelfIP and then modify your TMOS device to set the <code>configsync-ip</code> to the non-floating SelfIP. While the trusted queries can be issued to your remote BIG-IP&#39;s management IP address, if your remote BIG-IP does not have its <code>configsync-ip</code> populated, it will not be able to discover its own device certificate, which is used to sign responses to your queries. This design limitation is slated to be removed in a future release of TMOS.</em></p>
+<p><strong>Note:</strong> <em>It is not recommended that you use the API Services Gateway with TMOS versions less than 13.1.</em></p>
+<hr>
+<p><strong><em>STOP! - MAKE SURE YOUR TARGET BIG-IPS HAVE A CONFIG SYNC INTERFACE CONFIGURED. EVEN IF IT IS STANDALONE, THE API SERVICES GATEWAY REQUIRES IT TO CREATE A TRUST! READ BELOW</em></strong></p>
+<p><img src="./assets/images/f5-apps-tmos-xui-config-sync.png" alt="Configure TMOS Config Sync"></p>
+<p><code>tmsh modify cm device [device_name] configsync-ip [selfipaddress]</code></p>
+<p><strong>Note:</strong> <em>Becuase trusted device requests use the same mechanisms as TMOS configuration synchronization, there is a limitation in TMOS which requires our remote BIG-IP devices to have their <code>configsync-ip</code> interface populated with a non-floating SelfIP.</em></p>
+<p><em>While the trusted queries can be issued to your remote BIG-IP&#39;s management IP address, if your remote BIG-IP does not have its <code>configsync-ip</code> populated, it will not be able to discover its own device certificate, which is used to sign responses to your queries. This design limitation is slated to be removed in a future release of TMOS.</em></p>
 <p><em>If your remote BIG-IP does not have a <code>configsync-ip</code> set, please configure this before you continue.</em></p>
-<p>As our exercise is to teach you how to create you own device trusts, we will ignore the ability to populate the <code>BIGIP_LIST</code> ENV variable and the pre-installed <code>dockerContainers</code> and <code>dockerContainersLegacy116</code> device groups.  We will create a new device group.</p>
+<hr>
+<p>To illustrate every step needed to create device trusts, we will ignore the <code>BIGIP_LIST</code> ENV variable and the pre-installed <code>dockerContainers</code> and <code>dockerContainersLegacy116</code> device groups which the API Services Gateway team added to ease this concern.  We will create a new device group and establish trust step by step. We do this so you can learn not only how it works, but understand how to troubleshoot any problems you experence. </p>
+<p>Later we will create an iControl LX extension to allow the addition of tursted devices dynamically through a declarative interface!</p>
 <p><strong>Step 2. Make a iControl REST POST request to add a tusted remote BIG-IP</strong></p>
 <p>You can name your device group any valid TMOS name. We will add a device group named <code>app1</code>.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -1055,8 +1062,12 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/app1&quot;
 }</code></pre></div>
 
-<p><strong>Note:</strong> <em>The request to create the device group required no authentication or authorization.</em> The API Services Gateway does not, by default, enforce any authentication model. This is relieve us from that concern. We will later mitigate this issue by securing access to the API Service Gateway to only our other trusted orchestration services. The idea of restricting access to services to only trusted containers is a basic concept for container orchestrations. It is important to realize that removing concerns, even security concerns, is a goal at this phase of our development process.</p>
-<p><strong>Note:</strong> If your customer would like to add the concern of <em>minimal security</em> to the API Services Gateway, they can enable the requirement for HTTP BASIC authentication for all requests. The HTTP BASIC authentication scheme is enabled using Apache configuration directives. Apache modules to enable either Password or LDAP based configuration directives are built into the API Services Gateway. The Apache configuration directives can be imposed by attaching <code>docker</code> volumes to the base API Services Gateway container, or by using the <code>Dockerfile</code> <code>COPY</code> directive to build a new container from the base API Services Gateway container. Neither configuration directive is pre-configured, as it is our aim to present minimal concerns for service orchestrators.</p>
+<p><strong>Note:</strong> <em>The request to create the device group required no authentication or authorization.</em> The API Services Gateway does not, by default, enforce any authentication model. This relieves us from that concern. In fact, we exposed both <code>80</code> and <code>443</code> TCP port from the contanier. We could issue all these requests without encryption too.  We will later mitigate these concerns by limiting network access to the API Service Gateway to only trusted containers on a private network. The idea of restricting access to services as a means to relieve concerns is a basic concept for container orchestrations. It is important to realize that removing concerns, even security concerns, is a goal at this phase of our development process.</p>
+<p><strong>Note:</strong> If your customer would like to add the concern of <em>minimal security</em> to the API Services Gateway, they can enable the requirement for HTTP BASIC authentication for all requests. 
+The API Services Gateway includes an Apache web server, like TMOS does, which can implement the HTTP BASIC authentication scheme. You can config Apache to require <code>htpasswd</code> files (basic passwords) or to use LDAP queries to authenticate requests.</p>
+<p>The Apache configuration directives can be enabled by attaching <code>docker</code> volumes, which mount a directory containing your configuration files, or by building your own container based on the API Services Gateway. When building a container, the authentication configuration files are copied into the container&#39;s file system using the Dockerfile <code>COPY</code> directive.</p>
+<p><a href="https://github.com/jgruber/f5-asg-builder">For a hint how to do this check this link out</a></p>
+<p>We felt the need to burden the container with Apache because our customers might desire to run the API Service Gateway as a standalone API endpoint instead of its intended placement in a micro services orchestration. We understand sometimes you just want a fast way to get something done.</p>
 <p><strong>Step 3. Add our remote BIG-IP to our device group.</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='asg-add-device-to-group-command'>
@@ -1086,7 +1097,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/app1/devices/c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;
 }</code></pre></div>
 
-<p><strong>Note:</strong> The response shows the state of our device addition as <code>PENDING</code>. At this point, the API Services Gateway is initiating an exchange of device certificates with the remote BIG-IP. <em>Remote BIG-IP credentials are only required to initiate or the trust.</em> Once the devices exchange certificates, and device group membership is established, iControl LX extensions running on the API Services Gateway can issue iControl REST requests to trusted remote BIG-IPs without providing TMOS credentials or establishing an iControl REST session token.</p>
+<p><strong>Note:</strong> The response shows the state of our device addition as <code>PENDING</code>. At this point, the API Services Gateway is initiating an exchange of device certificates with the remote BIG-IP. <em>Remote BIG-IP credentials are only required to initiate the exchange of certificates required for the trust.</em> Once the devices exchange certificates, and device group membership is established, iControl LX extensions running on the API Services Gateway can issue iControl REST requests to trusted remote BIG-IPs <strong><em>without</em></strong> providing TMOS credentials or establishing an iControl REST session token.</p>
 <p><strong>Step 4. Query the status of the device trust to assure it is ACTIVE</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='asg-query-devices-in-group-command'>
@@ -1143,17 +1154,19 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
     &quot;kind&quot;: &quot;shared:resolver:device-groups:devicegroupdevicecollectionstate&quot;,
     &quot;lastUpdateMicros&quot;: 1539013178610088,
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/app1/devices&quot;
-}</code></pre><p><strong>Note:</strong> The response shows two devices in our device group. One is the API Services Gatway with a state of <code>ACTIVE</code>. The other is our remote BIG-IP, which should also show its state as <code>ACTIVE</code>. You can continue to add remote BIG-IPs to our device group, thus enabling iControl LX extensions installed on the API Service Gateway to have many remote trusted BIG-IPs.</p>
+}</code></pre><p><strong>Note:</strong> The response shows two devices in our device group. One is the API Services Gatway with a state of <code>ACTIVE</code>. The other is our remote BIG-IP, which should also show its state as <code>ACTIVE</code>. You can continue to add remote BIG-IPs to the device group, thus enabling iControl LX extensions installed on the API Service Gateway to have many remote trusted BIG-IPs as request targets.</p>
 <p>If your remote BIG-IP does not reach the <code>ACTIVE</code> state, you likely have one of two issues:</p>
 <ol>
 <li>The API Services Gateway can not reach the address and port issued in the <code>POST</code> request to add the device.</li>
-<li>You did not assure your remote BIG-IP device has it <code>configsync-ip</code> set to a non-floating SelfIP. Without this, the remote device can not discover its own certificate to exchange with the API Services Gateway.</li>
+<li>You did not assure your remote BIG-IP device has its <code>configsync-ip</code> set to a non-floating SelfIP. Without this, the remote device can not discover its own certificate to exchange with the API Services Gateway.</li>
 </ol>
-<p>If you remote BIG-IP did not reach the <code>ACTIVE</code> state, fix these issues, remove the errant device by issue <code>DELETE</code> requests to the device link in the device group, and then re-populate the device entry in the device group by issuing a <code>POST</code> request providing the appropriate request body. </p>
+<p>If your remote BIG-IP did not reach the <code>ACTIVE</code> state, remove the errant device by issue <code>DELETE</code> requests to the device link in the device group, and then re-populate the device entry in the device group by issuing a <code>POST</code> request providing the appropriate request body. </p>
 <h3 id="exercise-5-installing-the-trustedproxy-icontrol-lx-extension-on-the-api-services-gateway">Exercise #5 - Installing the TrustedProxy iControl LX Extension on the API Services Gateway</h3>
-<p>To utilize our established trust between the API Services Gateway and a remote BIG-IP, we need to issue iControl REST requests from the API Service Gateway. We are going to create a simple iControl LX extension which will proxy iControl REST by accepting POST requests. The body of our POST will contain the details of the desired iControl REST request to make to our remote BIG-IP. </p>
+<p>To utilize our established trust between the API Services Gateway and a remote BIG-IP, we need to issue iControl REST requests <strong><em>from</em></strong> the API Service Gateway. We are going to create a simple iControl LX extension which will proxy requests from external clients to trusted remote BIG-IPs. </p>
+<p>Our new proxy iControl LX extension will accept only POST requests. The body of our POST will contain the details of the desired iControl REST requests to perform on our remote BIG-IPs. The iControl LX proxy extension will take our request, <strong>1)</strong> use the iControl LX framework to sign the request with the API Services Gateway device key, <strong>2)</strong> send the signed request to the remote BIG-IP. The remote BIG-IP will <strong>3)</strong> validate the signature using its device group copy of the API Services Gateway certificate, <strong>4)</strong> perform the iControl REST requested actions, <strong>5)</strong> sign the response using its own device key and respond back to the API Service Gateway. The API Services Gateway will <strong>6)</strong> validate the response using its device group copy of the remote BIG-IP certificate, and lastly <strong>7)</strong> proxy the iControl REST response to the remote client.</p>
 <p><img src="./assets/images/icontrollx_trusted_proxy_extension.png" alt="Established Trust through iControl LX extensions"></p>
-<p>The key iControl LX component which enables us to issued signed requests for members of our trusted device group is the <code>RestOperation</code> eventChannel object class. There are two methods which enable the use of signed requests.</p>
+<p>Most of this process is actully done as part of the iControl REST service. This is how our Enterprise Manager, BIG-IQ, and iWorkflow all securely communicated with TMOS since iControl REST was introduced. By adding the iControl REST framework to the API Services Gateway, we gain this secured communication service.</p>
+<p>Fortuately, the iControl REST framework has made this whole process very simple to use wihtin iControl LX extensions. The key iControl LX framework component which enables us to issued signed requests for members of our trusted device group is the <code>RestOperation</code> eventChannel object class. There are two methods which enable the use of signed requests.</p>
 <hr>
 <table>
 <thead>
@@ -1168,7 +1181,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
 </tr>
 <tr>
 <td align="left"><code>setIdentifiedDeviceGroupName(device_trust_group_name)</code></td>
-<td align="left">(optional) Only check the host part of the URL against the named device group. Defaults to <code>null</code> which will check all device groups.</td>
+<td align="left">(optional) Only check the host part of the URL against the named device group. Defaults to <code>null</code> which will check all device groups available on the local device.</td>
 </tr>
 </tbody></table>
 <hr>
@@ -1270,14 +1283,16 @@ module.exports = TrustedProxyWorker;</code></pre><p>The TrustedProxy iControl LX
 <p><a href="https://github.com/elv1s/iControlLX-generator">iControl LX Generator</a></p>
 <p><a href="https://clouddocs.f5.com/products/iapp/iapp-lx/tmos-14_0/icontrollx_nodejs_sdk_appendix/restoperation.html">iControl LX RestOperation SDK doc</a></p>
 <p><a href="https://devcentral.f5.com/wiki/iControlREST.HomePage.ashx">iControl REST doc</a></p>
-<p>There are several steps involved in publishing an iControl LX extension via the iControl REST framework. The API Services Gateway has an iControl LX extension pre-installed which will look for iControl LX extension code or RPM files in the <code>/root/lx</code> directory. You can use <code>Dockerfile</code> <code>COPY</code> directives to copy your extemsions into the base API Services Gateway container if you wish. For completeness, we will show you the steps involved in publishing iControl LX extensions. The process is the same for the API Services Gateway or any BIG-IP, so it is useful to understand how publishing iControl LX extensions works.</p>
+<p>There are several steps involved in publishing an iControl LX extension via the iControl REST framework. </p>
+<p><strong>Note:</strong> Just like it did for device group trust building, the API Services Gateway has an iControl LX extension pre-installed which will look for iControl LX extension source code or RPM files copied into the container&#39;s <code>/root/lx</code> directory. You can use <code>Dockerfile</code> <code>COPY</code> directives to copy your extensions into the base API Services Gateway container. </p>
+<p>Because we educating you on how to utilize the API Services Gateway, we will show you the steps involved in publishing iControl LX extensions through iControl REST. It is a valuable thing to learn as this is the same process to follow for iControl LX extensions publishing across all F5 platforms which support iControl LX.</p>
 <p><strong>Step 1. Upload the TustedProxy iControl LX extension RPM file to the API Services Gateway Container</strong></p>
 <p>iControl REST supports uploading files to remote devices. A detailed discussion can be found here:</p>
 <p><a href="https://devcentral.f5.com/articles/demystifying-icontrol-rest-part-5-transferring-files">Demystifying iControl REST Part 5: Transferring Files</a></p>
-<p>The TrustedProxy RPM file is available at <a href="/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm">/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm</a>. We can download it into the <code>f5admin</code> user&#39;s home directory of the F5 Container Demonstration Virtual Device. </p>
+<p>The TrustedProxy RPM file is available at <a href="/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm">/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm</a>. We can download it into the <code>f5admin</code> user&#39;s home directory of the F5 Container Demonstration Virtual Device using curl. </p>
 <pre><code>f5admin@containerhost:~$ curl http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm -O
 f5admin@containerhost:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm 
--rw-rw-r-- 1 f5admin f5admin 7728 Oct  1 09:56 /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm</code></pre><p>We did this for your convience. Be aware that the RPM package for our iControl LX extension could be uploaded into the API Services Gateway container from anywhere that has access to the API Services Gateway iControl REST endpoints.</p>
+-rw-rw-r-- 1 f5admin f5admin 7728 Oct  1 09:56 /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm</code></pre><p>We created the F5 Container Demonstration Virtual Device for your convience. Be aware that the RPM package for our iControl LX extension could be uploaded into the API Services Gateway container from anywhere that has access to the API Services Gateway iControl REST endpoints.</p>
 <p><strong>Use bash and curl in the F5 Container Demonstration Device SSH session</strong></p>
 <p>Set the following bash variables and run the following <code>curl</code> command to upload the TrsutedProxy iControl LX extension from the F5 Container Demonstration Virtual Device into the API Services Gateway container.</p>
 <div id='asg-upload-trust-proxy-command'>
@@ -1293,8 +1308,13 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 {&quot;remainingByteCount&quot;:0,&quot;usedChunks&quot;:{&quot;0&quot;:7728},&quot;totalByteCount&quot;:7728,&quot;localFilePath&quot;:&quot;/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;temporaryFilePath&quot;:&quot;/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;generation&quot;:0,&quot;lastUpdateMicros&quot;:1539099747522073}</code></pre></div>
 
+<p>You can examine what the script above is doing. It is uploading our RPM file to an iControl REST endpoint <em>a chunk at a time</em>. The iControl REST FileWorker is taking these chunks and reassembling the final uploaded file. This is an example of <em>file streaming</em> our RPM to the API Services Gateway over HTTP. <em>File streaming</em> is another fundmental way micro services handle file processing. <em>File Streaming</em> allows for the resumption of uploading along chunk boundaries.</p>
 <p><strong>Step 2. Make a request to initiate an install task for the TrustedProxy iControl LX Extension in the API Services Gateway Container</strong></p>
-<p>iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the <code>rpm</code> utilities to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install <em>&#39;task&#39;</em> in your behalf. </p>
+<p>iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the <code>rpm</code> utilities and libraries to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install <em>&#39;task&#39;</em> in your behalf. While this breaks our ability to use standard RPM publishing (RPM repository downloads, cloud-init installation, ansible package modules, etc), it does some very micro service friendly things for us. </p>
+<p>The use of iControl REST extension install tasks accomplishes two things. </p>
+<p>First, it makes the installation task <em>asynchronous</em>. You initiate the task which then <em>runs in the background</em>. You can query the progress of your install task at any time after initiating the task. Get used to this pattern of behavior. Asynchronous request processing is a major way we increase the efficiency and concurrency of services. </p>
+<p>Secondly, using install tasks allows for the decomposition of the installation into <em>stages</em>. Only one of these <em>stages</em> includes using RPMs to copy the files into the right place. Another stage in the install process publishes the extension URL namespace. Without this, you could not access your extension through the iControl REST service listener (you know at <code>/mgmt/[YOUR EXTENSION NAMESPACE HERE]</code>). Internally iConrol REST itself is a collection of workers all accessed through the same service listener (the <code>restjavad</code> process listening on TCP 127.0.0.1:8100 on each host). Our extension code simply becomes a way to publish a new worker to which the iControl REST listener can issue requests.</p>
+<p>We can always create <em>wrapper</em> RPM files which turn the install back into a synchronous process, but enable the use of standard RPM tools. Obviously the RPMs would require iControl REST to be running in order to install or uninstall our extensions. We still need the install to handle all phases of the process.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <p>Create an install task for your uploaded iControl LX RPM file.</p>
 <div id='asg-install-trust-proxy-command'>
@@ -1354,7 +1374,8 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </code></pre></div>
 
 <p>The task should reach a status of <code>FINISHED</code>.</p>
-<p><strong>Note:</strong> You should be careful when you decide to install iControl LX extensions. Installing a new extension requires the entire iControl LX framework to be restarted. If you have other runing extensions which keep ephemerial data in memory or are handling requests, they will be interupted. The easiest way to assure this does not happen is to start your API Services Gateway and immediately install all required extensions. The cloud native way is to decomose such dependancies into individual services (containers). You very well could have a separate API Services Gateway for each iControl LX extension. This is currently the case for the AS3 Container.</p>
+<p><strong>Note:</strong> You should be careful when you decide to install iControl LX extensions. <strong><em>Installing a new extension requires the entire iControl LX framework to be restarted</em></strong>. If you have other runing extensions which keep ephemerial data in memory or are currently handling otehr requests, they will be interupted. The easiest way to assure this does not happen is to start your API Services Gateway and immediately install all required extensions.</p>
+<p>The cloud native way around the framework restart issue would be to decomose such concerns into individual services (containers). You very well could have a separate API Services Gateway for each iControl LX extension. This is currently the case for the AS3 Container. Do you see why we have an AS3 Container now?</p>
 <p><strong>Step 3. Make a request to initiate a query task to inventory the iControl LX extensions in the API Services Gateway Container</strong></p>
 <p>To see a listing of what iControl LX extensions are installed, you need to create a <em>&#39;task&#39;</em> which will inventory the locally installed extensions and return a report.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -1416,7 +1437,9 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p>The extension inventory report should have a record in the <code>queryResponse</code> reply attribute confirming your TrustedProxy iControl LX extension is installed properly.</p>
 <h3 id="exercise-6-issuing-icontrol-rest-requests-through-the-trustedproxy-icontrol-lx-extension">Exercise #6 - Issuing iControl REST Requests Through the TrustedProxy iControl LX Extension</h3>
 <p><strong><em>What the TrustProxy iControl LX extension is doing for us</em></strong></p>
-<p>Recall our endeavor was to remove the TMOS authentication and role authorization concerns from our orchestration services. We required remote TMOS credentials to establish the trusted device group, but once a device has an established trust with our API Services Gateway, we should not need them anymore. The trust relationship however requires us to issue iControl REST calls to remote BIG-IPs from the iControl LX framework on the API Services Gateway. Our TrustedProxy extension provides the mechanism to issue iControl REST calls from outside the API Service Gateway, but take advantage of the trust relationship it has. This is an example of build infrastructure services with the iControl LX extension framework. It is very powerful. In this scenario, our ability to take advantage of the work f5 has done to create iControl LX for TMOS has enabled us to remove the need for tenants who wish to make iControl REST calls or API declarations to have TMOS credentials. We are no longer <em>&#39;leaking&#39;</em> TMOS device credentials to remote users. Seeing that some of our API declarations, like AS3, require TMOS Administrator role, this is an important <em>&#39;separation of concerns&#39;</em> issue to deal with. We can now free our customers to secure access to the API Service Gateway, rather then providing secured access to all remote BIG-IPs. This is huge for our ability to integrate into ecosystems.</p>
+<p>Recall our endeavor was to remove the TMOS authentication and role authorization concerns from our orchestration services. We required remote TMOS credentials to establish the trusted device group, but once a device has an established trust with our API Services Gateway, we should not need them anymore. The trust relationship however requires us to issue the iControl REST calls from the trusted API Services Gateway. </p>
+<p>Our TrustedProxy extension provides the mechanism to issue iControl REST calls from outside the API Service Gateway, but take advantage of the trust relationship it has. This is an example of building infrastructure services with the iControl LX extension framework. It is very powerful. Whenever you have some iControl REST process which is either overly complicated or presents a concern which is only associated with F5, we use iControl LX extensions to handle it.</p>
+<p>In this scenario, our ability to take advantage of the work f5 has done to create iControl LX for TMOS has enabled us to remove the need for tenants to have TMOS credentials. We are no longer <em>&#39;leaking&#39;</em> TMOS device credentials to remote users. Seeing that some of our API declarations, like AS3, require TMOS Administrator role, this is an important <em>&#39;separation of concerns&#39;</em> issue for F5 to deal with. We can now free our customers to user their own desired tools to secure access to the API Service Gateway, rather then forcing them to have secured access to all remote BIG-IPs. This is huge for our ability to integrate into ecosystems.</p>
 <p><strong>Step 1. Make an iControl REST GET request through the TrustedProxy iControl LX Extension to a remote BIG-IP without credentials.</strong></p>
 <p>TrustedProxy iControl LX extension is registered to take <code>POST</code> requests at the iControl REST endpoint <code>/shared/TrustedProxy</code>.</p>
 <p>We will use a basic example here, but you can issue any iControl REST request via HTTP POST requests to the TrustedProxy iControl LX extension.</p>
@@ -1497,12 +1520,13 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 }</code></pre></div>
 
 <p>The response is the same as if we had issued a <code>GET</code> request to the remote BIG-IP&#39;s <code>/mgmt/shared/identified-devices/config/device-info</code> iControl REST endpoint, but we are no longer concerned with TMOS credentials or TMOS roles. The request, issued through the trust, runs as an Administrator role on the remote BIG-IP.</p>
+<p><strong><em>Look Mom No Leaked Credentials!</em></strong></p>
 <p><strong>WE HAVE ESTABLISHED A TRUSTED CONTAINER WITHOUT HAVING TENANTS KNOW TMOS CREDENTIALS</strong></p>
 <h3 id="exercise-7-removing-a-trust-between-the-api-services-gateway-and-a-remote-big-ip">Exercise #7 - Removing a Trust Between the API Services Gateway and a Remote BIG-IP</h3>
-<p>While the creation of the trust was an automated process which was initiated by the addition of a BIG-IP to a device group, the removal of trust must be done manually. </p>
-<p>The process to remove the trust has four steps:</p>
+<p>While the creation of the trust was an automated process which was initiated by the addition of a BIG-IP to a device group, the removal of trust must be done through multiple requests. </p>
+<p>The process to remove the trust has six steps:</p>
 <ol>
-<li>Query the device group for device <code>machineIds</code> for both the API Services Gateway and our remote BIG-IP</li>
+<li>Query the device group on the API Services Gateway collecting the device <code>machineIds</code> for both the API Services Gateway and the remote BIG-IP which we are removing the trust</li>
 <li>Using the TrustedProxy extension, query the <code>certificateId</code> for the API Services Gateway on the remote BIG-IP</li>
 <li>Using the TrustedProxy extension, remove the API Services Gateway certificate from your remote BIG-IP</li>
 <li>Remove the remote BIG-IP from the API Services Gateway device group</li>
@@ -1563,10 +1587,10 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/app1/devices&quot;
 }
 </code></pre><p>Record the <code>machineId</code> for both the Application Services Gateway and your remote BIG-IP. </p>
-<p>From our query here is an example of what to record:</p>
+<p>From our query, here is an example of what to record:</p>
 <p>API Services Gateway machineId: adec4506-656f-4aee-a94a-2414ee63f3ec</p>
 <p>Remote BIG-IP machineId: c61e1394-250c-451d-a1c2-fc0f7d1fa99a</p>
-<p><em>Your <code>machineId</code>s will be different.</em></p>
+<p><em>Your <code>machineId</code>s will be different from the example. Don&#39;t cut-n-pas them.</em></p>
 <p><strong>Step 2. Using the TrustedProxy extension, query the <code>certificateId</code> for the API Services Gateway on the remote BIG-IP</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
@@ -1697,12 +1721,14 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
     &quot;kind&quot;: &quot;shared:device-certificates:devicecertificatestate&quot;,
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/device-certificates/1.1.1.104&quot;
 }</code></pre><p>Now there is no vestage of our trust left.</p>
-<p><strong>Note:</strong> You might be tempted to simply delete your container, thus removing the API Services Gateway. While you can do this, the remote BIG-IP will retain the trusted device certficate for the container unless it was removed. It is better to clean up the trust appropriately, or else delete both the container and the remote BIG-IP.</p>
-<p>If you desire, you can also delete the <code>app1</code> device group we created from your API Services Gateway. If you have gotten this far, you should have the hang of this by now. Just find the right iControl REST request to make to remote a device group and issue it against the API Services Gateway endpoint.</p>
+<p><strong>Note:</strong> You might be tempted to simply delete your container, thus removing the API Services Gateway. While you can do this, the remote BIG-IP will retain the trusted device certficate for the now deleted container. It is better to clean up the trust appropriately, or else delete both the container and the remote BIG-IP virtual machine.</p>
+<p>If you desire, you can also delete the <code>app1</code> device group we created from your API Services Gateway. If you have gotten this far, you should have the hang of this by now. Just find the right iControl REST request to make to remove a device group and issue it against the API Services Gateway endpoint.</p>
 <h3 id="exercise-8-designing-a-trusteddevices-icontrol-lx-extension-from-json-schema">Exercise #8 - Designing a TrustedDevices iControl LX Extension from JSON Schema</h3>
 <p>Removing a trusted device from he API Services Gateway has a horrible user experience. Adding a trusted device seemed straight forward because iControl REST hid the concerns of the certificate exchange. However, the removal process was a mess we shouldn&#39;t be exposing. How do we fix that? </p>
 <p><strong>iControl LX extension - for when your own product is too hard for everyone else to use!</strong></p>
 <p>Let&#39;s add another iControl LX extension which make these complex iControl REST interactions with the API Services Gateway simple through a declaration.</p>
+<p>In fact, let&#39;s go through the same design exercise we go through for all declarative iControl LX extensions like AS3! That will teach you the steps involved in growing ecosystem services. It will also aid in your understanding of what is going on behind the scenes when using F5 published declarative interfaces.</p>
+<p>We will design a TrustedDevices iControl LX extension which will handle the lifecyle of device trusts for the API Services Gateway in a declarative fashion.</p>
 <p>Here is a JSON schema for our declaration:</p>
 <pre><code class="language-JSON">{
     &quot;definitions&quot;: {},
@@ -1814,8 +1840,8 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
         &quot;targetPassphrase&quot;: &quot;admin&quot;
       }
     ]
-}</code></pre><p>Let&#39;s define our iControl REST endpoint for our extension to be: `/mgmt/shared/TrustedDevices.</p>
-<p>This is a much simplier API then AS3, so we will only support <code>GET</code> and <code>POST</code> requests with complete declarations. We won&#39;t support additional URL namespaces or <code>POST</code> <code>action</code> attributes like AS3 does. We won&#39;t implement and fancy ODATA or graphql filtering complications. All that stuff can be added in another container which frontends interactions with the Application Services Gateway. Remember, we&#39;re decomposing to be cloud ready.</p>
+}</code></pre><p>Let&#39;s define our iControl REST endpoint for our extension to be: <code>/mgmt/shared/TrustedDevices</code>.</p>
+<p>This is a much simplier API then AS3, so we will only support <code>GET</code> and <code>POST</code> requests with complete declarations. We won&#39;t support additional URL namespaces or <code>POST</code> <code>action</code> attributes like AS3 does. We won&#39;t implement and fancy ODATA or graphql filtering complications. All that stuff can be added in another container which frontends interactions with the Application Services Gateway. Remember, <em>we&#39;re decomposing</em> to be cloud ready.</p>
 <p>Notice that our <code>targetUsername</code> and <code>targetPassword</code> attributes are <code>writeOnly</code>. That means they should only be present in <code>POST</code> requests. Our <code>state</code> attribute is <code>readOnly</code>, so it can not be set in a <code>POST</code> request, but will be present in the responses to <code>GET</code> or <code>POST</code> requests. </p>
 <p>Assuming we made the previous declaration in a <code>POST</code> request, let&#39;s have subsequest <code>GET</code> requests yield something like this:</p>
 <pre><code>{
@@ -1843,10 +1869,10 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p>That seems to give us everything we need, but keep the user experience simple. Fisrt you issue <code>GET</code> requests to see what trusted device are currently defined. Then you issue <code>POST</code> requests declarations specifying which trusted devices to add or retain. If you want to remove all device trusts,just <code>POST</code> an empty <code>devices</code> list like this:</p>
 <pre><code>{
   &quot;devices&quot;: []
-}</code></pre><p>In our experience, removed the concern for the device group entirely from the Application Service Gateway instance. That is the user experience we decided to implement. If you don&#39;t like that, change it. You don&#39;t need to wait for a new TMOS release to get a new API user experience. You don&#39;t have to wait for a new TMOS release to remove TMOS concerns from your API users. There is no license for the Application Service Gateway, so start as many of them as you want. Experiment. Refine. Test. Deploy. That&#39;s cloud ready.</p>
+}</code></pre><p>In our user experience, we removed the concern for the device group entirely. That is the user experience we decided to implement. If you don&#39;t like that, change it. You don&#39;t need to wait for a new TMOS release to get a new API user experience. You don&#39;t have to wait for a new TMOS release to remove TMOS concerns from your API users. There is no purchase cost for the Application Service Gateway, so start as many of them as you want. Experiment. Refine. Test. Deploy. That&#39;s cloud ready.</p>
 <p>This is just an example of defining a particular user experience and then creating a schema and an iControl LX extension to implement our declarative API. Do you think you could do this? Most of our engineers didn&#39;t think they would ever write an iRule at one point, but look at us now.</p>
-<p><strong>Note:</strong> If your desired user experience includes interaction with non-TMOS services, you should use the API Services Gateway <em>ONLY</em> for the TMOS interaction. The other service interactions should have their own containerized endpoints using frameworks and libraries which make sense for those systems. That&#39;s cloud ready. That&#39;s micro-services.</p>
-<p>We&#39;ve written the iControl LX extension which implements this user experience for you. If you are interested, <a href="/icontrollx/TrustedDevices/src/nodejs/TrustedDevicesWorker.js">here is the source code</a>. The RPM package file for this extension is on the F5 Container Demonstration Virtual Device.</p>
+<p><strong>Note:</strong> If your desired user experience includes interaction with non-TMOS services, you should use the API Services Gateway <em>ONLY</em> for the TMOS interaction. The other service interactions should have their own containerized endpoints using frameworks and libraries which make sense for those systems. That&#39;s cloud ready. That&#39;s micro-services. If you find you are making iControl REST calls and using calls to another vendor&#39;s APIs in the same iControl LX extension, you did it wrong.</p>
+<p>We&#39;ve written the iControl LX extension which implements this user experience for you. If you are interested, <a href="/icontrollx/TrustedDevices/src/nodejs/TrustedDevicesWorker.js">here is the source code</a>. The RPM package file for this extension can be downloaded to the F5 Container Demonstration Virtual Device just like the TrustProxy RPM file.</p>
 <p>To test your skills, see if you can:</p>
 <ul>
 <li>Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device</li>
@@ -1892,7 +1918,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
         }
     ]
 }</code></pre><p>You should play around with your new TrustedDevices iControl LX extension and see how easy it is to add and remove trusted devices now. That&#39;s the whole point. We took something complex and made it simpler through declarations.</p>
-<p><strong>Note:</strong> We used JSON schema because AS3 uses JASON schema. There are other schema standards which are becoming better accepted than JSON schema. Look at <a href="https://www.openapis.org/">OpenAPI</a>. We&#39;ll use an OpenAPI generated interactive UI to avoid all this <code>curl</code> cnt-n-paste and SSH sessions in future exercises.</p>
+<p><strong>Note:</strong> We used JSON schema because AS3 uses JSON schema. There are other schema standards which are becoming better accepted than JSON schema. Look at <a href="https://www.openapis.org/">OpenAPI</a>. We&#39;ll use an OpenAPI generated interactive UI to avoid all this <code>curl</code> cnt-n-paste and SSH sessions in future exercises.</p>
 <p>If you want to see more complex JSON schemas, the clouddocs that were generated from AS3&#39;s JSON schema files can be viewed here:</p>
 <p><a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/refguide/schema-reference.html">AS3 Schemas Documentation</a></p>
 <p>Appreciate that starting with well defined schemas for our API contracts leads to better code, better testing, and documentation.</p>
@@ -1903,13 +1929,13 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </li>
 <li><p>When the performance or security topology precludes the use of the API Services Gateway as a full proxy.    </p>
 </li>
-<li><p>When migrating or decomposing an existing iControl REST application into a mciro services architect.</p>
+<li><p>When migrating or decomposing an existing iControl REST application into a mciro services architect. It might be nice to retain the same tested iControl REST request workflows.</p>
 </li>
 </ul>
-<p><em>How can we still remove the concerns of TMOS authentication and roles authorization from our solution in these situations?</em>   </p>
-<p>We <em>expose the internal</em> iControl REST signature mechanism the API Service Gateway utilizes. iControl LX extensions are also the method by which we extend TMOS APIs. This extension won&#39;t be a fully declarative interface, rather a way to expose an internal service or process in our devices.</p>
+<p><em>I thought we could only proxy requests through the trusted API Services Gateway. How can we still remove the concerns of TMOS authentication and roles authorization from our solution in these situations?</em>   </p>
+<p>We <em>expose the internal</em> iControl REST signature mechanism the API Service Gateway is using to external clients. We can build an iControl LX extension which exposes these internal TMOS iControl REST APIs. This extension won&#39;t be a fully declarative interface, rather simply a way to expose an internal service or process to clients.</p>
 <p><strong><em>Note:</em> iControl LX extensions can be use to expose important components of F5 technology which are not readily exposed through our REST APIs. This includes security token generation, dynamic routing configuration, and other non iControl REST exposed system applications. You can utilize iControl LX extension to expose internals of any platform which supports the iControl LX framework. This includes BIG-IP devices and the API Services Gatway.</strong>   </p>
-<p>Let&#39;s not write a totally new iControl LX extension, let&#39;s just extend our existing TrustedProxy extension to support <code>GET</code> requests for security token retrieval. We lied to you  before... Your TrustedProxy iControl LX extension already supports this.  Sorry to fool you.. not really.</p>
+<p>Let&#39;s not write a totally new iControl LX extension, let&#39;s just extend our existing TrustedProxy extension to support <code>GET</code> requests for security token retrieval. <strong>We lied to you  before... Your TrustedProxy iControl LX extension already supports this.  Sorry to fool you.. not really.</strong></p>
 <p><img src="./assets/images/f5-api-services-gateway-proxy-or-token.png" alt="Established Trust through iControl LX extensions in two ways"></p>
 <p>The internal mechanism used by the API Service Gateway to sign proxied requests does so by adding two query parameters to all targeted iControl REST requests. The parameters indentify the API Services Gateway to the remote TMOS device and present the signed token. Here is an example of what the augmented query parameters look like: </p>
 <pre><code>?em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D</code></pre><p>Let&#39;s make a <code>GET</code> request to our TrustedProxy iControl LX extension to get an our signed tokens for each of our trusted devices.  </p>
@@ -1919,7 +1945,9 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
     &quot;172.17.0.2&quot;: &quot;{\&quot;address\&quot;:\&quot;172.17.0.2\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720288}&quot;,
     &quot;172.13.1.107&quot;: &quot;{\&quot;address\&quot;:\&quot;172.13.1.107\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720299}&quot;,
     &quot;172.13.1.103&quot;: &quot;{\&quot;address\&quot;:\&quot;172.13.1.103\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720309}&quot;
-}</code></pre><p>Our API Service Gateway token is also included, even though there is no security on our API Services Gateway by default. If you followed the directions on dockerHub to enable the HTTP BASIC authentication scheme for the API Service Gateway, you could build a micro service, which has credentials to access the API Services Gateway, issue requests to the TrustedProxy iControl LX extension. That service could now issue the token to other services which don&#39;t have the credentials to access the API Service Gateway but need to use iControl REST on trusted BIG-IPs. We&#39;ll see in a later example that completely removing direct access to the API Services Gateway is a much easier way to secure it in our modern containerized world.</p>
+}</code></pre><p>Our API Service Gateway token is also included in the response, even though there is no security on our API Services Gateway by default. </p>
+<p>If you followed the directions to enable Apache to enforce HTTP BASIC authentication for the API Service Gateway, you could build a micro service container which requires credentials to access the API Services Gateway, issue requests to the TrustedProxy iControl LX extension for tokens, and then returns those tokens to clients. Effectly building an F5 only secure token service container.</p>
+<p>We&#39;ll see in a later example that completely removing direct access to any container which has the API Services Gateway services is a much easier way to secure things in our modern containerized world.</p>
 <p>The returned token objects from our TrustedProxy iControl LX extension have three attributes:</p>
 <hr>
 <table>
@@ -1943,7 +1971,9 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </tr>
 </tbody></table>
 <hr>
-<p>Pick one of your trusted devices and see if the security token indeed works. You can do this with a simple curl request.</p>
+<p>Pick one of your trusted devices and see if the security token indeed works. You can do this by:</p>
+<p>1) Using curl to retrieve a token and storing it in an environment variable. 
+2) Issuing an iControl REST request directly to a trusted BIG-iP adding the token query parameters to your request URL.</p>
 <p><strong>Step 2. Make an iControl Rest request directly to a trusted device using our retrieved token (query parameters)</strong></p>
 <pre><code>f5admin@containerhost:~$ token=&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D&quot;
 
@@ -2003,7 +2033,8 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
    &quot;mcpDeviceName&quot; : &quot;/Common/test-bigip1.novalocal&quot;,
    &quot;icrdPort&quot; : 8100
 }
-</code></pre><p>Wow! Direct trusted access to BIG-IPs. Don&#39;t forget to get new tokens before your 10 minutes expire. Otherwise you will get the same <code>401 Unauthorized</code> response as if you had no credentials.</p>
+</code></pre><p><strong>Wow! Direct trusted access to BIG-IPs.</strong> </p>
+<p>Don&#39;t forget to get new tokens before your 10 minutes expire. Otherwise you will get the same <code>401 Unauthorized</code> response as if you had no credentials.</p>
 <h3 id="exercise-10-trustedextensions-icontrol-lx-extension-on-the-api-services-gateway">Exercise #10 - TrustedExtensions iControl LX Extension on the API Services Gateway</h3>
 <p>We can all agree that the process to install an iControl LX extension is too complex. </p>
 <ol>
@@ -2013,10 +2044,12 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
 <li>Query your installation process until the task completes.</li>
 </ol>
 <p>It should be easier. By now you should know how we are going to fix this. You guessed it, we are going to create another iControl LX extension. This inception extension is going to install iControl LX extensions.</p>
-<p>A simple synchronous worker, which takes a URL to your RPM, <code>http:</code>, <code>https:</code>, or <code>file:</code>, and installs it would be nice. If our extension RPM files are so big they can&#39;t upload before our request times out, fine, go back to the multi-step tasked based workflow. Let&#39;s add in knowledge of the API Service Gateway&#39;s trusted devices. All we should need to get from the user is a <code>targetHost</code> and a <code>url</code> to the RPM package file.</p>
-<p>We&#39;re not going to take the time to generate a schema and create a full declarative workflow, though we could. So far our iControl LX examples have largely forced a restrict RESTful lifecycle. That makes sense when we are forcing a rigid declarative API contract. Let&#39;s loose things up a bit and allow the iControl LX user to play with query variables in <code>GET</code>,<code>POST</code>,<code>PUT</code>,and <code>DELETE</code> requests.</p>
+<p>A simple <em>synchronous</em> worker, which takes a URL to your RPM, <code>http:</code>, <code>https:</code>, or <code>file:</code>, and installs it would be nice. If our extension RPM files are so big they can&#39;t upload and go through the <em>asynchronous</em> install tasks before our single request times out, fine, go back to the multi-step tasked based workflow.</p>
+<p>Let&#39;s sprink in some knowledge of the API Service Gateway&#39;s trusted devices. All we should need to get from the user is a <code>targetHost</code> and a <code>url</code> to the RPM package file. That&#39;s really simple.</p>
+<p>We&#39;re not going to take the time to generate a schema and create a full declarative workflow, though we could (and should). </p>
+<p>So far our iControl LX examples have largely forced a restrict RESTful lifecycle. That makes sense when we are forcing a rigid declarative API contract. Let&#39;s loose things up a bit and allow the iControl LX user to play with query variables in <code>GET</code>,<code>POST</code>,<code>PUT</code>,and <code>DELETE</code> requests.</p>
 <p><strong><em>Note: Somewhere the iControl REST architects just fainted. Do you know how much grief they had figuring out how to support basic tasks in TMOS which weren&#39;t RESTful. Take a big cleansing breath. Let it go! If we are creating a simple little app like this, just make the user experience what you want. For more critical operational tasks, full declarative interfaces save money. For quick fixes to bad API workflows, like this one, just simplify everyone&#39;s life and move on.</em></strong> </p>
-<p>Two simple inputs, one optional input.</p>
+<p>We&#39;ll have two simple required inputs, one optional input.</p>
 <hr>
 <table>
 <thead>
@@ -2039,7 +2072,7 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
 </tr>
 </tbody></table>
 <hr>
-<p>We&#39;ll let you input them as query parameters for:</p>
+<p>We&#39;ll collect our inputs as query parameters for:</p>
 <ul>
 <li><code>GET</code> requests to query what extensions are installed on a targeted device. </li>
 <li><code>POST</code> requests to install an extension on a trusted device.</li>
@@ -2053,7 +2086,7 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
      &quot;url&quot;: &quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
 }</code></pre><p>Either way, the user can still use the query parameters if you want. This is about making things easy. So this works:</p>
 <pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=172.13.1.103&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
-{ }</code></pre><p>Just for fun we&#39;ll make it smart enough to understand that a <code>targetHost</code> defined as <code>localhost</code> means to manage the extensions on the API Services Gateway itself. However we&#39;re going to learn a big inception problem with this idea. We don&#39;t care, we&#39;re doing it anyway! Like Lionel Ritchie says.. <em>&#39;That why I&#39;m easy..&#39;</em></p>
+{ }</code></pre><p>Just for fun we&#39;ll make it smart enough to understand that a <code>targetHost</code> defined as <code>localhost</code> means to manage the extensions on the API Services Gateway itself! Inception indeed! However we&#39;re going to learn a big inception with this idea. We don&#39;t care, we&#39;re doing it anyway! Like Lionel Ritchie says.. <em>&#39;That why I&#39;m easy..&#39;</em> Exception in use cases be damned.. keep going!</p>
 <p>Of course we&#39;ve written this example for you. If you are interested, <a href="/icontrollx/TrustedExtensions/src/nodejs/TrustedExtensionsWorker.js">here is the source code</a>.</p>
 <p>Let&#39;s follow the manual steps for the last time to install our &#39;easy button&#39; for iControl LX extension installation.</p>
 <p><strong>Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device</strong></p>
@@ -2111,11 +2144,11 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
         ]
     }
 ]</code></pre><p>Time for some questions to cement your understanding of iControl LX extensions:</p>
-<p><em>Have you figured out the inception problem with our extension?</em> </p>
+<p><em>Have you figured out the problem with using our new extension?</em> </p>
 <p>What happens when you use an iControl LX extension to manage iControl LX extensions on the API Service Gateway? </p>
-<p>Remember, every time you install or remove an iControl LX extension, on the API Services Gateway or on a TMOS device, the iControl LX framework gets restarted. <em>Ouch!</em></p>
+<p>Remember, every time you install or remove an iControl LX extension, on the API Services Gateway or any TMOS device, the iControl LX framework gets restarted. <em>Ouch!</em></p>
 <p>What happens to the requests we are making to the iControl LX framework when it gets restart? All existing requests made to the device are disconnected and our place in any orchestration workflow is lost.</p>
-<p>If the API Services Gateway is only part of an orchestration ecosystem, such a failure isn&#39;t catastrophic. Somewhere in our ecosystem we persist the state of our workflows so we can recover from such issues. We can keep the API Services Gateway nice and simple by requiring it to be only a component of a larger micro services framework.</p>
+<p>If the API Services Gateway was the only part of an orchestration ecosystem, such a failure would be catastrophic. However, in real life, somewhere in our ecosystem we persist the state of our workflows so we can recover from issues like restarting services. We can keep the API Services Gateway nice and simple, let it restart when it needs to, by requiring it to be <strong><em>only a component</em></strong> of a larger micro services framework.</p>
 <hr>
 <h3 id="summary-of-what-you-ve-learned">Summary of What You&#39;ve Learned</h3>
 <p>You&#39;ve had your basic introduction to the F5 components in an orchestration ecosystem.</p>
@@ -2125,7 +2158,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <li>Using an iControl LX extension as a proxy to trusted devices</li>
 <li>Designing a declarative API using a schema</li>
 <li>Using an iControl LX extension as a token service for trusted iControl REST communications</li>
-<li>Simplifying a complex task to make it as easy as we can on the end user</li>
+<li>Simplifying a complex task to make it as easy possible on the end user</li>
 </ul>
 <p>Now, let&#39;s move into the real world. Let&#39;s examine and use a simplified micro services framework which wraps in everything we&#39;ve learned so far and puts it to use within a standards based OpenAPI application.</p>
 <hr>
@@ -2207,7 +2240,12 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p>Let&#39;s update (in REST that&#39;s a <code>PUT</code> request) our <code>admin</code> user to have the <code>BIGIP Administrator</code> role.</p>
 <p>See if you can&#39;t figure out how to make the <code>PUT</code> request to the <code>/users/{userId}</code> API endpoint. You&#39;ll notice our schema example already has what you need built in. You will need the <code>id</code> of the <code>user</code> created by your <code>POST</code> request. You can copy that from the response section of our <code>POST</code> request.</p>
 <p><img src="./assets/images/f5-apps-openapi-app-user-put-request.png" alt="Adding the BIGIP Administrator role"></p>
-<p><strong>Step 5. Managing BIG-IP Deployments</strong></p>
+<p><strong>Step 5. Using iControl LX Extensions in Our Application</strong></p>
+<p>Before we start making iControl REST requests through the API Services Gateway, we still need to simplify many aspects of dealing with TMOS devices and extensions. We created a set of iControl LX extensions to do that, so why not use them as part of our micro servies orchestration. When you first started the application there was a fury of iControl REST calls which took place between the application container and the API Services Gateway. Scroll down to the <code>GET</code> <code>/extensions</code> API endpoint. List the iControl LX extensions our application has already loaded. </p>
+<p><img src="./assets/images/f5-apps-openapi-app-extensions-get.png" alt="List Gateway Extensions"></p>
+<p>Notice our little toolkit of extensions were loaded from file URLs into the API Servies Gateway. iControl LX extensions become the building blocks of larger orchestrations.</p>
+<p>Scroll back up to the <code>/deployments</code> API endpoints.</p>
+<p><strong>Step 6. Managing BIG-IP Deployments</strong></p>
 <p>Our application is going to tie all three of our iControl LX extensions, TrustedDevices, TrustedProxy, and TrustedExtensions, from our previous exercises together into one simplified API user experience. </p>
 <p>We are going to define a <code>Deployment</code> of BIG-IPs. Each deployment will have an <code>id</code> and <code>name</code> attribute to help us identify them. A <code>Deployment</code> will also have a list of BIG-IP targets to establish trust. Our <code>Deployment</code> will allow you to input a list of <code>url</code> attributes for iControl LX extensions which will be downloaded to our services, uploaded to the <code>Deployment&#39;s</code> BIG-IP targets, and installed. Once a <code>Deployment</code> is created, anyone can use either the <code>/api/deployments/{deploymentId}/proxy/</code> or the <code>/api/devices/{deviceId}/proxy/</code> API endpoints to issue iControl REST calls to our trusted BIG-IP devices.</p>
 <p>In our application, we&#39;ve decided that no authentication or roles are requires to issue iControl REST requests to trusted BIG-IPs through either the <code>/api/deployments/{deploymentId}</code> or <code>/api/devices/{deviceId}</code> API endpoints. It&#39;s not what you would want to do in real life, but it&#39;s making the point that the concern for TMOS secured access is provided by integrating our application with the API Services Gateway!</p>
@@ -2242,12 +2280,12 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p>While we are not adding security in our example, it is important to note that security boundaries are often enforced by URL namespaces. Having a means to anchor methods on a specific set of devices is a great way to design for API security.</p>
 <p>Navigate to the <code>DELETE</code> <code>/api/deployments/{deploymentId}</code> API endpoint. A deployment can quickly be discarded. Again, if devices joined to a deployment are present in other deployments, they will remain trusted on the API Services Gateway. Only then a device is no longer in any deployments will the <code>DELETE</code> <code>/api/deployments/{deploymentId}</code> API endpoint remove the extensions and the device trust from the API Services Gateway.</p>
 <p>So far every API endpoint associated with the API Services Gateway has required authentication and the authenticated use to have the <code>BIGIP Administrator</code> role. </p>
-<p><strong>Step 6. Exploring Trusted Devices</strong></p>
+<p><strong>Step 7. Exploring Trusted Devices</strong></p>
 <p>Scroll down the page until you see the <code>GET</code> <code>/api/devices</code> API endpoint. This endpoint will help you catalog your devices, regardless of the deployment to which they are joined. </p>
-<p><strong>Step 7. Exploring Available Extensions</strong></p>
+<p><strong>Step 8. Exploring Available Extensions</strong></p>
 <p>Scroll down the page until you see the <code>GET</code> <code>/api/extensions</code> API endpoint. This enpoint will help you inventory which extensions have previously been downloaded into our application. Once they are available in the application, that specific verison of our iControl LX extension does not need to be downloaded again.</p>
 <h3 id="exercise-12-making-trusted-icontrol-rest-request-to-remote-big-ips">Exercise #12 - Making Trusted iControl REST Request to Remote BIG-IPs</h3>
-<p><strong>Step 8. Make a Trusted iControl REST Request to All Devices in A Deployment</strong></p>
+<p><strong>Step 9. Make a Trusted iControl REST Request to All Devices in A Deployment</strong></p>
 <p>Issuing iControl REST requests to trusted devices through our application requires no authentication nor role. You can prove this to yourself by navigating to the top of the OpenAPI widgets and removing your authentication credentials. </p>
 <p>Let&#39;s perform some iControl REST requests which you might want to invoke on whole deployments of BIG-IPs at the same time. You can probably imagine many tasks which regularly need to be done on sets of BIG-IPs as part of regular operations. Let&#39;s select tasks that would likely require data from another part of your ecosystem. Most SDN controllers dynamically generate and manage VLANs. Let&#39;s manage a VLAN on multiple BIG-IPs at once through our deployment.</p>
 <p>To cememnt our understanding, let&#39;s assume that a Cisco APIC SDN controller dynamically provisions a VLAN with segmentation ID <code>2018</code> which needs to be bound to every BIG-IP in our deployment on interface 1.2.</p>
@@ -2267,13 +2305,13 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p>To complete the lifecycle of our VLAN management, when we need demonstrate removing the VLAN. We can use the <code>DELETE</code> <code>/api/deployments/{deploymentId}</code>. You will need the <code>fullPath</code> attribute from our VLAN modifying the path slashes with tildas (<code>~</code>). That is iControl REST&#39;s URL namespace syntax. </p>
 <p><img src="./assets/images/f5-apps-openapi-app-deployments-icontrol-delete-vlans.png" alt="Removing a VLAN on multiple BIG-IPs"></p>
 <p><strong>Note:</strong> Why wouldn&#39;t we just do this through <em>Ansible</em> modules? You can. Our application could easily be replaced by <em>Ansible</em>, but you still need to build the support in the ecosystem for removing BIG-IP concerns through the API Services Gateway. This is just an example of how this could be done using a container based micro services approach. We opted for a containerized approach because the API Services Gateway is a container.</p>
-<p><strong>Step 9. Making a Trusted iControl REST Request to a Single Device</strong></p>
+<p><strong>Step 10. Making a Trusted iControl REST Request to a Single Device</strong></p>
 <p>For completeness we will issue an iControl REST request to a single device. Naviagate to the <code>GET</code> <code>/devices/{deviceId}/proxy{iControlRestURIEndpoint}</code> API endpoint and issue the <code>/mgmt/shared/identified-devices/config/device-info</code> as supplied in the example. Note, again, that this request can be issued with concern for TMOS role.</p>
 <p><img src="./assets/images/f5-apps-openapi-app-devices-icontrol-get-device-info.png" alt="Making iControl REST Request to a Single Trusted Device"></p>
 <p>Most provisioning tasks are trusted device specific. This means the majority of the iControl REST requests will be made though the <code>/devices/{deviceId}/proxy{iControlRestURIEndpoint}</code> API endpoints.</p>
 <p>Because requests made to the <code>/devices/{deviceId}/proxy{iControlRestURIEndpoint}</code> API endpoints are made to specific iControl REST API endpoints on a trusted device, the HTTP status code, response headers, and body are directly proxied to the client. What you see as a status code, response headers, and body returned to your client is exactly what was recieved from the trusted request. Sticking to this direct proxy pattern will make the migration of existing iControl REST applications into part of our micro services orchestration ecosystem easier.</p>
 <h3 id="exercise-13-making-trusted-declarations-without-concern-for-tmos-roles">Exercise #13 - Making Trusted Declarations without Concern for TMOS Roles</h3>
-<p><strong>Step 10. Make a Declaration to A Devices in A Deployment</strong></p>
+<p><strong>Step 11. Make a Declaration to A Devices in A Deployment</strong></p>
 <p>What good would our examples be if we didn&#39;t come full circle and issue a declaration without concern for TMOS roles? Make sure you have included AS3 ny <code>url</code> in the <code>extensions</code> attribute of your deployment. Let&#39;s issue an AS3 declaration to a specific device using the <code>POST</code> <code>/devices/{deviceId}/proxy{iControlRestURIEndpoint}</code> API endpoint.</p>
 <p>We will deploy the sample AS3 declaration from the <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/userguide/composing-a-declaration.html#sample-declaration">AS3 clouddocs example</a>.</p>
 <p>The AS3 iControl LX extension iControl REST API endpoint to make a declarations is <code>/mgmt/shared/appsvcs/declare</code>.</p>
@@ -2325,7 +2363,7 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p>We&#39;ll stop here for now, but we&#39;ll enhance our library of iControl LX extensions to include many other compoents which will prove useful to our partner and community ecosystem orchestrations. There are future development efforts begining which will make use of the API Serviecs Gateway to improve the reuse and supportability of our orchestrations across ecosystems.</p>
 <p>If you want you can go back to <code>DELETE</code> on the <code>/deployments/{deploymentId}</code> API endpoint and remove your deployment. If it was the only one you created, you should see your extensions uninstalled from your remote trusted devices, and then the device trusts removed from the API Services Gateway.</p>
 <p><img src="./assets/images/f5-apps-openapi-app-deployments-delete.png" alt="Delete our Deployment"></p>
-<p><strong>Step 10. Removing the Application</strong></p>
+<p><strong>Step 12. Removing the Application</strong></p>
 <p>The is just one more thing to do, stop your micro services.</p>
 <p>Use the docker-compose orchestrator to remove our micro services. We will start our docker containers by issueing the up command in our home directory.</p>
 <pre><code>f5admin@containerhost:~$ docker-compose down</code></pre><hr>
