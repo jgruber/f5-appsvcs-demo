@@ -651,23 +651,28 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 <tr>
 <th align="left">Attribute</th>
 <th align="left">Explanation</th>
+<th align="left">Value</th>
 </tr>
 </thead>
 <tbody><tr>
 <td align="left">deviceIP</td>
 <td align="left">The F5 Container Demonstration Virtual Device IP Address</td>
+<td align="left">10.1.1.8</td>
 </tr>
 <tr>
 <td align="left">targetHost</td>
 <td align="left">The iControl REST remote BIG-IP host, reachable from the container</td>
+<td align="left">10.1.1.7</td>
 </tr>
 <tr>
 <td align="left">targetUsername</td>
 <td align="left">The iControl REST username on the remote BIG-IP</td>
+<td align="left">admin</td>
 </tr>
 <tr>
 <td align="left">targetPassphrase</td>
 <td align="left">The iControl REST password on the remote BIG-IP</td>
+<td align="left">admin</td>
 </tr>
 </tbody></table>
 <hr>
@@ -916,10 +921,10 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
 <form id='asg-container-exercises-variables'>
 <table>
-<tr><th>deviceIP: </th><td><input id='asg-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
-<tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address'></td></tr>
-<tr><th>targetUsername: </th><td><input id='asg-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
-<tr><th>targetPassphrase: </th><td><input id='asg-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
+<tr><th>deviceIP: </th><td><input id='asg-container-container-demonstration-virtual-device-ip' placeholder='Device IP' value='10.1.1.8'></td></tr>
+<tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address' value='10.1.1.7'></td></tr>
+<tr><th>targetUsername: </th><td><input id='asg-container-exercises-targetUsername' placeholder='BIG-IP Username' value='admin'></td></tr>
+<tr><th>targetPassphrase: </th><td><input id='asg-container-exercises-targetPassphrase' placeholder='BIG-IP Password' value='admin'></td></tr>
 <tr><td>&nbsp;</td></tr>
 <tr><td colspan='2'><input type='button' onclick='buildASGExercises()' value=' Generate Exercises Cut-n-Paste Commands '></td></tr>
 </table>
