@@ -205,11 +205,6 @@ spec:
 <p><img src="./assets/images/f5_container_demonstration_virtual_device_and_bigip_ve.png" alt="Launch Virtual Machines for Exercises"></p>
 <hr>
 <h3 id="exercise-1-downloading-and-launching-the-as3-container-with-docker">Exercise #1 - Downloading and Launching the AS3 Container with <code>docker</code></h3>
-<p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
-<p>You can Obtain the IP address of your booted F5 Container Demonstration Virtual Device by opening its console. </p>
-<p><img src="./assets/images/f5_container_demonstration_virtual_device_console.png" alt="F5 Container Demonstration Virtual Device Console"></p>
-<p>In this example, the IP address would be 192.168.185.129. Your address will likely be different.</p>
-<p>If the Host entry IP address is blank, please assure your network interface is properly connected to a network.</p>
 <div class='webcontent'>
 
 <p>Fill in the form below to create your cut-n-paste examples for these exercises.</p>
@@ -219,23 +214,28 @@ spec:
 <tr>
 <th align="left">Attribute</th>
 <th align="left">Explanation</th>
+<th align="left">Value</th>
 </tr>
 </thead>
 <tbody><tr>
 <td align="left">deviceIP</td>
 <td align="left">The F5 Container Demonstration Virtual Device IP Address</td>
+<td align="left">10.1.1.8</td>
 </tr>
 <tr>
 <td align="left">targetHost</td>
 <td align="left">The iControl REST remote BIG-IP host, reachable from the container</td>
+<td align="left">10.1.1.7</td>
 </tr>
 <tr>
 <td align="left">targetUsername</td>
 <td align="left">The iControl REST username on the remote BIG-IP</td>
+<td align="left">admin</td>
 </tr>
 <tr>
 <td align="left">targetPassphrase</td>
 <td align="left">The iControl REST password on the remote BIG-IP</td>
+<td align="left">admin</td>
 </tr>
 </tbody></table>
 <hr>
@@ -248,8 +248,7 @@ function buildAS3Exercises()
     var targetUsername = document.getElementById('as3-container-exercises-targetUsername').value;
     var targetPassphrase = document.getElementById('as3-container-exercises-targetPassphrase').value;
 
-    var ssh_login = `ssh f5admin@` + deviceIp + `
-f5admin@` + deviceIp + `'s password: f5admin`;
+    var ssh_login = ``;
 
     var as3_version_command = `curl -k -s https://localhost:8443/mgmt/shared/appsvcs/info|json_pp
 `;
@@ -272,7 +271,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
 }'
 `;
 
-    var as3_retrieve_command_output = `f5admin@containerhost:~$ <b>curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d '{
+    var as3_retrieve_command_output = `ubuntu@ip-10-1-1-8:~$ <b>curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d '{
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
@@ -280,10 +279,10 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
 
-f5admin@containerhost:~$ <-- Notice no response output!
+ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 
 `;
-    var as3_retrieve_command_output_post_to_remote_bigip = `f5admin@containerhost:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `/mgmt/shared/appsvcs/declare -d '{
+    var as3_retrieve_command_output_post_to_remote_bigip = `ubuntu@ip-10-1-1-8:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `/mgmt/shared/appsvcs/declare -d '{
 >     "class": "AS3",
 >     "action": "retrieve"
 > }'|json_pp
@@ -295,7 +294,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
 }
 `;
 
-    var as3_retrieve_command_output_get_to_remote_bigip = `f5admin@containerhost:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `/mgmt/shared/appsvcs/declare|json_pp
+    var as3_retrieve_command_output_get_to_remote_bigip = `ubuntu@ip-10-1-1-8:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `/mgmt/shared/appsvcs/declare|json_pp
 
 {
     "statusCode": 404,
@@ -389,24 +388,20 @@ f5admin@containerhost:~$ <-- Notice no response output!
 
 </div>
 
-<p>Start your ssh client and login with the username, password, and host shown on the console.</p>
+
+<p>Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device</p>
+<p>Create a SSH connection to the component called F5 AS3 Container Demonstration in your UDF Blueprint </p>
+<p><img src="./assets/images/udf-access-ssh-as3-container.png" alt="F5 Container Demonstration Virtual Device Console"></p>
 <div id='as3-ssh-login'>
 
-<p><strong><code>ssh f5admin@[Your F5 Container Demonstration Device IP]</code></strong></p>
-<pre><code>f5admin@[Your F5 Container Demonstration Device IP]
-f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</code></pre></div>
 
-<pre><code>Welcome to F5 Container Demo Virtual Device (GNU/Linux 4.15.0-36-generic x86_64)
+</div>
 
-Running Containers: 
-
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
-
-Last login: Sat Sept 1 09:32:55 2018 from 172.16.27.1
-f5admin@containerhost:~$ 
+<pre><code>Last login: Sun Nov 11 16:04:46 2018 from 10.1.1.254
+ubuntu@ip-10-1-1-8:~$
 </code></pre><p>Step 2. Pull the AS3 Container from Dockerhub</p>
 <p><strong><code>docker pull f5devcentral/f5-as3-container</code></strong></p>
-<pre><code>f5admin@containerhost:~$ docker pull f5devcentral/f5-as3-container
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker pull f5devcentral/f5-as3-container
 Using default tag: latest
 latest: Pulling from f5devcentral/f5-as3-container
 911c6d0c7995: Pulling fs layer
@@ -417,10 +412,10 @@ Digest: sha256:9ccf5a8e18699742440ea50b9023a9728987d04da4710869e8964d36bcf1d552
 Status: Downloaded newer image for f5devcentral/f5-as3-container:latest
 </code></pre><p>Step 3. Create a running instance of the AS3 Container</p>
 <p><strong><code>docker run --name as3_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-as3-container:latest</code></strong></p>
-<pre><code>f5admin@containerhost:~$ docker run --name as3_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-as3-container:latest
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker run --name as3_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-as3-container:latest
 478d06836ee38fdd48f89e267d7b91c9d3bfb9538c0602e3fdb444062e2f3e54</code></pre><p>List the running containers.</p>
 <p><strong><code>docker ps</code></strong></p>
-<pre><code>f5admin@containerhost:~$ docker ps
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker ps
 CONTAINER ID        IMAGE                                  COMMAND             CREATED             STATUS              PORTS                                         NAMES
 478d06836ee3        f5devcentral/f5-as3-container:latest   &quot;/etc/runit/boot&quot;   8 seconds ago       Up 7 seconds        0.0.0.0:8080-&gt;80/tcp, 0.0.0.0:8443-&gt;443/tcp   as3_container
 </code></pre><h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
@@ -429,7 +424,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='get-as3-version'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s  https://localhost:8443/mgmt/shared/appsvcs/info|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s  https://localhost:8443/mgmt/shared/appsvcs/info|json_pp
 {
    &quot;schemaMinimum&quot; : &quot;3.0.0&quot;,
    &quot;release&quot; : &quot;3&quot;,
@@ -448,7 +443,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='get-as3-existing-declaration-command'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
@@ -459,7 +454,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 <p>If you receive no response output like this:</p>
 <div id='get-as3-existing-declaration-command-output'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
@@ -467,7 +462,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
 
-f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
+ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
 
 <p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> status code in your response.</p>
 <p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
@@ -475,7 +470,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 <p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-post-to-remote-bigip'>
 
-<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]/mgmt/shared/appsvcs/declare -d &#39;{
 &gt;     &quot;class&quot;: &quot;AS3&quot;,
 &gt;     &quot;action&quot;: &quot;retrieve&quot;
 &gt; }&#39;|json_pp
@@ -488,7 +483,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 <p>Note the response issuing a <code>GET</code> request on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-get-to-remote-bigip'>
 
-<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]/mgmt/shared/appsvcs/declare|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]/mgmt/shared/appsvcs/declare|json_pp
 {
     &quot;statusCode&quot;: 404,
     &quot;message&quot;: &quot;declaration 0 not found&quot;,
@@ -504,7 +499,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 
 <p>iControl LX extension resources are created within the AS3 Container and then a series of iControl REST requests are issued to the target host BIG-IP to provision the services declared. </p>
 <p>Here is what the result should look like. </p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;deploy&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
@@ -586,7 +581,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
     }
 }
 
-f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
+ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
 <p><strong>Note:</strong> <em>The declaration is maintained in the AS3 Container, however the declared state is implemented on the remote BIG-IP.</em> When our customers use the AS3 container, they can get the advantages of the simplified declarative AS3 API without the need to deploy the AS3 iControl LX extension on fleets of BIG-IPs.</p>
 <p><strong>Step 4. Remove an AS3 declaration from a remote BIG-IP</strong></p>
 <p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
@@ -595,7 +590,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 
 </div>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/appsvcs/declare -d &#39;{
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;remove&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
@@ -625,7 +620,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 }</code></pre><p><strong>Step 5. Stop the AS3 Container</strong></p>
 <p>To stop the AS3 Container on our F5 Container Demonstration Virtual Device issue the following <code>docker</code> command.</p>
 <p><strong><code>docker stop as3_container</code></strong></p>
-<pre><code>f5admin@containerhost:~$ docker stop as3_container </code></pre><hr>
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker stop as3_container </code></pre><hr>
 <h2 id="f5-api-services-gateway-exercises">F5 API Services Gateway Exercises</h2>
 <p>We will go through a series of exercises which illustrate the uses of the <a href="https://hub.docker.com/r/f5devcentral/f5-api-services-gateway/">API Service Gateway Container</a> as a place to install and use iControl LX extensions. We will highlight the API Services Gateway acting as trusted gateway to remove BIG-IP concerns from a complex ecosystem integration.</p>
 <p>In these exercises you will need:</p>
@@ -701,7 +696,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
-f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '
+ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '
 {
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
@@ -737,7 +732,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     "packageFilePath": "/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm"
 }'|json_pp`;
 
-    var asg_install_trust_proxy_response = `f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
+    var asg_install_trust_proxy_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
 { 
     "operation":"INSTALL",
     "packageFilePath": "/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm"
@@ -757,7 +752,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]`;
 
-    var asg_install_query_trust_proxy_response = `f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/9a559504-f1a2-4dca-a8d6-32ce48f2f896
+    var asg_install_query_trust_proxy_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/9a559504-f1a2-4dca-a8d6-32ce48f2f896
 
 {
    "ownerMachineId" : "d4b0973a-dea3-4eb9-a281-f6378ed5cfc8",
@@ -781,7 +776,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_query_installed_task_extensions_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ "operation":"QUERY"}'|json_pp`;
 
-    var asg_query_installed_task_extensions_response = `f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ "operation":"QUERY"}'|json_pp
+    var asg_query_installed_task_extensions_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ "operation":"QUERY"}'|json_pp
 
 {
    "generation" : 1,
@@ -796,7 +791,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_query_installed_task_extensions_id_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]|json_pp`;
 
-    var asg_query_installed_task_extensions_id_response = `f5admin@containerhost:~$curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/d4bcd95e-1625-49af-ab25-1acfb91f0cb8|json_pp
+    var asg_query_installed_task_extensions_id_response = `ubuntu@ip-10-1-1-8:~$curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/d4bcd95e-1625-49af-ab25-1acfb91f0cb8|json_pp
 {
    "kind" : "shared:iapp:package-management-tasks:iapppackagemanagementtaskstate",
    "ownerMachineId" : "d4b0973a-dea3-4eb9-a281-f6378ed5cfc8",
@@ -829,7 +824,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
 `;
 
-    var asg_trusted_proxy_icontrol_response = `f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d '{
+    var asg_trusted_proxy_icontrol_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d '{
     "method": "Get",
     "uri": "https://` + targetHost + `/mgmt/shared/identified-devices/config/device-info"
 }'|json_pp
@@ -943,10 +938,10 @@ Running Containers:
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 
 Last login: Sat Sept 1 09:32:55 2018 from 172.16.27.1
-f5admin@containerhost:~$ 
+ubuntu@ip-10-1-1-8:~$ 
 </code></pre><p><strong>Step 2. Pull the API Services Gateway Container from Dockerhub</strong></p>
 <p><strong><code>docker pull f5devcentral/f5-api-services-gateway</code></strong></p>
-<pre><code>f5admin@containerhost:~$ docker pull f5devcentral/f5-api-services-gateway
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker pull f5devcentral/f5-api-services-gateway
 Using default tag: latest
 latest: Pulling from f5devcentral/f5-api-services-gateway
 911c6d0c7995: Already exists 
@@ -957,7 +952,7 @@ latest: Pulling from f5devcentral/f5-api-services-gateway
 Digest: sha256:6d425a974564940fb7a86bfd899d17999260cf16f839f9ab451b99ef38c68b7e
 Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</code></pre><p><strong>Step 3. Create a running instance of the API Services Gateway</strong></p>
 <p><strong><code>docker run --name asg_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-api-services-gateway:latest</code></strong></p>
-<pre><code>f5admin@containerhost:~$ docker run --name asg_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-api-services-gateway:latest
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker run --name asg_container --rm -d -p 8443:443 -p 8080:80 f5devcentral/f5-api-services-gateway:latest
 1c93dd6fa06e7f63df22953d0a0facb20635d7db74ca9a322f798fe3ff582119</code></pre><h3 id="exercise-4-creating-a-trust-between-the-api-service-gateway-and-remote-big-ips">Exercise #4 - Creating a Trust Between the API Service Gateway and Remote BIG-IPs</h3>
 <p>The main use case for the API Services Gateway is to add an container based service which decouples all the TMOS concerns from the rest of the orchestration services. One of the major concerns imposed by TMOS is its authentication and roles based authorizations. To remove those concerns we are going to create a device trust between the API Services Gateway and a remote BIG-IP.</p>
 <p>In TMOS, the ability to issue trusted requests is contingent on a remote device being registered in a device group. We will start by </p>
@@ -972,7 +967,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
 
 </div>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups|json_pp
 {
     &quot;items&quot;: [
         {
@@ -1029,7 +1024,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
 
 <div id='asg-add-device-group-response'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/resolver/device-groups -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/resolver/device-groups -d &#39;{
     &quot;groupName&quot;: &quot;app1&quot;,
     &quot;display&quot;: &quot;API Gateway Trust Group&quot;,
     &quot;description&quot;: &quot;API Gateway Trust Group&quot;
@@ -1063,7 +1058,7 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
 
 <div id='asg-add-device-to-group-response'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d &#39;{
     &quot;userName&quot;: &quot;[Your Remote BIG-IP Username]&quot;,
     &quot;password&quot;: &quot;[Your Remote BIG-IP Password]&quot;,
     &quot;address&quot;: &quot;[Your Remote BIG-IP]&quot;,
@@ -1091,7 +1086,7 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
 
 </div>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices|json_pp
 
 {
     &quot;items&quot;: [
@@ -1277,8 +1272,8 @@ module.exports = TrustedProxyWorker;</code></pre><p>The TrustedProxy iControl LX
 <p>iControl REST supports uploading files to remote devices. A detailed discussion can be found here:</p>
 <p><a href="https://devcentral.f5.com/articles/demystifying-icontrol-rest-part-5-transferring-files">Demystifying iControl REST Part 5: Transferring Files</a></p>
 <p>The TrustedProxy RPM file is available at <a href="/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm">/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm</a>. We can download it into the <code>f5admin</code> user&#39;s home directory of the F5 Container Demonstration Virtual Device using curl. </p>
-<pre><code>f5admin@containerhost:~$ curl http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm -O
-f5admin@containerhost:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm 
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm -O
+ubuntu@ip-10-1-1-8:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm 
 -rw-rw-r-- 1 f5admin f5admin 7728 Oct  1 09:56 /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm</code></pre><p>We created the F5 Container Demonstration Virtual Device for your convience. Be aware that the RPM package for our iControl LX extension could be uploaded into the API Services Gateway container from anywhere that has access to the API Services Gateway iControl REST endpoints.</p>
 <p><strong>Use bash and curl in the F5 Container Demonstration Device SSH session</strong></p>
 <p>Set the following bash variables and run the following <code>curl</code> command to upload the TrsutedProxy iControl LX extension from the F5 Container Demonstration Virtual Device into the API Services Gateway container.</p>
@@ -1288,10 +1283,10 @@ f5admin@containerhost:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm
 
 <div id='asg-upload-trust-proxy-response'>
 
-<pre><code>f5admin@containerhost:~$ filepath=&#39;/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm&#39;
-f5admin@containerhost:~$ filename=$(basename $filepath)
-f5admin@containerhost:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm&#39;
+ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
+ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 
 {&quot;remainingByteCount&quot;:0,&quot;usedChunks&quot;:{&quot;0&quot;:7728},&quot;totalByteCount&quot;:7728,&quot;localFilePath&quot;:&quot;/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;temporaryFilePath&quot;:&quot;/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;generation&quot;:0,&quot;lastUpdateMicros&quot;:1539099747522073}</code></pre></div>
 
@@ -1311,7 +1306,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 <div id='asg-install-trust-proxy-response'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
     &quot;operation&quot;:&quot;INSTALL&quot;,
     &quot;packageFilePath&quot;: &quot;/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm&quot;
 }&#39;|json_pp
@@ -1337,7 +1332,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 <div id='asg-install-query-trust-proxy-response'>
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[your task id]
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[your task id]
 
 {
    &quot;ownerMachineId&quot; : &quot;d4b0973a-dea3-4eb9-a281-f6378ed5cfc8&quot;,
@@ -1373,7 +1368,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 <div id='asg-query-installed-task-extensions-response' >
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ &quot;operation&quot;:&quot;QUERY&quot;}&#39;|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ &quot;operation&quot;:&quot;QUERY&quot;}&#39;|json_pp
 
 {
    &quot;generation&quot; : 1,
@@ -1395,7 +1390,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 <div id='asg-query-installed-task-extensions-id-response' >
 
-<pre><code>f5admin@containerhost:~$curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/iapp/package-management-tasks/d4bcd95e-1625-49af-ab25-1acfb91f0cb8|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/iapp/package-management-tasks/d4bcd95e-1625-49af-ab25-1acfb91f0cb8|json_pp
 {
    &quot;kind&quot; : &quot;shared:iapp:package-management-tasks:iapppackagemanagementtaskstate&quot;,
    &quot;ownerMachineId&quot; : &quot;d4b0973a-dea3-4eb9-a281-f6378ed5cfc8&quot;,
@@ -1445,7 +1440,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <div id='asg-trusted-proxy-icontrol-response'>
 
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d &#39;{
     &quot;method&quot;: &quot;Get&quot;,
     &quot;uri&quot;: &quot;https://172.13.1.103/mgmt/shared/identified-devices/config/device-info&quot;
 }&#39;|json_pp
@@ -1522,7 +1517,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </ol>
 <p><strong>Step 1. Query the device group for device <code>machineIds</code> for both the API Services Gateway and our remote BIG-IP</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices|json_pp
 
 {
     &quot;items&quot;: [
@@ -1580,7 +1575,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p><em>Your <code>machineId</code>s will be different from the example. Don&#39;t cut-n-pas them.</em></p>
 <p><strong>Step 2. Using the TrustedProxy extension, query the <code>certificateId</code> for the API Services Gateway on the remote BIG-IP</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
 {
    &quot;method&quot;:&quot;Get&quot;,
    &quot;uri&quot;: &quot;https://172.13.1.103:443/mgmt/shared/device-certificates&quot;
@@ -1615,7 +1610,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p><strong>Step 3. Using the TrustedProxy extension, remove the API Services Gateway certificate from your remote BIG-IP</strong></p>
 <p>Augment the <code>uri</code> in the POST body to include the <code>certificateId</code> and change the method to <code>Delete</code>. This will issue a <code>DELETE</code> request through the trust to delete the API Services Gateway certificate.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
 {
    &quot;method&quot;:&quot;Delete&quot;,
    &quot;uri&quot;: &quot;https://172.13.1.103:443/mgmt/shared/device-certificates/[Your API Services Gateway certificateId]&quot;
@@ -1634,7 +1629,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p><strong>Step 4. Remove the remote BIG-IP from the API Services Gateway device group</strong></p>
 <p>Augment the device group URI with <code>/devices/</code>[your remote BIG-IP machineId] and issue a <code>DELETE</code> iControl REST request to the API Services Gateway.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X DELETE https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices/[Your remote BIG-IP machineId]|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X DELETE https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices/[Your remote BIG-IP machineId]|json_pp
 
 {
     &quot;uuid&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
@@ -1666,7 +1661,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 }</code></pre><p>Now that the device group entry for our remote BIG-IP has been removed, the TrustedProxy extension would not longer be able to resolve the trusted device to sign requests.</p>
 <p><strong>Step 5. Query the remote BIG-IP <code>certificateId</code> from the API Services Gateway</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/device-certificates|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/device-certificates|json_pp
 
 {
     &quot;items&quot;: [
@@ -1697,7 +1692,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p><strong>Step 6. Remove the remote BIG-IP&#39;s certificate on the API Services Gateway</strong></p>
 <p>Lastly we remove the remote BIG-IP&#39;s certificate from the Application Services Gateway. Augment the certificates URI with the <code>certificateId</code> for our remote BIG-IP and issue a <code>DELETE</code> iControl REST request on the Application Services Gateway.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X DELETE https://localhost:8443/mgmt/shared/device-certificates/[Your remote BIG-IP certificateId]|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X DELETE https://localhost:8443/mgmt/shared/device-certificates/[Your remote BIG-IP certificateId]|json_pp
 
 {
     &quot;certificateId&quot;: &quot;1.1.1.104&quot;,
@@ -1869,12 +1864,12 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 </ul>
 <p>You&#39;ve already done exercises for each of those step associated with the TrustedProxy extension. Just review those exercises and do the same for the DeviceTrustGroup extension. Here are some hints:</p>
 <p><strong>Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm</code></pre><p><strong>Step 2. Upload the RPM file into the Application Services Gateway</strong></p>
-<pre><code>f5admin@containerhost:~$ filepath=&#39;/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm&#39;
-f5admin@containerhost:~$ filename=$(basename $filepath)
-f5admin@containerhost:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -O http://localhost/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm</code></pre><p><strong>Step 2. Upload the RPM file into the Application Services Gateway</strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm&#39;
+ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
+ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
     &quot;operation&quot;:&quot;INSTALL&quot;,
     &quot;packageFilePath&quot;: &quot;/var/config/rest/downloads/TrustedDevices-1.0.0-0001.noarch.rpm&quot;
 }&#39;|json_pp
@@ -1890,7 +1885,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
    &quot;id&quot; : &quot;863d509e-a246-4361-81ca-43e9b4f19968&quot;,
    &quot;operation&quot; : &quot;INSTALL&quot;
 }</code></pre><p><strong>Step 4. Issue requests to our TrustedDevices iControl LX extension</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
 {
     &quot;devices&quot;: [
         {
@@ -1927,7 +1922,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p>The internal mechanism used by the API Service Gateway to sign proxied requests does so by adding two query parameters to all targeted iControl REST requests. The parameters indentify the API Services Gateway to the remote TMOS device and present the signed token. Here is an example of what the augmented query parameters look like: </p>
 <pre><code>?em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D</code></pre><p>Let&#39;s make a <code>GET</code> request to our TrustedProxy iControl LX extension to get an our signed tokens for each of our trusted devices.  </p>
 <p><strong>Step 1. Get tokens for all your trusted devices</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedProxy|json_pp  
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedProxy|json_pp  
 {
     &quot;172.17.0.2&quot;: &quot;{\&quot;address\&quot;:\&quot;172.17.0.2\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720288}&quot;,
     &quot;172.13.1.107&quot;: &quot;{\&quot;address\&quot;:\&quot;172.13.1.107\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720299}&quot;,
@@ -1962,9 +1957,9 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p>1) Using curl to retrieve a token and storing it in an environment variable. 
 2) Issuing an iControl REST request directly to a trusted BIG-iP adding the token query parameters to your request URL.</p>
 <p><strong>Step 2. Make an iControl Rest request directly to a trusted device using our retrieved token (query parameters)</strong></p>
-<pre><code>f5admin@containerhost:~$ token=&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D&quot;
+<pre><code>ubuntu@ip-10-1-1-8:~$ token=&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D&quot;
 
-f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://172.13.1.103:443/mgmt/shared/identified-devices/config/device-info?$token|json_pp
+ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://172.13.1.103:443/mgmt/shared/identified-devices/config/device-info?$token|json_pp
 {
    &quot;slots&quot; : [
       {
@@ -2077,12 +2072,12 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
 <p>Of course we&#39;ve written this example for you. If you are interested, <a href="/icontrollx/TrustedExtensions/src/nodejs/TrustedExtensionsWorker.js">here is the source code</a>.</p>
 <p>Let&#39;s follow the manual steps for the last time to install our &#39;easy button&#39; for iControl LX extension installation.</p>
 <p><strong>Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm</code></pre><p><strong>Step 2. Upload the RPM file into the Application Services Gateway</strong></p>
-<pre><code>f5admin@containerhost:~$ filepath=&#39;/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm&#39;
-f5admin@containerhost:~$ filename=$(basename $filepath)
-f5admin@containerhost:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm</code></pre><p><strong>Step 2. Upload the RPM file into the Application Services Gateway</strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm&#39;
+ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
+ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
     &quot;operation&quot;:&quot;INSTALL&quot;,
     &quot;packageFilePath&quot;: &quot;/var/config/rest/downloads/TrustedExtensions-1.0.0-0001.noarch.rpm&quot;
 }&#39;|json_pp
@@ -2098,7 +2093,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
    &quot;id&quot; : &quot;8e1a6d03-0ffb-43bd-86a4-c4801fe43d36&quot;,
    &quot;operation&quot; : &quot;INSTALL&quot;
 }</code></pre><p><strong>Step 4. Issue requests to our TrustedExtensions iControl LX extension</strong></p>
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedExtensions?targetHost=localhost|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedExtensions?targetHost=localhost|json_pp
 [
     {
         &quot;name&quot;: &quot;TrustedProxy&quot;,
@@ -2167,7 +2162,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</code></pre></div>
 
 <p>Once you are logged in, use the <code>docker-compose</code> orchestrator to launch our micro services. We will start our docker containers by issueing the <code>up</code> command in our home directory.</p>
-<pre><code>f5admin@containerhost:~$ docker-compose up</code></pre><p>This command will start a flurry of activity in your terminal session as three services intialize and gradually communicate with each other to reach a ready state for external API access.</p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker-compose up</code></pre><p>This command will start a flurry of activity in your terminal session as three services intialize and gradually communicate with each other to reach a ready state for external API access.</p>
 <p><strong>Note:</strong> watch some of what&#39;s going on. Do you see anything familiar? You should see many iControl REST URIs that you recognize as our application installs our TrustedDevices, TrustedProxy, and TrustedExtensions iControl LX extensions to the Application Services Gateway. Our application will use these extensions to provision the BIG-IPs.</p>
 <p>In the home directory there is a <code>docker-compose.yaml</code> file which details what container images to start and their relationship with each other. Our example deployment is comprised of 3 service, each in their own container. </p>
 <ul>
@@ -2371,7 +2366,7 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p><strong>Step 12. Removing the Application</strong></p>
 <p>The is just one more thing to do, stop your micro services.</p>
 <p>Use the docker-compose orchestrator to remove our micro services. We will remove our docker containers by issueing the down command in our home directory.</p>
-<pre><code>f5admin@containerhost:~$ docker-compose down</code></pre><hr>
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker-compose down</code></pre><hr>
 <h1 id="the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</h1>
 <p>How do we keep up with rapidly developing service deployments in our every changing orchestration environments? We&#39;re betting on the ability to launch our containerized services. Our containerized services allow our customers to build distributed controllers which include secured access to BIG-IP provisioning. Our orchestration efforts become decoupled from partner dependencies and releases through iControl LX extensions declarative APIs. The internal workings of BIG-IP trusted access, iControl REST workflows, or even our ability to pivot to non-TMOS application delivery systems, can be masked from the partner ecosystem by consistent and maintainable declarations.</p>
 <p>Perhaps you are thinking this sounds like how other container orchestrators, like Kubernetes, handle deployments. Exactly! We are meeting the market where it is and, hopefully, where it is going. REST APIs were a great step in providing standardized protocol access without proprietary agents. The next phase was providing declared services which integrate directly into containerized application deployments. If you did the exercises above, then you&#39;ve already seen how this all works together. The API Service Gateway provides the basis to greatly simply access to F5 services and build out a fully integrated ecosystem.</p>
