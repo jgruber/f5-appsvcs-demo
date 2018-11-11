@@ -797,6 +797,8 @@ Fill in the form below to create your cut-n-paste examples for these exercises.
 ---
 
 <script>
+
+
 function buildASGExercises()
 {
 
@@ -816,7 +818,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "description": "API Gateway Trust Group"
 }'|json_pp`;
 
-    var asg_add_device_to_group_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '{
+    var asg_add_device_to_group_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices -d '{
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
@@ -824,7 +826,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
-f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '
+f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices -d '
 {
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
@@ -846,7 +848,9 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "selfLink": "https://localhost/mgmt/shared/resolver/device-groups/app1/devices/c61e1394-250c-451d-a1c2-fc0f7d1fa99a"
 }`;
 
-    var asg_query_devices_in_group_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices|json_pp`;
+    var asg_query_devices_in_group_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices|json_pp`;
+
+    var asg_download_trust_proxy_command = `curl -O http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm`;
 
     var asg_upload_trust_proxy_command = `filepath='/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
@@ -878,7 +882,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
    "operation" : "INSTALL"
 }`;
 
-    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]`;
+    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]|json_pp`;
 
     var asg_install_query_trust_proxy_response = `f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/9a559504-f1a2-4dca-a8d6-32ce48f2f896
 
@@ -1013,18 +1017,64 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     "selfLink": "https://localhost/mgmt/shared/identified-devices/config/device-info"
 }`
 
+    var asg_download_trust_device_command = 'curl -O http://localhost/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm';
+
+    var asg_upload_trust_device_command = `filepath='/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm'
+filename=$(basename $filepath)
+rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+`;
+
+    var asg_install_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
+{ 
+    "operation":"INSTALL",
+    "packageFilePath": "/var/config/rest/downloads/TrustedDevices-1.0.0-0001.noarch.rpm"
+}'|json_pp`;
+
+    var asg_get_trust_device_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+
+    var asg_remove_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+
+    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+
+    var asg_get_tokens = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedProxy|json_pp`;
+
+    var asg_use_token = `token="[Your Token Here]"
+curl -k -s -H 'Content-Type: application/json' https://${targetHost}:443/mgmt/shared/identified-devices/config/device-info?$token|json_pp`;
+
+    var asg_download_trust_extension_command = `curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm`;
+
+    var asg_upload_trust_extension_command = `filepath='/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm'
+filename=$(basename $filepath)
+rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
+
+    var asg_install_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
+    "operation":"INSTALL",
+    "packageFilePath": "/var/config/rest/downloads/TrustedExtensions-1.0.0-0001.noarch.rpm"
+}'|json_pp`;
+
+    var asg_get_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedExtensions?targetHost=localhost|json_pp`;
+
+    var app_docker_compose_up = `docker-compose up`;
+    var app_docker_compose_down = `docker-compose down`;
+    var app_openapi_url = `<a href='http://${deviceIp}:3000/api-docs' target='_blank'>http://${deviceIp}:3000/api-docs</a>`;
+
     var command_header = `<h4>cut-n-pase command:</h4><code>
     <div style='white-space: pre-wrap; word-wrap: break-word; font-weight: bold; display: block; border: 1px solid #ccc; border-radius: 0; margin: 0 0 11px; padding: 10.5px;background-color: #f5f5f5;'>`;
     var command_footer = `</div></code>`;
     var sample_header = `<pre>`;
     var sample_footer = `</pre>`;
 
+
     document.getElementById('asg-ssh-login').innerHTML = command_header + ssh_login + command_footer;
+    document.getElementById('app-ssh-login').innerHTML = command_header + ssh_login + command_footer;
     document.getElementById('asg-list-device-group-command').innerHTML = command_header + asg_list_device_group_command + command_footer;
     document.getElementById('asg-add-device-group-command').innerHTML = command_header + asg_add_device_group_command + command_footer;
     document.getElementById('asg-add-device-to-group-command').innerHTML = command_header + asg_add_device_to_group_command + command_footer;
     document.getElementById('asg-add-device-to-group-response').innerHTML = sample_header + asg_add_device_to_group_response + sample_footer;
     document.getElementById('asg-query-devices-in-group-command').innerHTML = command_header + asg_query_devices_in_group_command + command_footer;
+    document.getElementById('asg-download-trust-proxy-command').innerHTML = command_header + asg_download_trust_proxy_command + command_footer;
     document.getElementById('asg-upload-trust-proxy-command').innerHTML = command_header + asg_upload_trust_proxy_command + command_footer;
     document.getElementById('asg-install-trust-proxy-command').innerHTML = command_header + asg_install_trust_proxy_command + command_footer;
     document.getElementById('asg-install-trust-proxy-response').innerHTML = sample_header + asg_install_trust_proxy_response + sample_footer;
@@ -1033,16 +1083,30 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     document.getElementById('asg-query-installed-task-extensions-command').innerHTML = command_header + asg_query_installed_task_extensions_command + command_footer;
     document.getElementById('asg-query-installed-task-extensions-response').innerHTML = sample_header + asg_query_installed_task_extensions_response + sample_footer;
     document.getElementById('asg-query-installed-task-extensions-id-command').innerHTML = command_header + asg_query_installed_task_extensions_id_command + command_footer;
+    document.getElementById('asg-download-trust-device-command').innerHTML = command_header + asg_download_trust_device_command + command_footer;
+    document.getElementById('asg-upload-trust-device-command').innerHTML = command_header + asg_upload_trust_device_command + command_footer;
+    document.getElementById('asg-install-trust-device-command').innerHTML = command_header + asg_install_trust_device_command + command_footer;
     document.getElementById('asg-trusted-proxy-icontrol-command').innerHTML = command_header + asg_trusted_proxy_icontrol_command + command_footer;
     document.getElementById('asg-trusted-proxy-icontrol-response').innerHTML = sample_header + asg_trusted_proxy_icontrol_response + sample_footer;
-
+    document.getElementById('asg-get-trust-device-command').innerHTML = command_header + asg_get_trust_device_command + command_footer;
+    document.getElementById('asg-remove-trust-device-command').innerHTML = command_header + asg_remove_trust_device_command + command_footer;
+    document.getElementById('asg-add-trust-device-command').innerHTML = command_header + asg_add_trust_device_command + command_footer;
+    document.getElementById('asg-get-tokens').innerHTML = command_header + asg_get_tokens + command_footer;
+    document.getElementById('asg-use-token').innerHTML = command_header + asg_use_token + command_footer;
+    document.getElementById('asg-download-trust-extension-command').innerHTML = command_header + asg_download_trust_extension_command + command_footer;
+    document.getElementById('asg-upload-trust-extension-command').innerHTML = command_header + asg_upload_trust_extension_command + command_footer;
+    document.getElementById('asg-install-trust-extension-command').innerHTML = command_header + asg_install_trust_extension_command + command_footer;
+    document.getElementById('asg-get-trust-extension-command').innerHTML = command_header + asg_get_trust_extension_command + command_footer;
+    document.getElementById('app-docker-compose-up').innerHTML = command_header + app_docker_compose_up + command_footer;
+    document.getElementById('app-docker-compose-down').innerHTML = command_header + app_docker_compose_down + command_footer;
+    document.getElementById('app-openapi-url').innerHTML = command_header + app_openapi_url + command_footer;
 }
 </script>
 
 <form id='asg-container-exercises-variables'>
 <table>
 <tr><th>deviceIP: </th><td><input id='asg-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
-<tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address'></td></tr>
+<tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address' value=></td></tr>
 <tr><th>targetUsername: </th><td><input id='asg-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
 <tr><th>targetPassphrase: </th><td><input id='asg-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -1242,7 +1306,7 @@ We felt the need to burden the container with Apache because our customers might
 <div id='asg-add-device-to-group-response'>
 
 ```
-f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '{
+f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices -d '{
     "userName": "[Your Remote BIG-IP Username]",
     "password": "[Your Remote BIG-IP Password]",
     "address": "[Your Remote BIG-IP]",
@@ -1277,7 +1341,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
 </div>
 
 ```
-f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices|json_pp
+f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices|json_pp
 
 {
     "items": [
@@ -1460,8 +1524,13 @@ iControl REST supports uploading files to remote devices. A detailed discussion 
 
 The TrustedProxy RPM file is available at [/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm](/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm). We can download it into the `f5admin` user's home directory of the F5 Container Demonstration Virtual Device using curl. 
 
+<div id='asg-download-trust-proxy-command'>
+
+</div>
+
+
 ```
-f5admin@containerhost:~$ curl http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm -O
+f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm
 f5admin@containerhost:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm 
 -rw-rw-r-- 1 f5admin f5admin 7728 Oct  1 09:56 /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm
 ```
@@ -2218,11 +2287,20 @@ You've already done exercises for each of those step associated with the Trusted
 
 **Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device**
 
+<div id='asg-download-trust-device-command'>
+
+</div>
+
 ```
 f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm
 ```
 
 **Step 2. Upload the RPM file into the Application Services Gateway**
+
+<div id='asg-upload-trust-device-command'>
+
+</div>
+
 
 ```
 f5admin@containerhost:~$ filepath='/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm'
@@ -2232,6 +2310,11 @@ f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream
 ```
 
 **Step 3. Install the TrustedDevices iControl LX extension**
+
+<div id='asg-install-trust-device-command'>
+
+</div>
+
 
 ```
 f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
@@ -2254,8 +2337,16 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
 
 **Step 4. Issue requests to our TrustedDevices iControl LX extension**
 
+You should play around with your new TrustedDevices iControl LX extension and see how easy it is to add and remove trusted devices now. That's the whole point. We took something complex and made it simpler through declarations.
+
+Get the devices which are currently trusted by the API Services Gateway
+
+<div id='asg-get-trust-device-command'>
+
+</div> 
+
 ```
-f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
 {
     "devices": [
         {
@@ -2272,7 +2363,37 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
 }
 ```
 
-You should play around with your new TrustedDevices iControl LX extension and see how easy it is to add and remove trusted devices now. That's the whole point. We took something complex and made it simpler through declarations.
+Remove all the trusted devices from the API Services Gateway.
+
+<div id='asg-remove-trust-device-command'>
+
+</div>
+
+```
+f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST -d '{ "devices": [] }' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+{
+    "devices": []
+}
+```
+
+Add a deivce trust.
+
+<div id='asg-add-trust-device-command'>
+
+</div> 
+
+```
+f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST -d '{ "devices": [ "targetHost": "172.13.1.103", "targetUsername": "admin", "targetPassphrase":"admin" ] }' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+{
+    "devices": [
+        {
+            "targetHost": "172.13.1.103",
+            "targetPort": 443,
+            "state": "ACTIVE"
+        }
+    ]
+}
+```
 
 **Note:** We used JSON schema because AS3 uses JSON schema. There are other schema standards which are becoming better accepted than JSON schema. Look at [OpenAPI](https://www.openapis.org/). We'll use an OpenAPI generated interactive UI to avoid all this `curl` cnt-n-paste and SSH sessions in future exercises.
 
@@ -2314,6 +2435,11 @@ Let's make a `GET` request to our TrustedProxy iControl LX extension to get an o
 
 **Step 1. Get tokens for all your trusted devices**
 
+<div id='asg-get-tokens'>
+
+</div>
+
+
 ```
 f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedProxy|json_pp  
 {
@@ -2348,6 +2474,11 @@ Pick one of your trusted devices and see if the security token indeed works. You
 2) Issuing an iControl REST request directly to a trusted BIG-iP adding the token query parameters to your request URL.
 
 **Step 2. Make an iControl Rest request directly to a trusted device using our retrieved token (query parameters)**
+
+<div id='asg-use-token'>
+
+</div>
+
 
 ```
 f5admin@containerhost:~$ token="em_server_ip=172.17.0.2&em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D"
@@ -2480,13 +2611,21 @@ Of course we've written this example for you. If you are interested, [here is th
 
 Let's follow the manual steps for the last time to install our 'easy button' for iControl LX extension installation.
 
-**Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device**
+**Step 1. Download the TrustedExtensions RPM install package to the F5 Container Demonstration Virtual Device**
+
+<div id='asg-download-trust-extension-command'>
+
+</div>
 
 ```
 f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm
 ```
 
 **Step 2. Upload the RPM file into the Application Services Gateway**
+
+<div id='asg-upload-trust-extension-command'>
+
+</div>
 
 ```
 f5admin@containerhost:~$ filepath='/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm'
@@ -2496,6 +2635,10 @@ f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream
 ```
 
 **Step 3. Install the TrustedDevices iControl LX extension**
+
+<div id='asg-install-trust-extension-command'>
+
+</div>
 
 ```
 f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
@@ -2517,6 +2660,10 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
 ```
 
 **Step 4. Issue requests to our TrustedExtensions iControl LX extension**
+
+<div id='asg-get-trust-extension-command'>
+
+</div>
 
 ```
 f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedExtensions?targetHost=localhost|json_pp
@@ -2577,7 +2724,7 @@ You've had your basic introduction to the F5 components in an orchestration ecos
 - Using an iControl LX extension as a proxy to trusted devices
 - Designing a declarative API using a schema
 - Using an iControl LX extension as a token service for trusted iControl REST communications
-- Simplifying a complex task to make it as easy possible on the end user
+- Simplifying a complex task to make it as easy as possible on the end user
 
 Now, let's move into the real world. Let's examine and use a simplified micro services framework which wraps in everything we've learned so far and puts it to use within a standards based OpenAPI application.
 
@@ -2600,7 +2747,7 @@ In these exercises you will need:
 
 Start your ssh client and login with the username, password, and host shown on the console.
 
-<div id='asg-ssh-login'>
+<div id='app-ssh-login'>
 
 **`ssh f5admin@[Your F5 Container Demonstration Device IP]`**
 
@@ -2612,6 +2759,10 @@ f5admin@[Your F5 Container Demonstration Device IP]'s password: f5admin
 </div>
 
 Once you are logged in, use the `docker-compose` orchestrator to launch our micro services. We will start our docker containers by issueing the `up` command in our home directory.
+
+<div id='app-docker-compose-up'>
+
+</div>
 
 ```
 f5admin@containerhost:~$ docker-compose up
@@ -2641,7 +2792,11 @@ Our `f5-appsvcs-demo` application implements our OpenAPI schema in the `/api` na
 
 Open a web browser and navigate to:
 
+<div id='app-openapi-url'>
+
 `http://[Your F5 Container Demonstration Device IP]:3000/api-docs`
+
+</div>
 
 You should see the OpenAPI generated UI being served by our application container.
 
@@ -2936,6 +3091,10 @@ The is just one more thing to do, stop your micro services.
 
 Use the docker-compose orchestrator to remove our micro services. We will remove our docker containers by issueing the down command in our home directory.
 
+<div id='app-docker-compose-down'>
+
+</div>
+
 ```
 f5admin@containerhost:~$ docker-compose down
 ```
@@ -2961,3 +3120,8 @@ There are multiple ways:
 - Present the API Service Gateway to your customers who need to develop deep integrations with BIG-IP provisioning now.
 
 The exercises above were your introduction to ready yourself for cloud native orchestration. Some customers are already expecting you to understand these concepts. Other customers' migration to cloud services might still be simply a plan. Either way, you can be ready to help them now.
+
+<script>
+document.getElementById('as3-container-container-demonstration-virtual-device-ip').value = window.location.hostname;
+document.getElementById('asg-container-container-demonstration-virtual-device-ip').value = window.location.hostname;
+</script>
