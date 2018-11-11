@@ -407,10 +407,10 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 
 <form id='as3-container-exercises-variables'>
 <table>
-<tr><th>deviceIP: </th><td><input id='as3-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
-<tr><th>targetHost: </th><td><input id='as3-container-exercises-targetHost' placeholder='BIG-IP IP Address'></td></tr>
-<tr><th>targetUsername: </th><td><input id='as3-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
-<tr><th>targetPassphrase: </th><td><input id='as3-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
+<tr><th>deviceIP: </th><td><input id='as3-container-container-demonstration-virtual-device-ip' placeholder='Device IP' value='10.1.1.8'></td></tr>
+<tr><th>targetHost: </th><td><input id='as3-container-exercises-targetHost' placeholder='BIG-IP IP Address' value='10.1.1.7'></td></tr>
+<tr><th>targetUsername: </th><td><input id='as3-container-exercises-targetUsername' placeholder='BIG-IP Username' value='admin'></td></tr>
+<tr><th>targetPassphrase: </th><td><input id='as3-container-exercises-targetPassphrase' placeholder='BIG-IP Password' value='admin'></td></tr>
 <tr><td>&nbsp;</td></tr>
 <tr><td colspan='2'><input type='button' onclick='buildAS3Exercises()' value=' Generate Exercises Cut-n-Paste Commands '></td></tr>
 </table>
@@ -755,8 +755,6 @@ In these exercises you will need:
 
 **Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device**
 
-Create a SSH connection to component called F5 AS3 Container Demonstration in your UDF Blueprint. 
-
 <div class='webcontent'>
 
 Fill in the form below to create your cut-n-paste examples for these exercises.
@@ -781,8 +779,7 @@ function buildASGExercises()
     var targetUsername = document.getElementById('asg-container-exercises-targetUsername').value;
     var targetPassphrase = document.getElementById('asg-container-exercises-targetPassphrase').value;
 
-    var ssh_login = `ssh f5admin@` + deviceIp + `
-f5admin@` + deviceIp + `'s password: f5admin`;
+    var ssh_login = ``;
 
     var asg_list_device_group_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups|json_pp`;
   
@@ -1028,28 +1025,17 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
 </div>
 
-Start your ssh client and login with the username, password, and host shown on the console.
+Create a SSH connection to the component called F5 AS3 Container Demonstration in your UDF Blueprint 
+
+![F5 Container Demonstration Virtual Device Console](./assets/images/udf-access-ssh-as3-container.png)
 
 <div id='asg-ssh-login'>
-
-**`ssh f5admin@[Your F5 Container Demonstration Device IP]`**
-
-```
-f5admin@[Your F5 Container Demonstration Device IP]
-f5admin@[Your F5 Container Demonstration Device IP]'s password: f5admin
-```
 
 </div>
 
 ```
-Welcome to F5 Container Demo Virtual Device (GNU/Linux 4.15.0-36-generic x86_64)
-
-Running Containers: 
-
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
-
-Last login: Sat Sept 1 09:32:55 2018 from 172.16.27.1
-ubuntu@ip-10-1-1-8:~$ 
+Last login: Sun Nov 11 16:04:46 2018 from 10.1.1.254
+ubuntu@ip-10-1-1-8:~$
 
 ```
 
