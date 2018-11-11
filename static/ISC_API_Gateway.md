@@ -773,13 +773,7 @@ In these exercises you will need:
 
 **Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device**
 
-You can Obtain the IP address of your booted F5 Container Demonstration Virtual Device by opening its console. 
-
-![F5 Container Demonstration Virtual Device Console](./assets/images/f5_container_demonstration_virtual_device_console.png)
-
-In this example, the IP address would be 192.168.185.129. Your address will likely be different.
-
-If the Host entry IP address is blank, please assure your network interface is properly connected to a network.
+Create a SSH connection to component called F5 AS3 Container Demonstration in your UDF Blueprint. 
 
 <div class='webcontent'>
 
