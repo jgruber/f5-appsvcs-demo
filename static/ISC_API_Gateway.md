@@ -298,7 +298,7 @@ function buildAS3Exercises()
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'
@@ -308,7 +308,7 @@ function buildAS3Exercises()
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -342,7 +342,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "deploy",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `",
     "declaration": {
@@ -386,7 +386,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "remove",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -522,7 +522,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "[Your targetHost]",
-    "targetPort": [Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
 }'
@@ -606,7 +606,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "class": "AS3",
     "action": "deploy",
     "targetHost": "[Your targetHost]",
-    "targetPort": "[Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
     "declaration": {
@@ -650,7 +650,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
 		"lineCount": 24,
 		"code": 200,
 		"host": "[Your targetHost]",
-        "port": "[Your targetPort]",
+        "port": [Your targetPort],
 		"tenant": "Sample_container",
 		"runTime": 1077
 	}],
@@ -708,7 +708,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "class": "AS3",
     "action": "remove",
     "targetHost": "[Your targetHost]",
-    "targetPort": "[Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
 }'|json_pp
@@ -719,7 +719,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
             "lineCount": 22,
             "code": 200,
             "host": "[Your targetHost]",
-            "port": "[Your targetPort]",
+            "port": [Your targetPort],
             "tenant": "Sample_container",
             "runTime": 21546
         }
@@ -807,7 +807,7 @@ function buildASGExercises()
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
@@ -816,7 +816,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp
 
 {
@@ -1020,7 +1020,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_remove_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
 
-    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetPort":"${targetPort}", "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetPort":${targetPort}, "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
 
     var asg_get_tokens = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedProxy|json_pp`;
 
@@ -2098,7 +2098,6 @@ Here is a JSON schema for our declaration:
 				"description": "Attributes need to define a trusted device",
 				"required": [
 					"targetHost",
-					"targetPort",
 					"targetUsername",
 					"targetPassphrase",
 					"state"
@@ -2564,7 +2563,7 @@ We'll collect our inputs as query parameters for:
 POST /mgmt/shared/TrustedExtensions
 { 
      "targetHost": "10.1.1.7",
-     "targetPort": "443",
+     "targetPort": 443,
      "url": "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm"
 }
 ```

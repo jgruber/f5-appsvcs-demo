@@ -272,7 +272,7 @@ function buildAS3Exercises()
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'
@@ -282,7 +282,7 @@ function buildAS3Exercises()
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -316,7 +316,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "deploy",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `",
     "declaration": {
@@ -360,7 +360,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "remove",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -458,7 +458,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: [Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;</code></pre></div>
@@ -515,7 +515,7 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;deploy&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
     &quot;declaration&quot;: {
@@ -559,7 +559,7 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
         &quot;lineCount&quot;: 24,
         &quot;code&quot;: 200,
         &quot;host&quot;: &quot;[Your targetHost]&quot;,
-        &quot;port&quot;: &quot;[Your targetPort]&quot;,
+        &quot;port&quot;: [Your targetPort],
         &quot;tenant&quot;: &quot;Sample_container&quot;,
         &quot;runTime&quot;: 1077
     }],
@@ -608,7 +608,7 @@ ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multi
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;remove&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
@@ -619,7 +619,7 @@ ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multi
             &quot;lineCount&quot;: 22,
             &quot;code&quot;: 200,
             &quot;host&quot;: &quot;[Your targetHost]&quot;,
-            &quot;port&quot;: &quot;[Your targetPort]&quot;,
+            &quot;port&quot;: [Your targetPort],
             &quot;tenant&quot;: &quot;Sample_container&quot;,
             &quot;runTime&quot;: 21546
         }
@@ -712,7 +712,7 @@ function buildASGExercises()
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
@@ -721,7 +721,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp
 
 {
@@ -925,7 +925,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_remove_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
 
-    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetPort":"${targetPort}", "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetPort":${targetPort}, "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
 
     var asg_get_tokens = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedProxy|json_pp`;
 
@@ -1814,7 +1814,6 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
                 &quot;description&quot;: &quot;Attributes need to define a trusted device&quot;,
                 &quot;required&quot;: [
                     &quot;targetHost&quot;,
-                    &quot;targetPort&quot;,
                     &quot;targetUsername&quot;,
                     &quot;targetPassphrase&quot;,
                     &quot;state&quot;
@@ -2191,7 +2190,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; htt
 <pre><code>POST /mgmt/shared/TrustedExtensions
 { 
      &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
-     &quot;targetPort&quot;: &quot;443&quot;,
+     &quot;targetPort&quot;: 443,
      &quot;url&quot;: &quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
 }</code></pre><p>Either way, the user can still use the query parameters if you want. This is about making things easy. So this works:</p>
 <pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=10.1.1.7targetPort=443&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
