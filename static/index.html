@@ -245,6 +245,10 @@ spec:
 <td align="left">The iControl REST remote BIG-IP host, reachable from the container</td>
 </tr>
 <tr>
+<td align="left">targetPort</td>
+<td align="left">The iControl REST remote BIG-IP port, reachable from the container</td>
+</tr>
+<tr>
 <td align="left">targetUsername</td>
 <td align="left">The iControl REST username on the remote BIG-IP</td>
 </tr>
@@ -260,6 +264,7 @@ function buildAS3Exercises()
 
     var deviceIp = document.getElementById('as3-container-container-demonstration-virtual-device-ip').value;
     var targetHost = document.getElementById('as3-container-exercises-targetHost').value;
+    var targetPort = document.getElementById('as3-container-exercises-targetPort').value;
     var targetUsername = document.getElementById('as3-container-exercises-targetUsername').value;
     var targetPassphrase = document.getElementById('as3-container-exercises-targetPassphrase').value;
 
@@ -282,6 +287,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'
@@ -291,6 +297,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -298,7 +305,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
 f5admin@containerhost:~$ <-- Notice no response output!
 
 `;
-    var as3_retrieve_command_output_post_to_remote_bigip = `f5admin@containerhost:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `/mgmt/shared/appsvcs/declare -d '{
+    var as3_retrieve_command_output_post_to_remote_bigip = `f5admin@containerhost:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `:` + targetPort + `/mgmt/shared/appsvcs/declare -d '{
 >     "class": "AS3",
 >     "action": "retrieve"
 > }'|json_pp
@@ -310,7 +317,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
 }
 `;
 
-    var as3_retrieve_command_output_get_to_remote_bigip = `f5admin@containerhost:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `/mgmt/shared/appsvcs/declare|json_pp
+    var as3_retrieve_command_output_get_to_remote_bigip = `f5admin@containerhost:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `:` + targetPort + `/mgmt/shared/appsvcs/declare|json_pp
 
 {
     "statusCode": 404,
@@ -324,6 +331,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "deploy",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `",
     "declaration": {
@@ -367,6 +375,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "remove",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -395,6 +404,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
 <table>
 <tr><th>deviceIP: </th><td><input id='as3-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
 <tr><th>targetHost: </th><td><input id='as3-container-exercises-targetHost' placeholder='BIG-IP IP Address'></td></tr>
+<tr><th>targetPort: </th><td><input id='as3-container-exercises-targetPort' placeholder='BIG-IP IP Port'></td></tr>
 <tr><th>targetUsername: </th><td><input id='as3-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
 <tr><th>targetPassphrase: </th><td><input id='as3-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -457,7 +467,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 </div>
 
 <p>You should see a returned JSON object which shows the version of the AS3 iControl LX Extension which was pre-installed in the AS3 Container. </p>
-<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration inform the AS3 iControl LX extension that is should not issue iControl REST requests to the local device, but should authenticate against and issue iControl REST requests to the <code>targetHost</code>. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
+<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration inform the AS3 iControl LX extension that is should not issue iControl REST requests to the local device, but should authenticate against and issue iControl REST requests to the <code>targetHost</code>:<code>targetPort</code> device. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
 <p><strong>Note:</strong> Since declaration attributes are required to target remote BIG-IPs, we won&#39;t be able to make remote declarations with HTTP GET or DELETE requests, which by RFC can not contain a request body. You can query the version from the iControl LX extension with a GET request, but any requests to manage a declaration on a remote BIG-IP must use HTTP POST or PATCH methods.</p>
 <p><strong>Step 2. Get any existing AS3 declaration on a remote BIG-IP</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -467,6 +477,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;</code></pre></div>
@@ -478,6 +489,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
@@ -485,12 +497,12 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 
 <p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> status code in your response.</p>
-<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
+<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code>,<code>targetPort</code>, and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
 <p>As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get status code <code>404</code> response, not the <code>204</code> response returned when using AS3 in the container.</p>
 <p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-post-to-remote-bigip'>
 
-<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare -d &#39;{
 &gt;     &quot;class&quot;: &quot;AS3&quot;,
 &gt;     &quot;action&quot;: &quot;retrieve&quot;
 &gt; }&#39;|json_pp
@@ -503,7 +515,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 <p>Note the response issuing a <code>GET</code> request on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-get-to-remote-bigip'>
 
-<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]/mgmt/shared/appsvcs/declare|json_pp
+<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare|json_pp
 {
     &quot;statusCode&quot;: 404,
     &quot;message&quot;: &quot;declaration 0 not found&quot;,
@@ -511,7 +523,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 }</code></pre></div>
 
 <p><strong>Step 3. Issue an AS3 declaration to the a remote BIG-IP</strong></p>
-<p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
+<p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='as3-declare-example'>
 
@@ -523,6 +535,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;deploy&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
     &quot;declaration&quot;: {
@@ -566,6 +579,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
         &quot;lineCount&quot;: 24,
         &quot;code&quot;: 200,
         &quot;host&quot;: &quot;[Your targetHost]&quot;,
+        &quot;port&quot;: &quot;[Your targetPort]&quot;,
         &quot;tenant&quot;: &quot;Sample_container&quot;,
         &quot;runTime&quot;: 1077
     }],
@@ -601,10 +615,10 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
     }
 }
 
-f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
+f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
 <p><strong>Note:</strong> <em>The declaration is maintained in the AS3 Container, however the declared state is implemented on the remote BIG-IP.</em> When our customers use the AS3 container, they can get the advantages of the simplified declarative AS3 API without the need to deploy the AS3 iControl LX extension on fleets of BIG-IPs.</p>
 <p><strong>Step 4. Remove an AS3 declaration from a remote BIG-IP</strong></p>
-<p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
+<p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='as3-remove-example'>
 
@@ -614,6 +628,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;remove&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
@@ -624,6 +639,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
             &quot;lineCount&quot;: 22,
             &quot;code&quot;: 200,
             &quot;host&quot;: &quot;[Your targetHost]&quot;,
+            &quot;port&quot;: &quot;[Your targetPort]&quot;,
             &quot;tenant&quot;: &quot;Sample_container&quot;,
             &quot;runTime&quot;: 21546
         }
@@ -677,6 +693,10 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
 <td align="left">The iControl REST remote BIG-IP host, reachable from the container</td>
 </tr>
 <tr>
+<td align="left">targetPort</td>
+<td align="left">The iControl REST remote BIG-IP port, reachable from the container</td>
+</tr>
+<tr>
 <td align="left">targetUsername</td>
 <td align="left">The iControl REST username on the remote BIG-IP</td>
 </tr>
@@ -694,6 +714,7 @@ function buildASGExercises()
 
     var deviceIp = document.getElementById('asg-container-container-demonstration-virtual-device-ip').value;
     var targetHost = document.getElementById('asg-container-exercises-targetHost').value;
+    var targetPort = document.getElementById('asg-container-exercises-targetPort').value;
     var targetUsername = document.getElementById('asg-container-exercises-targetUsername').value;
     var targetPassphrase = document.getElementById('asg-container-exercises-targetPassphrase').value;
 
@@ -712,7 +733,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "443"
+    "httpsPort": "` + targetPort + `"
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
@@ -721,7 +742,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "443"
+    "httpsPort": "` + targetPort + `"
 }'|json_pp
 
 {
@@ -730,7 +751,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "machineId": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
     "state": "PENDING",
     "address": "` + targetHost + `",
-    "httpsPort": 443,
+    "httpsPort": "` + targetPort + `",
     "groupName": "app1",
     "generation": 1,
     "lastUpdateMicros": 1539013176263467,
@@ -841,14 +862,14 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_trusted_proxy_icontrol_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d '{
     "method": "Get",
-    "uri": "https://` + targetHost + `/mgmt/shared/identified-devices/config/device-info"
+    "uri": "https://` + targetHost + `:` + targetPort + `/mgmt/shared/identified-devices/config/device-info"
 }'|json_pp
 
 `;
 
     var asg_trusted_proxy_icontrol_response = `f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d '{
     "method": "Get",
-    "uri": "https://` + targetHost + `/mgmt/shared/identified-devices/config/device-info"
+    "uri": "https://` + targetHost + `:` + targetPort + `/mgmt/shared/identified-devices/config/device-info"
 }'|json_pp
 
 {
@@ -925,12 +946,12 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_remove_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
 
-    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetPort":"${targetPort}", "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
 
     var asg_get_tokens = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedProxy|json_pp`;
 
     var asg_use_token = `token="[Your Token Here]"
-curl -k -s -H 'Content-Type: application/json' https://${targetHost}:443/mgmt/shared/identified-devices/config/device-info?$token|json_pp`;
+curl -k -s -H 'Content-Type: application/json' https://${targetHost}:${targetPort}/mgmt/shared/identified-devices/config/device-info?$token|json_pp`;
 
     var asg_download_trust_extension_command = `curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm`;
 
@@ -997,6 +1018,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 <table>
 <tr><th>deviceIP: </th><td><input id='asg-container-container-demonstration-virtual-device-ip' placeholder='Device IP'></td></tr>
 <tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address' value=></td></tr>
+<tr><th>targetPort: </th><td><input id='asg-container-exercises-targetPort' placeholder='BIG-IP IP Port' value=></td></tr>
 <tr><th>targetUsername: </th><td><input id='asg-container-exercises-targetUsername' placeholder='BIG-IP Username'></td></tr>
 <tr><th>targetPassphrase: </th><td><input id='asg-container-exercises-targetPassphrase' placeholder='BIG-IP Password'></td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -1592,6 +1614,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 <p><strong><em>Look Mom No Leaked Credentials!</em></strong></p>
 <p><strong>WE HAVE ESTABLISHED A TRUSTED CONTAINER WITHOUT HAVING TENANTS KNOW TMOS CREDENTIALS</strong></p>
 <h3 id="exercise-7-removing-a-trust-between-the-api-services-gateway-and-a-remote-big-ip">Exercise #7 - Removing a Trust Between the API Services Gateway and a Remote BIG-IP</h3>
+<p><strong>Note:</strong> This exercise is here for completeness. You should read it, but in Exercise 8 we are going to make this whole process a simple declaration!</p>
 <p>While the creation of the trust was an automated process which was initiated by the addition of a BIG-IP to a device group, the removal of trust must be done through multiple requests. </p>
 <p>The process to remove the trust has six steps:</p>
 <ol>
@@ -2019,7 +2042,7 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
 
 </div> 
 
-<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{ &quot;devices&quot;: [ &quot;targetHost&quot;: &quot;172.13.1.103&quot;, &quot;targetUsername&quot;: &quot;admin&quot;, &quot;targetPassphrase&quot;:&quot;admin&quot; ] }&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+<pre><code>f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{ &quot;devices&quot;: [ &quot;targetHost&quot;: &quot;172.13.1.103&quot;, &quot;targetPort&quot;: &quot;443&quot;, &quot;targetUsername&quot;: &quot;admin&quot;, &quot;targetPassphrase&quot;:&quot;admin&quot; ] }&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
 {
     &quot;devices&quot;: [
         {
@@ -2203,9 +2226,10 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
 <pre><code>POST /mgmt/shared/TrustedExtensions
 { 
      &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+     &quot;targetPort&quot;: &quot;443&quot;,
      &quot;url&quot;: &quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
 }</code></pre><p>Either way, the user can still use the query parameters if you want. This is about making things easy. So this works:</p>
-<pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=172.13.1.103&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
+<pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=172.13.1.103targetPort=443&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
 { }</code></pre><p>Just for fun we&#39;ll make it smart enough to understand that a <code>targetHost</code> defined as <code>localhost</code> means to manage the extensions on the API Services Gateway itself! Inception indeed! However we&#39;re going to learn a big inception with this idea. We don&#39;t care, we&#39;re doing it anyway! Like Lionel Ritchie says.. <em>&#39;That why I&#39;m easy..&#39;</em> Exception in use cases be damned.. keep going!</p>
 <p>Of course we&#39;ve written this example for you. If you are interested, <a href="/icontrollx/TrustedExtensions/src/nodejs/TrustedExtensionsWorker.js">here is the source code</a>.</p>
 <p>Let&#39;s follow the manual steps for the last time to install our &#39;easy button&#39; for iControl LX extension installation.</p>
@@ -2549,7 +2573,17 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p>The exercises above were your introduction to ready yourself for cloud native orchestration. Some customers are already expecting you to understand these concepts. Other customers&#39; migration to cloud services might still be simply a plan. Either way, you can be ready to help them now.</p>
 <script>
 document.getElementById('as3-container-container-demonstration-virtual-device-ip').value = window.location.hostname;
+document.getElementById('as3-container-exercises-targetHost').value = '172.13.1.103';
+document.getElementById('as3-container-exercises-targetPort').value = '443';
+document.getElementById('as3-container-exercises-targetUsername').value = 'admin';
+document.getElementById('as3-container-exercises-targetPassphrase').value = 'admin';
 document.getElementById('asg-container-container-demonstration-virtual-device-ip').value = window.location.hostname;
+document.getElementById('asg-container-exercises-targetHost').value = '172.13.1.103';
+document.getElementById('asg-container-exercises-targetPort').value = '443';
+document.getElementById('asg-container-exercises-targetUsername').value = 'admin';
+document.getElementById('asg-container-exercises-targetPassphrase').value = 'admin';
+buildAS3Exercises();
+buildASGExercises();
 </script></div>
 
 <script src="assets/js/index.js"></script>
