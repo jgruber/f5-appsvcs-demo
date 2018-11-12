@@ -311,7 +311,7 @@ function buildAS3Exercises()
     "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
-}'|json_pp
+}'
 
 ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 
@@ -541,7 +541,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "targetHost": "[Your targetHost]",
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
-}'|json_pp
+}'
 
 ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 ```
