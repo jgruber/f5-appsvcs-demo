@@ -228,6 +228,11 @@ spec:
 <td align="left">10.1.1.7</td>
 </tr>
 <tr>
+<td align="left">targetPort</td>
+<td align="left">The iControl REST remote BIG-IP port, reachable from the container</td>
+<td align="left">443</td>
+</tr>
+<tr>
 <td align="left">targetUsername</td>
 <td align="left">The iControl REST username on the remote BIG-IP</td>
 <td align="left">admin</td>
@@ -245,6 +250,7 @@ function buildAS3Exercises()
 
     var deviceIp = document.getElementById('as3-container-container-demonstration-virtual-device-ip').value;
     var targetHost = document.getElementById('as3-container-exercises-targetHost').value;
+    var targetPort = document.getElementById('as3-container-exercises-targetPort').value;
     var targetUsername = document.getElementById('as3-container-exercises-targetUsername').value;
     var targetPassphrase = document.getElementById('as3-container-exercises-targetPassphrase').value;
 
@@ -266,6 +272,7 @@ function buildAS3Exercises()
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'
@@ -275,6 +282,7 @@ function buildAS3Exercises()
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -282,7 +290,7 @@ function buildAS3Exercises()
 ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 
 `;
-    var as3_retrieve_command_output_post_to_remote_bigip = `ubuntu@ip-10-1-1-8:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `/mgmt/shared/appsvcs/declare -d '{
+    var as3_retrieve_command_output_post_to_remote_bigip = `ubuntu@ip-10-1-1-8:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' -X POST https://` + targetHost + `:` + targetPort + `/mgmt/shared/appsvcs/declare -d '{
 >     "class": "AS3",
 >     "action": "retrieve"
 > }'|json_pp
@@ -294,7 +302,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 }
 `;
 
-    var as3_retrieve_command_output_get_to_remote_bigip = `ubuntu@ip-10-1-1-8:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `/mgmt/shared/appsvcs/declare|json_pp
+    var as3_retrieve_command_output_get_to_remote_bigip = `ubuntu@ip-10-1-1-8:~$ curl -u '`+targetUsername+`:`+targetPassphrase+`' -k -s -H 'Content-Type: application/json' https://` + targetHost + `:` + targetPort + `/mgmt/shared/appsvcs/declare|json_pp
 
 {
     "statusCode": 404,
@@ -308,6 +316,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "deploy",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `",
     "declaration": {
@@ -351,6 +360,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "remove",
     "targetHost": "` + targetHost + `",
+    "targetPort": "` + targetPort + `",
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -362,7 +372,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     var sample_header = `<pre>`;
     var sample_footer = `</pre>`;
 
-    document.getElementById('as3-ssh-login').innerHTML = command_header + ssh_login + command_footer;
+    // document.getElementById('as3-ssh-login').innerHTML = command_header + ssh_login + command_footer;
     document.getElementById('get-as3-version').innerHTML = command_header + as3_version_command + command_footer;
     document.getElementById('get-as3-version-output').innerHTML = sample_header + as3_version_command_output + sample_footer;
     document.getElementById('get-as3-existing-declaration-command').innerHTML = command_header + as3_retrieve_command + command_footer;
@@ -379,6 +389,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 <table>
 <tr><th>deviceIP: </th><td><input id='as3-container-container-demonstration-virtual-device-ip' placeholder='Device IP' value='10.1.1.8'></td></tr>
 <tr><th>targetHost: </th><td><input id='as3-container-exercises-targetHost' placeholder='BIG-IP IP Address' value='10.1.1.7'></td></tr>
+<tr><th>targetPort: </th><td><input id='as3-container-exercises-targetPort' placeholder='BIG-IP IP Port' value='443'></td></tr>
 <tr><th>targetUsername: </th><td><input id='as3-container-exercises-targetUsername' placeholder='BIG-IP Username' value='admin'></td></tr>
 <tr><th>targetPassphrase: </th><td><input id='as3-container-exercises-targetPassphrase' placeholder='BIG-IP Password' value='admin'></td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -437,7 +448,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 </div>
 
 <p>You should see a returned JSON object which shows the version of the AS3 iControl LX Extension which was pre-installed in the AS3 Container. </p>
-<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration inform the AS3 iControl LX extension that is should not issue iControl REST requests to the local device, but should authenticate against and issue iControl REST requests to the <code>targetHost</code>. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
+<p><strong>Note:</strong> While the iControl REST endpoint is on the AS3 Container, our desire is to make AS3 declarations against remote BIG-IP hosts. Creating a remote configuration for an AS3 declaration is done by including 3 additional attributes. The presence of the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, <code>targetPassphrase</code> attributes in the declaration inform the AS3 iControl LX extension that is should not issue iControl REST requests to the local device, but should authenticate against and issue iControl REST requests to the <code>targetHost</code>:<code>targetPort</code> device. We will be including these attributes in all our requests to the AS3 Container endpoint. </p>
 <p><strong>Note:</strong> Since declaration attributes are required to target remote BIG-IPs, we won&#39;t be able to make remote declarations with HTTP GET or DELETE requests, which by RFC can not contain a request body. You can query the version from the iControl LX extension with a GET request, but any requests to manage a declaration on a remote BIG-IP must use HTTP POST or PATCH methods.</p>
 <p><strong>Step 2. Get any existing AS3 declaration on a remote BIG-IP</strong></p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -447,6 +458,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: [Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;</code></pre></div>
@@ -465,12 +477,12 @@ CONTAINER ID        IMAGE                                  COMMAND             C
 ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
 
 <p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> status code in your response.</p>
-<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
+<p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code>:<code>targetPort</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
 <p>As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get status code <code>404</code> response, not the <code>204</code> response returned when using AS3 in the container.</p>
 <p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-post-to-remote-bigip'>
 
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]/mgmt/shared/appsvcs/declare -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare -d &#39;{
 &gt;     &quot;class&quot;: &quot;AS3&quot;,
 &gt;     &quot;action&quot;: &quot;retrieve&quot;
 &gt; }&#39;|json_pp
@@ -483,7 +495,7 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
 <p>Note the response issuing a <code>GET</code> request on AS3 installed on your remote BIG-IP:</p>
 <div id='get-as3-existing-declaration-get-to-remote-bigip'>
 
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]/mgmt/shared/appsvcs/declare|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare|json_pp
 {
     &quot;statusCode&quot;: 404,
     &quot;message&quot;: &quot;declaration 0 not found&quot;,
@@ -491,7 +503,7 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
 }</code></pre></div>
 
 <p><strong>Step 3. Issue an AS3 declaration to the a remote BIG-IP</strong></p>
-<p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
+<p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='as3-declare-example'>
 
@@ -503,6 +515,7 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;deploy&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
     &quot;declaration&quot;: {
@@ -546,6 +559,7 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
         &quot;lineCount&quot;: 24,
         &quot;code&quot;: 200,
         &quot;host&quot;: &quot;[Your targetHost]&quot;,
+        &quot;port&quot;: &quot;[Your targetPort]&quot;,
         &quot;tenant&quot;: &quot;Sample_container&quot;,
         &quot;runTime&quot;: 1077
     }],
@@ -581,10 +595,10 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
     }
 }
 
-ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
+ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multiple remote BIG-IP hosts by changing the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes.</p>
 <p><strong>Note:</strong> <em>The declaration is maintained in the AS3 Container, however the declared state is implemented on the remote BIG-IP.</em> When our customers use the AS3 container, they can get the advantages of the simplified declarative AS3 API without the need to deploy the AS3 iControl LX extension on fleets of BIG-IPs.</p>
 <p><strong>Step 4. Remove an AS3 declaration from a remote BIG-IP</strong></p>
-<p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
+<p>To remove our deployed declaration from our remote BIG-IP, issue a <code>POST</code> request with the <code>remove</code> action to the AS3 Container. We will include our <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes to remove the declaration from the correct remote BIG-IP. </p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='as3-remove-example'>
 
@@ -594,6 +608,7 @@ ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multi
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;remove&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
+    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
@@ -604,6 +619,7 @@ ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multi
             &quot;lineCount&quot;: 22,
             &quot;code&quot;: 200,
             &quot;host&quot;: &quot;[Your targetHost]&quot;,
+            &quot;port&quot;: &quot;[Your targetPort]&quot;,
             &quot;tenant&quot;: &quot;Sample_container&quot;,
             &quot;runTime&quot;: 21546
         }
@@ -656,6 +672,11 @@ ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multi
 <td align="left">10.1.1.7</td>
 </tr>
 <tr>
+<td align="left">targetPort</td>
+<td align="left">The iControl REST remote BIG-IP port, reachable from the container</td>
+<td align="left">443</td>
+</tr>
+<tr>
 <td align="left">targetUsername</td>
 <td align="left">The iControl REST username on the remote BIG-IP</td>
 <td align="left">admin</td>
@@ -673,6 +694,7 @@ function buildASGExercises()
 
     var deviceIp = document.getElementById('asg-container-container-demonstration-virtual-device-ip').value;
     var targetHost = document.getElementById('asg-container-exercises-targetHost').value;
+    var targetPort = document.getElementById('asg-container-exercises-targetPort').value;
     var targetUsername = document.getElementById('asg-container-exercises-targetUsername').value;
     var targetPassphrase = document.getElementById('asg-container-exercises-targetPassphrase').value;
 
@@ -686,29 +708,29 @@ function buildASGExercises()
     "description": "API Gateway Trust Group"
 }'|json_pp`;
 
-    var asg_add_device_to_group_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '{
+    var asg_add_device_to_group_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices -d '{
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "443"
+    "httpsPort": "` + targetPort + `"
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
-ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d '
+ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices -d '
 {
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "443"
+    "httpsPort": "` + targetPort + `"
 }'|json_pp
 
 {
     "uuid": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
-    "deviceUri": "https://172.13.1.103:443",
+    "deviceUri": "https://10.1.1.7:443",
     "machineId": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
     "state": "PENDING",
     "address": "` + targetHost + `",
-    "httpsPort": 443,
+    "httpsPort": ` + targetPort + `,
     "groupName": "app1",
     "generation": 1,
     "lastUpdateMicros": 1539013176263467,
@@ -716,9 +738,11 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     "selfLink": "https://localhost/mgmt/shared/resolver/device-groups/app1/devices/c61e1394-250c-451d-a1c2-fc0f7d1fa99a"
 }`;
 
-    var asg_query_devices_in_group_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices|json_pp`;
+    var asg_query_devices_in_group_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices|json_pp`;
 
-    var asg_upload_trust_proxy_command = `filepath='/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm'
+    var asg_download_trust_proxy_command = `curl http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm -O`;
+
+    var asg_upload_trust_proxy_command = `filepath='/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
 curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
@@ -817,14 +841,14 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 
     var asg_trusted_proxy_icontrol_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d '{
     "method": "Get",
-    "uri": "https://` + targetHost + `/mgmt/shared/identified-devices/config/device-info"
+    "uri": "https://` + targetHost + `:` + targetPort + `/mgmt/shared/identified-devices/config/device-info"
 }'|json_pp
 
 `;
 
     var asg_trusted_proxy_icontrol_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d '{
     "method": "Get",
-    "uri": "https://` + targetHost + `/mgmt/shared/identified-devices/config/device-info"
+    "uri": "https://` + targetHost + `:` + targetPort + `/mgmt/shared/identified-devices/config/device-info"
 }'|json_pp
 
 {
@@ -883,18 +907,62 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     "selfLink": "https://localhost/mgmt/shared/identified-devices/config/device-info"
 }`
 
+    var asg_download_trust_device_command = 'curl -O http://localhost/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm';
+
+    var asg_upload_trust_device_command = `filepath='/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm'
+filename=$(basename $filepath)
+rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+`;
+
+    var asg_install_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
+{ 
+    "operation":"INSTALL",
+    "packageFilePath": "/var/config/rest/downloads/TrustedDevices-1.0.0-0001.noarch.rpm"
+}'|json_pp`;
+
+    var asg_get_trust_device_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+
+    var asg_remove_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+
+    var asg_add_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": [{"targetHost":"${targetHost}", "targetPort":"${targetPort}", "targetUsername":"${targetUsername}", "targetPassphrase":"${targetPassphrase}"}]}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`;
+
+    var asg_get_tokens = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedProxy|json_pp`;
+
+    var asg_use_token = `token="[Your Token Here]"
+curl -k -s -H 'Content-Type: application/json' https://${targetHost}:${targetPort}/mgmt/shared/identified-devices/config/device-info?$token|json_pp`;
+
+    var asg_download_trust_extension_command = `curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm`;
+
+    var asg_upload_trust_extension_command = `filepath='/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm'
+filename=$(basename $filepath)
+rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
+
+    var asg_install_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
+    "operation":"INSTALL",
+    "packageFilePath": "/var/config/rest/downloads/TrustedExtensions-1.0.0-0001.noarch.rpm"
+}'|json_pp`;
+
+    var asg_get_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/TrustedExtensions?targetHost=localhost|json_pp`;
+
+    var app_docker_compose_up = `docker-compose up`;
+    var app_docker_compose_down = `docker-compose down`;
+    var app_openapi_url = `<a href='http://${deviceIp}:3000/api-docs' target='_blank'>http://${deviceIp}:3000/api-docs</a>`;
+
     var command_header = `<h4>cut-n-pase command:</h4><code>
     <div style='white-space: pre-wrap; word-wrap: break-word; font-weight: bold; display: block; border: 1px solid #ccc; border-radius: 0; margin: 0 0 11px; padding: 10.5px;background-color: #f5f5f5;'>`;
     var command_footer = `</div></code>`;
     var sample_header = `<pre>`;
     var sample_footer = `</pre>`;
 
-    document.getElementById('asg-ssh-login').innerHTML = command_header + ssh_login + command_footer;
+    // document.getElementById('asg-ssh-login').innerHTML = command_header + ssh_login + command_footer;
     document.getElementById('asg-list-device-group-command').innerHTML = command_header + asg_list_device_group_command + command_footer;
     document.getElementById('asg-add-device-group-command').innerHTML = command_header + asg_add_device_group_command + command_footer;
     document.getElementById('asg-add-device-to-group-command').innerHTML = command_header + asg_add_device_to_group_command + command_footer;
     document.getElementById('asg-add-device-to-group-response').innerHTML = sample_header + asg_add_device_to_group_response + sample_footer;
     document.getElementById('asg-query-devices-in-group-command').innerHTML = command_header + asg_query_devices_in_group_command + command_footer;
+    document.getElementById('asg-download-trust-proxy-command').innerHTML = command_header + asg_download_trust_proxy_command + command_footer;
     document.getElementById('asg-upload-trust-proxy-command').innerHTML = command_header + asg_upload_trust_proxy_command + command_footer;
     document.getElementById('asg-install-trust-proxy-command').innerHTML = command_header + asg_install_trust_proxy_command + command_footer;
     document.getElementById('asg-install-trust-proxy-response').innerHTML = sample_header + asg_install_trust_proxy_response + sample_footer;
@@ -903,9 +971,23 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     document.getElementById('asg-query-installed-task-extensions-command').innerHTML = command_header + asg_query_installed_task_extensions_command + command_footer;
     document.getElementById('asg-query-installed-task-extensions-response').innerHTML = sample_header + asg_query_installed_task_extensions_response + sample_footer;
     document.getElementById('asg-query-installed-task-extensions-id-command').innerHTML = command_header + asg_query_installed_task_extensions_id_command + command_footer;
+    document.getElementById('asg-download-trust-device-command').innerHTML = command_header + asg_download_trust_device_command + command_footer;
+    document.getElementById('asg-upload-trust-device-command').innerHTML = command_header + asg_upload_trust_device_command + command_footer;
+    document.getElementById('asg-install-trust-device-command').innerHTML = command_header + asg_install_trust_device_command + command_footer;
     document.getElementById('asg-trusted-proxy-icontrol-command').innerHTML = command_header + asg_trusted_proxy_icontrol_command + command_footer;
     document.getElementById('asg-trusted-proxy-icontrol-response').innerHTML = sample_header + asg_trusted_proxy_icontrol_response + sample_footer;
-
+    document.getElementById('asg-get-trust-device-command').innerHTML = command_header + asg_get_trust_device_command + command_footer;
+    document.getElementById('asg-remove-trust-device-command').innerHTML = command_header + asg_remove_trust_device_command + command_footer;
+    document.getElementById('asg-add-trust-device-command').innerHTML = command_header + asg_add_trust_device_command + command_footer;
+    document.getElementById('asg-get-tokens').innerHTML = command_header + asg_get_tokens + command_footer;
+    document.getElementById('asg-use-token').innerHTML = command_header + asg_use_token + command_footer;
+    document.getElementById('asg-download-trust-extension-command').innerHTML = command_header + asg_download_trust_extension_command + command_footer;
+    document.getElementById('asg-upload-trust-extension-command').innerHTML = command_header + asg_upload_trust_extension_command + command_footer;
+    document.getElementById('asg-install-trust-extension-command').innerHTML = command_header + asg_install_trust_extension_command + command_footer;
+    document.getElementById('asg-get-trust-extension-command').innerHTML = command_header + asg_get_trust_extension_command + command_footer;
+    document.getElementById('app-docker-compose-up').innerHTML = command_header + app_docker_compose_up + command_footer;
+    document.getElementById('app-docker-compose-down').innerHTML = command_header + app_docker_compose_down + command_footer;
+    document.getElementById('app-openapi-url').innerHTML = command_header + app_openapi_url + command_footer;
 }
 </script>
 
@@ -913,6 +995,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
 <table>
 <tr><th>deviceIP: </th><td><input id='asg-container-container-demonstration-virtual-device-ip' placeholder='Device IP' value='10.1.1.8'></td></tr>
 <tr><th>targetHost: </th><td><input id='asg-container-exercises-targetHost' placeholder='BIG-IP IP Address' value='10.1.1.7'></td></tr>
+<tr><th>targetPort: </th><td><input id='asg-container-exercises-targetPort' placeholder='BIG-IP IP Port' value='443'></td></tr>
 <tr><th>targetUsername: </th><td><input id='asg-container-exercises-targetUsername' placeholder='BIG-IP Username' value='admin'></td></tr>
 <tr><th>targetPassphrase: </th><td><input id='asg-container-exercises-targetPassphrase' placeholder='BIG-IP Password' value='admin'></td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -1049,7 +1132,7 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
 
 <div id='asg-add-device-to-group-response'>
 
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices -d &#39;{
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices -d &#39;{
     &quot;userName&quot;: &quot;[Your Remote BIG-IP Username]&quot;,
     &quot;password&quot;: &quot;[Your Remote BIG-IP Password]&quot;,
     &quot;address&quot;: &quot;[Your Remote BIG-IP]&quot;,
@@ -1058,10 +1141,10 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
 
 {
     &quot;uuid&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
-    &quot;deviceUri&quot;: &quot;https://172.13.1.103:443&quot;,
+    &quot;deviceUri&quot;: &quot;https://10.1.1.7:443&quot;,
     &quot;machineId&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
     &quot;state&quot;: &quot;PENDING&quot;,
-    &quot;address&quot;: &quot;172.13.1.103&quot;,
+    &quot;address&quot;: &quot;10.1.1.7&quot;,
     &quot;httpsPort&quot;: 443,
     &quot;groupName&quot;: &quot;app1&quot;,
     &quot;generation&quot;: 1,
@@ -1077,7 +1160,7 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
 
 </div>
 
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups/api1/devices|json_pp
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/resolver/device-groups/app1/devices|json_pp
 
 {
     &quot;items&quot;: [
@@ -1096,10 +1179,10 @@ The API Services Gateway includes an Apache web server, like TMOS does, which ca
         },
         {
             &quot;uuid&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
-            &quot;deviceUri&quot;: &quot;https://172.13.1.103:443&quot;,
+            &quot;deviceUri&quot;: &quot;https://10.1.1.7:443&quot;,
             &quot;machineId&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
             &quot;state&quot;: &quot;ACTIVE&quot;,
-            &quot;address&quot;: &quot;172.13.1.103&quot;,
+            &quot;address&quot;: &quot;10.1.1.7&quot;,
             &quot;httpsPort&quot;: 443,
             &quot;hostname&quot;: &quot;test-bigip1.sample.openstack.f5se.com&quot;,
             &quot;version&quot;: &quot;13.1.1&quot;,
@@ -1262,10 +1345,14 @@ module.exports = TrustedProxyWorker;</code></pre><p>The TrustedProxy iControl LX
 <p><strong>Step 1. Upload the TustedProxy iControl LX extension RPM file to the API Services Gateway Container</strong></p>
 <p>iControl REST supports uploading files to remote devices. A detailed discussion can be found here:</p>
 <p><a href="https://devcentral.f5.com/articles/demystifying-icontrol-rest-part-5-transferring-files">Demystifying iControl REST Part 5: Transferring Files</a></p>
-<p>The TrustedProxy RPM file is available at <a href="/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm">/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm</a>. We can download it into the <code>f5admin</code> user&#39;s home directory of the F5 Container Demonstration Virtual Device using curl. </p>
+<p>The TrustedProxy RPM file is available at <a href="/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm">/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm</a>. We can download it into the <code>ubuntu</code> user&#39;s home directory of the F5 Container Demonstration Virtual Device using curl. </p>
+<div id='asg-download-trust-proxy-command'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl http://localhost/icontrollx/TrustedProxy/build/RPMS/noarch/TrustedProxy-1.0.0-0001.noarch.rpm -O
-ubuntu@ip-10-1-1-8:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm 
--rw-rw-r-- 1 f5admin f5admin 7728 Oct  1 09:56 /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm</code></pre><p>We created the F5 Container Demonstration Virtual Device for your convience. Be aware that the RPM package for our iControl LX extension could be uploaded into the API Services Gateway container from anywhere that has access to the API Services Gateway iControl REST endpoints.</p>
+ubuntu@ip-10-1-1-8:~$ ls -l /home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm 
+-rw-rw-r-- 1 ubuntu ubuntu 7728 Oct  1 09:56 /home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm</code></pre><p>We created the F5 Container Demonstration Virtual Device for your convience. Be aware that the RPM package for our iControl LX extension could be uploaded into the API Services Gateway container from anywhere that has access to the API Services Gateway iControl REST endpoints.</p>
 <p><strong>Use bash and curl in the F5 Container Demonstration Device SSH session</strong></p>
 <p>Set the following bash variables and run the following <code>curl</code> command to upload the TrsutedProxy iControl LX extension from the F5 Container Demonstration Virtual Device into the API Services Gateway container.</p>
 <div id='asg-upload-trust-proxy-command'>
@@ -1274,7 +1361,7 @@ ubuntu@ip-10-1-1-8:~$ ls -l /home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm
 
 <div id='asg-upload-trust-proxy-response'>
 
-<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm&#39;
+<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
 ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
@@ -1421,7 +1508,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 
 {
     &quot;method&quot;: &quot;Get&quot;,
-    &quot;uri&quot;: &quot;https://[Your Remote BIG-IP Address]/mgmt/shared/identified-devices/config/device-info&quot;
+    &quot;uri&quot;: &quot;https://[Your Remote BIG-IP Address]:[Your Remote BIG-IP Port]/mgmt/shared/identified-devices/config/device-info&quot;
 }
 </code></pre><p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
 <div id='asg-trusted-proxy-icontrol-command'>
@@ -1433,7 +1520,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustedProxy -d &#39;{
     &quot;method&quot;: &quot;Get&quot;,
-    &quot;uri&quot;: &quot;https://172.13.1.103/mgmt/shared/identified-devices/config/device-info&quot;
+    &quot;uri&quot;: &quot;https://10.1.1.7/mgmt/shared/identified-devices/config/device-info&quot;
 }&#39;|json_pp
 
 {
@@ -1496,6 +1583,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <p><strong><em>Look Mom No Leaked Credentials!</em></strong></p>
 <p><strong>WE HAVE ESTABLISHED A TRUSTED CONTAINER WITHOUT HAVING TENANTS KNOW TMOS CREDENTIALS</strong></p>
 <h3 id="exercise-7-removing-a-trust-between-the-api-services-gateway-and-a-remote-big-ip">Exercise #7 - Removing a Trust Between the API Services Gateway and a Remote BIG-IP</h3>
+<p><strong>Note:</strong> This exercise is here for completeness. You should read it, but in Exercise 8 we are going to make this whole process a simple declaration!</p>
 <p>While the creation of the trust was an automated process which was initiated by the addition of a BIG-IP to a device group, the removal of trust must be done through multiple requests. </p>
 <p>The process to remove the trust has six steps:</p>
 <ol>
@@ -1527,10 +1615,10 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
         },
         {
             &quot;uuid&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
-            &quot;deviceUri&quot;: &quot;https://172.13.1.103:443&quot;,
+            &quot;deviceUri&quot;: &quot;https://10.1.1.7:443&quot;,
             &quot;machineId&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
             &quot;state&quot;: &quot;ACTIVE&quot;,
-            &quot;address&quot;: &quot;172.13.1.103&quot;,
+            &quot;address&quot;: &quot;10.1.1.7&quot;,
             &quot;httpsPort&quot;: 443,
             &quot;hostname&quot;: &quot;test-bigip1.sample.openstack.f5se.com&quot;,
             &quot;version&quot;: &quot;13.1.1&quot;,
@@ -1569,7 +1657,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
 {
    &quot;method&quot;:&quot;Get&quot;,
-   &quot;uri&quot;: &quot;https://172.13.1.103:443/mgmt/shared/device-certificates&quot;
+   &quot;uri&quot;: &quot;https://10.1.1.7:443/mgmt/shared/device-certificates&quot;
 }&#39;|json_pp
 
 {
@@ -1604,7 +1692,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustProxy -d &#39;   
 {
    &quot;method&quot;:&quot;Delete&quot;,
-   &quot;uri&quot;: &quot;https://172.13.1.103:443/mgmt/shared/device-certificates/[Your API Services Gateway certificateId]&quot;
+   &quot;uri&quot;: &quot;https://10.1.1.7:443/mgmt/shared/device-certificates/[Your API Services Gateway certificateId]&quot;
 }&#39;|json_pp
 
 {
@@ -1624,10 +1712,10 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 
 {
     &quot;uuid&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
-    &quot;deviceUri&quot;: &quot;https://172.13.1.103:443&quot;,
+    &quot;deviceUri&quot;: &quot;https://10.1.1.7:443&quot;,
     &quot;machineId&quot;: &quot;c61e1394-250c-451d-a1c2-fc0f7d1fa99a&quot;,
     &quot;state&quot;: &quot;ACTIVE&quot;,
-    &quot;address&quot;: &quot;172.13.1.103&quot;,
+    &quot;address&quot;: &quot;10.1.1.7&quot;,
     &quot;httpsPort&quot;: 443,
     &quot;hostname&quot;: &quot;test-bigip1.sample.openstack.f5se.com&quot;,
     &quot;version&quot;: &quot;13.1.1&quot;,
@@ -1801,13 +1889,13 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>{
     &quot;devices&quot;: [
       {
-        &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+        &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
         &quot;targetPort&quot;: 443,
         &quot;targetUsername&quot;: &quot;admin&quot;,
         &quot;targetPassphrase&quot;: &quot;admin&quot;
       },
       {
-        &quot;targetHost&quot;: &quot;172.13.1.107&quot;,
+        &quot;targetHost&quot;: &quot;10.1.1.6&quot;,
         &quot;targetPort&quot;: 443,
         &quot;targetUsername&quot;: &quot;admin&quot;,
         &quot;targetPassphrase&quot;: &quot;admin&quot;
@@ -1820,22 +1908,22 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>{
     &quot;devices&quot;: [
       {
-        &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+        &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
         &quot;targetPort&quot;: 443,
         &quot;state&quot;: &quot;ACTIVE&quot;
       },
       {
-        &quot;targetHost&quot;: &quot;172.13.1.107&quot;,
+        &quot;targetHost&quot;: &quot;10.1.1.6&quot;,
         &quot;targetPort&quot;: 443,
         &quot;state&quot;: &quot;ACTIVE&quot;
       }
     ]
 }</code></pre><p>Notice the <code>writeOnly</code> attributes are missing, but the <code>readOnly</code> attribute is present. We should <em>NEVER</em> see our TMOS credentials every again. We can gain <em>separation of concerns</em> as part of our user experience!</p>
-<p>For a simplified user interaction to remove a trusted device, let&#39;s have the user simply remove it from their declaration. Assuming we made the previous declaration, to remove the <code>targetHost</code> 172.13.1.107, but retain <code>targetHost</code> 172.13.1.103, we just <code>POST</code> this declaration.</p>
+<p>For a simplified user interaction to remove a trusted device, let&#39;s have the user simply remove it from their declaration. Assuming we made the previous declaration, to remove the <code>targetHost</code> 10.1.1.6, but retain <code>targetHost</code> 10.1.1.7, we just <code>POST</code> this declaration.</p>
 <pre><code>{
     &quot;devices&quot;: [
       {
-        &quot;targetHost&quot;: &quot;172.13.1.103&quot;
+        &quot;targetHost&quot;: &quot;10.1.1.7&quot;
       }
     ]
 }</code></pre><p>They shouldn&#39;t need to give us TMOS credentials just to retain a trusted device, so let&#39;s not make them supply those. Again, we are worried about user experience in our example.</p>
@@ -1855,11 +1943,23 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 </ul>
 <p>You&#39;ve already done exercises for each of those step associated with the TrustedProxy extension. Just review those exercises and do the same for the DeviceTrustGroup extension. Here are some hints:</p>
 <p><strong>Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device</strong></p>
+<div id='asg-download-trust-device-command'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -O http://localhost/icontrollx/TrustedDevices/build/RPMS/noarch/TrustedDevices-1.0.0-0001.noarch.rpm</code></pre><p><strong>Step 2. Upload the RPM file into the Application Services Gateway</strong></p>
-<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm&#39;
+<div id='asg-upload-trust-device-command'>
+
+</div>
+
+<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
 ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+<div id='asg-install-trust-device-command'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
     &quot;operation&quot;:&quot;INSTALL&quot;,
     &quot;packageFilePath&quot;: &quot;/var/config/rest/downloads/TrustedDevices-1.0.0-0001.noarch.rpm&quot;
@@ -1876,22 +1976,49 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
    &quot;id&quot; : &quot;863d509e-a246-4361-81ca-43e9b4f19968&quot;,
    &quot;operation&quot; : &quot;INSTALL&quot;
 }</code></pre><p><strong>Step 4. Issue requests to our TrustedDevices iControl LX extension</strong></p>
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+<p>You should play around with your new TrustedDevices iControl LX extension and see how easy it is to add and remove trusted devices now. That&#39;s the whole point. We took something complex and made it simpler through declarations.</p>
+<p>Get the devices which are currently trusted by the API Services Gateway</p>
+<div id='asg-get-trust-device-command'>
+
+</div> 
+
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
 {
     &quot;devices&quot;: [
         {
-            &quot;targetHost&quot;: &quot;172.13.1.107&quot;,
+            &quot;targetHost&quot;: &quot;10.1.1.6&quot;,
             &quot;targetPort&quot;: 443,
             &quot;state&quot;: &quot;ACTIVE&quot;
         },
         {
-            &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+            &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
             &quot;targetPort&quot;: 443,
             &quot;state&quot;: &quot;ACTIVE&quot;
         }
     ]
-}</code></pre><p>You should play around with your new TrustedDevices iControl LX extension and see how easy it is to add and remove trusted devices now. That&#39;s the whole point. We took something complex and made it simpler through declarations.</p>
-<p><strong>Note:</strong> We used JSON schema because AS3 uses JSON schema. There are other schema standards which are becoming better accepted than JSON schema. Look at <a href="https://www.openapis.org/">OpenAPI</a>. We&#39;ll use an OpenAPI generated interactive UI to avoid all this <code>curl</code> cnt-n-paste and SSH sessions in future exercises.</p>
+}</code></pre><p>Remove all the trusted devices from the API Services Gateway.</p>
+<div id='asg-remove-trust-device-command'>
+
+</div>
+
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{ &quot;devices&quot;: [] }&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+{
+    &quot;devices&quot;: []
+}</code></pre><p>Add a deivce trust.</p>
+<div id='asg-add-trust-device-command'>
+
+</div> 
+
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{ &quot;devices&quot;: [ &quot;targetHost&quot;: &quot;10.1.1.7&quot;, &quot;targetUsername&quot;: &quot;admin&quot;, &quot;targetPassphrase&quot;:&quot;admin&quot; ] }&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+{
+    &quot;devices&quot;: [
+        {
+            &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
+            &quot;targetPort&quot;: 443,
+            &quot;state&quot;: &quot;ACTIVE&quot;
+        }
+    ]
+}</code></pre><p><strong>Note:</strong> We used JSON schema because AS3 uses JSON schema. There are other schema standards which are becoming better accepted than JSON schema. Look at <a href="https://www.openapis.org/">OpenAPI</a>. We&#39;ll use an OpenAPI generated interactive UI to avoid all this <code>curl</code> cnt-n-paste and SSH sessions in future exercises.</p>
 <p>If you want to see more complex JSON schemas, the clouddocs that were generated from AS3&#39;s JSON schema files can be viewed here:</p>
 <p><a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/refguide/schema-reference.html">AS3 Schemas Documentation</a></p>
 <p>Appreciate that starting with well defined schemas for our API contracts leads to better code, better testing, and documentation.</p>
@@ -1913,11 +2040,15 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <p>The internal mechanism used by the API Service Gateway to sign proxied requests does so by adding two query parameters to all targeted iControl REST requests. The parameters indentify the API Services Gateway to the remote TMOS device and present the signed token. Here is an example of what the augmented query parameters look like: </p>
 <pre><code>?em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D</code></pre><p>Let&#39;s make a <code>GET</code> request to our TrustedProxy iControl LX extension to get an our signed tokens for each of our trusted devices.  </p>
 <p><strong>Step 1. Get tokens for all your trusted devices</strong></p>
+<div id='asg-get-tokens'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedProxy|json_pp  
 {
     &quot;172.17.0.2&quot;: &quot;{\&quot;address\&quot;:\&quot;172.17.0.2\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720288}&quot;,
-    &quot;172.13.1.107&quot;: &quot;{\&quot;address\&quot;:\&quot;172.13.1.107\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720299}&quot;,
-    &quot;172.13.1.103&quot;: &quot;{\&quot;address\&quot;:\&quot;172.13.1.103\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720309}&quot;
+    &quot;10.1.1.6&quot;: &quot;{\&quot;address\&quot;:\&quot;10.1.1.6\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720299}&quot;,
+    &quot;10.1.1.7&quot;: &quot;{\&quot;address\&quot;:\&quot;10.1.1.7\&quot;,\&quot;queryParam\&quot;:\&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D\&quot;,\&quot;timestamp\&quot;:1541175720309}&quot;
 }</code></pre><p>Our API Service Gateway token is also included in the response, even though there is no security on our API Services Gateway by default. </p>
 <p>If you followed the directions to enable Apache to enforce HTTP BASIC authentication for the API Service Gateway, you could build a micro service container which requires credentials to access the API Services Gateway, issue requests to the TrustedProxy iControl LX extension for tokens, and then returns those tokens to clients. Effectly building an F5 only secure token service container.</p>
 <p>We&#39;ll see in a later example that completely removing direct access to any container which has the API Services Gateway services is a much easier way to secure things in our modern containerized world.</p>
@@ -1948,9 +2079,13 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <p>1) Using curl to retrieve a token and storing it in an environment variable. 
 2) Issuing an iControl REST request directly to a trusted BIG-iP adding the token query parameters to your request URL.</p>
 <p><strong>Step 2. Make an iControl Rest request directly to a trusted device using our retrieved token (query parameters)</strong></p>
+<div id='asg-use-token'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ token=&quot;em_server_ip=172.17.0.2&amp;em_server_auth_token=jcV3CpJaECUop%2FGd2cnfGH%2FrTgFtJsq7DEXQeOuu%2B1mf137o7li02Bss31vJl3Wec3siMJLkPMUZIOwCMLtvNZunf9vT9A3udImoyuW%2FVxXClqDZUz50sQ8Fs6iPvdw4O8Nlha3dPidOyvf51fLWCER0HJgUH3Yd6RQrKP7oNd1T7OyD8kPunaSIyjXTgmirBYpl%2FC96f4Ofc2osgcA4vtT1sgampzOpKwgyptX7SUhXjkQZCEHpbOUGWBxCaqIvgLW30krRQM%2BFtJyfh41c%2FSp%2F5gOEMTSzyF9fmTUdkQ6NiJxBdff%2FuR7KW9QULzHusM0VDn1gZn2lvAkB0fh0ZQ%3D%3D&quot;
 
-ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://172.13.1.103:443/mgmt/shared/identified-devices/config/device-info?$token|json_pp
+ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://10.1.1.7:443/mgmt/shared/identified-devices/config/device-info?$token|json_pp
 {
    &quot;slots&quot; : [
       {
@@ -2055,19 +2190,33 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; htt
 <p><strong>Note:</strong> You will still need a request body for <code>PUT</code> and <code>POST</code> requests. That&#39;s HTTP. But we can make it an empty JSON object <code>{ }</code> or a JSON object defining each of the parameters, for instance, one like this:</p>
 <pre><code>POST /mgmt/shared/TrustedExtensions
 { 
-     &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+     &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
+     &quot;targetPort&quot;: &quot;443&quot;,
      &quot;url&quot;: &quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
 }</code></pre><p>Either way, the user can still use the query parameters if you want. This is about making things easy. So this works:</p>
-<pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=172.13.1.103&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
-{ }</code></pre><p>Just for fun we&#39;ll make it smart enough to understand that a <code>targetHost</code> defined as <code>localhost</code> means to manage the extensions on the API Services Gateway itself! Inception indeed! However we&#39;re going to learn a big inception with this idea. We don&#39;t care, we&#39;re doing it anyway! Like Lionel Ritchie says.. <em>&#39;That why I&#39;m easy..&#39;</em> Exception in use cases be damned.. keep going!</p>
+<pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=10.1.1.7targetPort=443&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
+{ }</code></pre><p>Just for fun we&#39;ll make it smart enough to understand that a <code>targetHost</code>,<code>targetPort</code>, defined as <code>localhost</code> means to manage the extensions on the API Services Gateway itself! Inception indeed! However we&#39;re going to learn a big inception with this idea. We don&#39;t care, we&#39;re doing it anyway! Like Lionel Ritchie says.. <em>&#39;That why I&#39;m easy..&#39;</em> Exception in use cases be damned.. keep going!</p>
 <p>Of course we&#39;ve written this example for you. If you are interested, <a href="/icontrollx/TrustedExtensions/src/nodejs/TrustedExtensionsWorker.js">here is the source code</a>.</p>
 <p>Let&#39;s follow the manual steps for the last time to install our &#39;easy button&#39; for iControl LX extension installation.</p>
 <p><strong>Step 1. Download the TrustedDevices RPM install package to the F5 Container Demonstration Virtual Device</strong></p>
+<div id='asg-download-trust-extension-command'>
+
+</div>
+
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -O http://localhost/icontrollx/TrustedExtensions/build/RPMS/noarch/TrustedExtensions-1.0.0-0001.noarch.rpm</code></pre><p><strong>Step 2. Upload the RPM file into the Application Services Gateway</strong></p>
-<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm&#39;
+<div id='asg-upload-trust-extension-command'>
+
+</div>
+
+<pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
 ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+<div id='asg-install-trust-extension-command'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d &#39;{ 
     &quot;operation&quot;:&quot;INSTALL&quot;,
     &quot;packageFilePath&quot;: &quot;/var/config/rest/downloads/TrustedExtensions-1.0.0-0001.noarch.rpm&quot;
@@ -2084,6 +2233,10 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
    &quot;id&quot; : &quot;8e1a6d03-0ffb-43bd-86a4-c4801fe43d36&quot;,
    &quot;operation&quot; : &quot;INSTALL&quot;
 }</code></pre><p><strong>Step 4. Issue requests to our TrustedExtensions iControl LX extension</strong></p>
+<div id='asg-get-trust-extension-command'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; https://localhost:8443/mgmt/shared/TrustedExtensions?targetHost=localhost|json_pp
 [
     {
@@ -2148,11 +2301,14 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <p>Start your ssh client and login with the username, password, and host shown on the console.</p>
 <div id='asg-ssh-login'>
 
-<p><strong><code>ssh f5admin@[Your F5 Container Demonstration Device IP]</code></strong></p>
-<pre><code>f5admin@[Your F5 Container Demonstration Device IP]
-f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</code></pre></div>
+<p><strong><code>ssh ubuntu@[Your F5 Container Demonstration Device IP]</code></strong></p>
+<pre><code>ubuntu@ip-10-1-1-8</code></pre></div>
 
 <p>Once you are logged in, use the <code>docker-compose</code> orchestrator to launch our micro services. We will start our docker containers by issueing the <code>up</code> command in our home directory.</p>
+<div id='app-docker-compose-up'>
+
+</div>
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ docker-compose up</code></pre><p>This command will start a flurry of activity in your terminal session as three services intialize and gradually communicate with each other to reach a ready state for external API access.</p>
 <p><strong>Note:</strong> watch some of what&#39;s going on. Do you see anything familiar? You should see many iControl REST URIs that you recognize as our application installs our TrustedDevices, TrustedProxy, and TrustedExtensions iControl LX extensions to the Application Services Gateway. Our application will use these extensions to provision the BIG-IPs.</p>
 <p>In the home directory there is a <code>docker-compose.yaml</code> file which details what container images to start and their relationship with each other. Our example deployment is comprised of 3 service, each in their own container. </p>
@@ -2161,14 +2317,18 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <li><code>mongodb</code> stock container with only authentication sepcified</li>
 <li><code>f5-appsvcs-demo</code> our OpenAPI application which handles our API endpoints and initializes our ecosystem to a ready state.</li>
 </ul>
-<p>Feel free to examine the <code>/home/f5admin/docker-compose.yaml</code> file which describes our services. Our deployment uses <code>linked</code> containers, meaning they have access to each other by name, and are available to each other over a private network.</p>
+<p>Feel free to examine the <code>/home/ubuntu/docker-compose.yaml</code> file which describes our services. Our deployment uses <code>linked</code> containers, meaning they have access to each other by name, and are available to each other over a private network.</p>
 <p>Only our <code>f5-appsvcs-demo</code> container will have inbound access via an exposed TCP port. Our micro services ecosystem is effectively firewalled. This is how we mitagate the need to secure the <code>f5-api-services-gateway</code>. It simply can not be access because the container has no exposed ports. By our <code>docker-compose.yaml</code> declaration, our <code>f5-appsvcs-demo</code> alone exposes a port and then only one, TCP port 3000.</p>
 <p><img src="./assets/images/f5-appsvcs-demo-microservices-diagram.png" alt="An Example Micro Service Orchestration Application"></p>
 <p><strong>Note:</strong> This is a very simple example. Our customers have Kubernetes orchestrated deployments which can be auto-scaled to load. It is not uncommon for a micro services architecture to be comprised of dozens of containerized services, each dynamically provised by a container orchestrator. We&#39;re just using <code>docker-compose</code> to aquaint you with the concepts and where the F5 API Services Gateway fits into a micro services deployment.</p>
 <p><strong>Step 2. Validate the Demonstration app is running querying the OpenAPI Documentation user interface</strong></p>
 <p>Our <code>f5-appsvcs-demo</code> application implements our OpenAPI schema in the <code>/api</code> namespace. The schema derived user interface can be reached at <code>/api-docs/</code>.</p>
 <p>Open a web browser and navigate to:</p>
+<div id='app-openapi-url'>
+
 <p><code>http://[Your F5 Container Demonstration Device IP]:3000/api-docs</code></p>
+</div>
+
 <p>You should see the OpenAPI generated UI being served by our application container.</p>
 <p><img src="./assets/images/f5-apps-openapi-app-initial.png" alt="OpenAPI Generated GUI"></p>
 <p>Feel free to read the introduction text. This text is embedded in our schema document. In fact the schema document is linked in the description text. Open the schema document and examine it. Or you can just click on the link below to examine our application&#39;s schema.</p>
@@ -2242,13 +2402,13 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <pre><code>{
     &quot;name&quot;: &quot;dmzProxies&quot;,
     &quot;devices&quot;: [{
-            &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+            &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
             &quot;targetPort&quot;: 443,
             &quot;targetUsername&quot;: &quot;admin&quot;,
             &quot;targetPassphrase&quot;: &quot;admin&quot;
         },
         {
-            &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
+            &quot;targetHost&quot;: &quot;10.1.1.7&quot;,
             &quot;targetPort&quot;: 443,
             &quot;targetUsername&quot;: &quot;admin&quot;,
             &quot;targetPassphrase&quot;: &quot;admin&quot;
@@ -2357,6 +2517,11 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 <p><strong>Step 12. Removing the Application</strong></p>
 <p>The is just one more thing to do, stop your micro services.</p>
 <p>Use the docker-compose orchestrator to remove our micro services. We will remove our docker containers by issueing the down command in our home directory.</p>
+<div id='app-docker-compose-down'>
+
+</div>
+
+
 <pre><code>ubuntu@ip-10-1-1-8:~$ docker-compose down</code></pre><hr>
 <h1 id="the-api-service-gateway-in-next-generation-partner-ecosystems">The API Service Gateway in Next Generation Partner Ecosystems</h1>
 <p>How do we keep up with rapidly developing service deployments in our every changing orchestration environments? We&#39;re betting on the ability to launch our containerized services. Our containerized services allow our customers to build distributed controllers which include secured access to BIG-IP provisioning. Our orchestration efforts become decoupled from partner dependencies and releases through iControl LX extensions declarative APIs. The internal workings of BIG-IP trusted access, iControl REST workflows, or even our ability to pivot to non-TMOS application delivery systems, can be masked from the partner ecosystem by consistent and maintainable declarations.</p>
@@ -2372,3 +2537,7 @@ f5admin@[Your F5 Container Demonstration Device IP]&#39;s password: f5admin</cod
 </li>
 </ul>
 <p>The exercises above were your introduction to ready yourself for cloud native orchestration. Some customers are already expecting you to understand these concepts. Other customers&#39; migration to cloud services might still be simply a plan. Either way, you can be ready to help them now.</p>
+<script>
+buildAS3Exercises();
+buildASGExercises();
+</script>
