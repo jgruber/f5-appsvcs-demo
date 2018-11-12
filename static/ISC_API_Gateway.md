@@ -474,8 +474,11 @@ List the running containers.
 
 ```
 ubuntu@ip-10-1-1-8:~$ docker ps
-CONTAINER ID        IMAGE                                  COMMAND             CREATED             STATUS              PORTS                                         NAMES
-478d06836ee3        f5devcentral/f5-as3-container:latest   "/etc/runit/boot"   8 seconds ago       Up 7 seconds        0.0.0.0:8080->80/tcp, 0.0.0.0:8443->443/tcp   as3_container
+CONTAINER ID        IMAGE                                  COMMAND                  CREATED             STATUS              PORTS                                         NAMES
+abeefbf9bbd8        f5devcentral/f5-as3-container:latest   "/etc/runit/boot"        2 minutes ago       Up 2 minutes        0.0.0.0:8080->80/tcp, 0.0.0.0:8443->443/tcp   as3_container
+f6f0b0dc99a2        jgruber/f5-appsvcs-demo-web:udf        "nginx -g 'daemon of…"   4 minutes ago       Up 4 minutes        0.0.0.0:80->80/tcp                            f5-appsvcs-demo-web
+0526bcfb67bb        v2tec/watchtower                       "/watchtower"            About an hour ago   Up About an hour                                                  watchtower
+0304edda0fc7        jgruber/as3validatortool               "/bin/sh -c 'serve b…"   About an hour ago   Up About an hour    0.0.0.0:5000->3000/tcp                        as3validator
 
 ```
 
@@ -560,9 +563,9 @@ Note the response issuing a `POST` request and the `retrieve` action on AS3 inst
 
 ```
 ubuntu@ip-10-1-1-8:~$ curl -u 'admin:admin' -k -s -H 'Content-Type: application/json' -X POST https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare -d '{
->     "class": "AS3",
->     "action": "retrieve"
-> }'|json_pp
+     "class": "AS3",
+     "action": "retrieve"
+ }'|json_pp
 {
 	"statusCode": 404,
 	"message": "declaration 0 not found",
