@@ -272,7 +272,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'
@@ -282,7 +282,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -316,7 +316,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "deploy",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `",
     "declaration": {
@@ -360,7 +360,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "remove",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -462,7 +462,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;</code></pre></div>
@@ -474,7 +474,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;retrieve&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
@@ -520,7 +520,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;deploy&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
     &quot;declaration&quot;: {
@@ -564,7 +564,7 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
         &quot;lineCount&quot;: 24,
         &quot;code&quot;: 200,
         &quot;host&quot;: &quot;[Your targetHost]&quot;,
-        &quot;port&quot;: &quot;[Your targetPort]&quot;,
+        &quot;port&quot;: [Your targetPort],
         &quot;tenant&quot;: &quot;Sample_container&quot;,
         &quot;runTime&quot;: 1077
     }],
@@ -613,7 +613,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
     &quot;class&quot;: &quot;AS3&quot;,
     &quot;action&quot;: &quot;remove&quot;,
     &quot;targetHost&quot;: &quot;[Your targetHost]&quot;,
-    &quot;targetPort&quot;: &quot;[Your targetPort]&quot;,
+    &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
 }&#39;|json_pp
@@ -624,7 +624,7 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
             &quot;lineCount&quot;: 22,
             &quot;code&quot;: 200,
             &quot;host&quot;: &quot;[Your targetHost]&quot;,
-            &quot;port&quot;: &quot;[Your targetPort]&quot;,
+            &quot;port&quot;: [Your targetPort],
             &quot;tenant&quot;: &quot;Sample_container&quot;,
             &quot;runTime&quot;: 21546
         }
@@ -718,7 +718,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
@@ -727,7 +727,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp
 
 {
@@ -736,7 +736,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "machineId": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
     "state": "PENDING",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `",
+    "httpsPort": ` + targetPort + `,
     "groupName": "app1",
     "generation": 1,
     "lastUpdateMicros": 1539013176263467,
@@ -1830,7 +1830,6 @@ f5admin@containerhost:~$ curl -k --header &quot;Content-Type:application/octet-s
                 &quot;description&quot;: &quot;Attributes need to define a trusted device&quot;,
                 &quot;required&quot;: [
                     &quot;targetHost&quot;,
-                    &quot;targetPort&quot;,
                     &quot;targetUsername&quot;,
                     &quot;targetPassphrase&quot;,
                     &quot;state&quot;
@@ -2211,7 +2210,7 @@ f5admin@containerhost:~$ curl -k -s -H &#39;Content-Type: application/json&#39; 
 <pre><code>POST /mgmt/shared/TrustedExtensions
 { 
      &quot;targetHost&quot;: &quot;172.13.1.103&quot;,
-     &quot;targetPort&quot;: &quot;443&quot;,
+     &quot;targetPort&quot;: 443,
      &quot;url&quot;: &quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;
 }</code></pre><p>Either way, the user can still use the query parameters if you want. This is about making things easy. So this works:</p>
 <pre><code>POST /mgmt/shared/TrustedExtensions?targetHost=172.13.1.103targetPort=443&amp;url=&quot;https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm&quot;

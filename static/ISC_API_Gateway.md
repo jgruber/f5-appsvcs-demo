@@ -309,7 +309,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'
@@ -319,7 +319,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -353,7 +353,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "deploy",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `",
     "declaration": {
@@ -397,7 +397,7 @@ f5admin@containerhost:~$ <-- Notice no response output!
     "class": "AS3",
     "action": "remove",
     "targetHost": "` + targetHost + `",
-    "targetPort": "` + targetPort + `",
+    "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
 }'|json_pp
@@ -540,7 +540,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "[Your targetHost]",
-    "targetPort": "[Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
 }'
@@ -557,7 +557,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "class": "AS3",
     "action": "retrieve",
     "targetHost": "[Your targetHost]",
-    "targetPort": "[Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
 }'|json_pp
@@ -625,7 +625,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "class": "AS3",
     "action": "deploy",
     "targetHost": "[Your targetHost]",
-    "targetPort": "[Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
     "declaration": {
@@ -669,7 +669,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
 		"lineCount": 24,
 		"code": 200,
 		"host": "[Your targetHost]",
-        "port": "[Your targetPort]",
+        "port": [Your targetPort],
 		"tenant": "Sample_container",
 		"runTime": 1077
 	}],
@@ -727,7 +727,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "class": "AS3",
     "action": "remove",
     "targetHost": "[Your targetHost]",
-    "targetPort": "[Your targetPort]",
+    "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
 }'|json_pp
@@ -738,7 +738,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
             "lineCount": 22,
             "code": 200,
             "host": "[Your targetHost]",
-            "port": "[Your targetPort]",
+            "port": [Your targetPort],
             "tenant": "Sample_container",
             "runTime": 21546
         }
@@ -837,7 +837,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp`;
 
     var asg_add_device_to_group_response = `
@@ -846,7 +846,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "userName": "` + targetUsername + `",
     "password": "` + targetPassphrase + `",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `"
+    "httpsPort": ` + targetPort + `
 }'|json_pp
 
 {
@@ -855,7 +855,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "machineId": "c61e1394-250c-451d-a1c2-fc0f7d1fa99a",
     "state": "PENDING",
     "address": "` + targetHost + `",
-    "httpsPort": "` + targetPort + `",
+    "httpsPort": ` + targetPort + `,
     "groupName": "app1",
     "generation": 1,
     "lastUpdateMicros": 1539013176263467,
@@ -2142,7 +2142,6 @@ Here is a JSON schema for our declaration:
 				"description": "Attributes need to define a trusted device",
 				"required": [
 					"targetHost",
-					"targetPort",
 					"targetUsername",
 					"targetPassphrase",
 					"state"
@@ -2612,7 +2611,7 @@ We'll collect our inputs as query parameters for:
 POST /mgmt/shared/TrustedExtensions
 { 
      "targetHost": "172.13.1.103",
-     "targetPort": "443",
+     "targetPort": 443,
      "url": "https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.5.0/f5-appsvcs-3.5.0-3.noarch.rpm"
 }
 ```
