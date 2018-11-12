@@ -322,7 +322,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
-}'|json_pp
+}'
 
 f5admin@containerhost:~$ <-- Notice no response output!
 
@@ -560,7 +560,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     "targetPort": [Your targetPort],
     "targetUsername": "[Your targetUsername]",
     "targetPassphrase": "[Your targetPassphrase]"
-}'|json_pp
+}'
 
 f5admin@containerhost:~$ <-- Notice no response output!
 ```

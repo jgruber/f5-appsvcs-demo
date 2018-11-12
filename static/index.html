@@ -300,7 +300,7 @@ f5admin@` + deviceIp + `'s password: f5admin`;
     "targetPort": ` + targetPort + `,
     "targetUsername": "` + targetUsername + `",
     "targetPassphrase": "` + targetPassphrase + `"
-}'|json_pp
+}'
 
 f5admin@containerhost:~$ <-- Notice no response output!
 
@@ -492,7 +492,7 @@ CONTAINER ID        IMAGE                                  COMMAND             C
     &quot;targetPort&quot;: [Your targetPort],
     &quot;targetUsername&quot;: &quot;[Your targetUsername]&quot;,
     &quot;targetPassphrase&quot;: &quot;[Your targetPassphrase]&quot;
-}&#39;|json_pp
+}&#39;
 
 f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 
