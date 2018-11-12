@@ -8,7 +8,7 @@ cp ./src/config/swagger.json ./static/swagger.json
 
 #cd static
 
-docker build -t f5-appsvcs-demo-web:latest ./static
+docker build -t f5-appsvcs-demo-web:udf ./static
 
 #cd ../
 rm -rf ./static/icontrollx
