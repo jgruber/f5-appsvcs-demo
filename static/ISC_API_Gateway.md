@@ -836,7 +836,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
     var asg_upload_trust_proxy_command = `filepath='/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -1003,7 +1003,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     var asg_upload_trust_device_command = `filepath='/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -1028,7 +1028,7 @@ curl -k -s -H 'Content-Type: application/json' https://${targetHost}:${targetPor
     var asg_upload_trust_extension_command = `filepath='/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
 
     var asg_install_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
     "operation":"INSTALL",
@@ -1533,7 +1533,7 @@ Set the following bash variables and run the following `curl` command to upload 
 f5admin@containerhost:~$ filepath='/home/f5admin/TrustedProxy-1.0.0-0001.noarch.rpm'
 f5admin@containerhost:~$ filename=$(basename $filepath)
 f5admin@containerhost:~$ rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 
 {"remainingByteCount":0,"usedChunks":{"0":7728},"totalByteCount":7728,"localFilePath":"/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm","temporaryFilePath":"/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm","generation":0,"lastUpdateMicros":1539099747522073}
 ```
@@ -2289,7 +2289,7 @@ f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedDevices/buil
 f5admin@containerhost:~$ filepath='/home/f5admin/TrustedDevices-1.0.0-0001.noarch.rpm'
 f5admin@containerhost:~$ filename=$(basename $filepath)
 f5admin@containerhost:~$ rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 ```
 
 **Step 3. Install the TrustedDevices iControl LX extension**
@@ -2359,7 +2359,7 @@ f5admin@containerhost:~$ curl -k -s -H 'Content-Type: application/json' -X POST 
 }
 ```
 
-Add a deivce trust.
+Add a device trust.
 
 <div id='asg-add-trust-device-command'>
 
@@ -2615,7 +2615,7 @@ f5admin@containerhost:~$ curl -O http://localhost/icontrollx/TrustedExtensions/b
 f5admin@containerhost:~$ filepath='/home/f5admin/TrustedExtensions-1.0.0-0001.noarch.rpm'
 f5admin@containerhost:~$ filename=$(basename $filepath)
 f5admin@containerhost:~$ rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+f5admin@containerhost:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 ```
 
 **Step 3. Install the TrustedDevices iControl LX extension**
