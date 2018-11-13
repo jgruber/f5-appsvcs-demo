@@ -723,7 +723,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     var asg_upload_trust_proxy_command = `filepath='/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -750,7 +750,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
    "operation" : "INSTALL"
 }`;
 
-    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]`;
+    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]|json_pp`;
 
     var asg_install_query_trust_proxy_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/9a559504-f1a2-4dca-a8d6-32ce48f2f896
 
@@ -890,7 +890,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     var asg_upload_trust_device_command = `filepath='/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -915,7 +915,7 @@ curl -k -s -H 'Content-Type: application/json' https://${targetHost}:${targetPor
     var asg_upload_trust_extension_command = `filepath='/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
 
     var asg_install_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
     "operation":"INSTALL",
@@ -1342,7 +1342,7 @@ ubuntu@ip-10-1-1-8:~$ ls -l /home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm
 <pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 
 {&quot;remainingByteCount&quot;:0,&quot;usedChunks&quot;:{&quot;0&quot;:7728},&quot;totalByteCount&quot;:7728,&quot;localFilePath&quot;:&quot;/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;temporaryFilePath&quot;:&quot;/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;generation&quot;:0,&quot;lastUpdateMicros&quot;:1539099747522073}</code></pre></div>
 
@@ -1932,7 +1932,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
 <div id='asg-install-trust-device-command'>
 
 </div>
@@ -1981,7 +1981,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{ &quot;devices&quot;: [] }&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
 {
     &quot;devices&quot;: []
-}</code></pre><p>Add a deivce trust.</p>
+}</code></pre><p>Add a device trust.</p>
 <div id='asg-add-trust-device-command'>
 
 </div> 
@@ -2189,7 +2189,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; htt
 <pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
 <div id='asg-install-trust-extension-command'>
 
 </div>
@@ -2305,7 +2305,8 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <p><strong>Note:</strong> This is a very simple example. Our customers have Kubernetes orchestrated deployments which can be auto-scaled to load. It is not uncommon for a micro services architecture to be comprised of dozens of containerized services, each dynamically provised by a container orchestrator. We&#39;re just using <code>docker-compose</code> to aquaint you with the concepts and where the F5 API Services Gateway fits into a micro services deployment.</p>
 <p><strong>Step 2. Validate the Demonstration app is running querying the OpenAPI Documentation user interface</strong></p>
 <p>Our <code>f5-appsvcs-demo</code> application implements our OpenAPI schema in the <code>/api</code> namespace. The schema derived user interface can be reached at <code>/api-docs/</code>.</p>
-<p>Open a web browser and navigate to:</p>
+<p>Since we will be using the OpenAPI UI web interface, you will need access the Linux Jumphost via RDP. </p>
+<p>In your RDP session, open a web browser and navigate to:</p>
 <div id='app-openapi-url'>
 
 <p><code>http://[Your F5 Container Demonstration Device IP]:3000/api-docs</code></p>
