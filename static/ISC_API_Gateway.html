@@ -2264,7 +2264,12 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <li>Simplifying a complex task to make it as easy possible on the end user</li>
 </ul>
 <p>Now, let&#39;s move into the real world. Let&#39;s examine and use a simplified micro services framework which wraps in everything we&#39;ve learned so far and puts it to use within a standards based OpenAPI application.</p>
-<hr>
+<p><strong>Step 5. - Clean Up Your BIG-IP and Stop the API Services Gateway Container</strong></p>
+<p>Let&#39;s remove the device trusts we created on our BIG-IPs</p>
+<p><strong><code>curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{&quot;devices&quot;: []}&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp</code></strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{&quot;devices&quot;: []}&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp</code></pre><p>To stop the API Services Gateway Container on our F5 Container Demonstration Virtual Device issue the following <code>docker</code> command.</p>
+<p><strong><code>docker stop asg_container</code></strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker stop asg_container </code></pre><hr>
 <h2 id="demonstration-integration-exercises">Demonstration Integration Exercises</h2>
 <p>In the following exercises we are going to illustrate the use of the API Services Gateway as part of an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using <code>docker-compose</code></p>
 <p>In these exercises you will need:</p>

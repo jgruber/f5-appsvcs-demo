@@ -2668,6 +2668,25 @@ You've had your basic introduction to the F5 components in an orchestration ecos
 
 Now, let's move into the real world. Let's examine and use a simplified micro services framework which wraps in everything we've learned so far and puts it to use within a standards based OpenAPI application.
 
+**Step 5. - Clean Up Your BIG-IP and Stop the API Services Gateway Container**
+
+Let's remove the device trusts we created on our BIG-IPs
+
+**`curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`**
+
+```
+ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+```
+
+To stop the API Services Gateway Container on our F5 Container Demonstration Virtual Device issue the following `docker` command.
+
+**`docker stop asg_container`**
+
+```
+ubuntu@ip-10-1-1-8:~$ docker stop asg_container 
+```
+
+
 ---
 
 Demonstration Integration Exercises
