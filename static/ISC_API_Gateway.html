@@ -377,8 +377,6 @@ f5admin@containerhost:~$ <-- Notice no response output!
     document.getElementById('get-as3-version-output').innerHTML = sample_header + as3_version_command_output + sample_footer;
     document.getElementById('get-as3-existing-declaration-command').innerHTML = command_header + as3_retrieve_command + command_footer;
     document.getElementById('get-as3-existing-declaration-command-output').innerHTML = sample_header +as3_retrieve_command_output + sample_footer;
-    document.getElementById('get-as3-existing-declaration-post-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_post_to_remote_bigip + sample_footer;
-    document.getElementById('get-as3-existing-declaration-get-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_get_to_remote_bigip + sample_footer;
     document.getElementById('as3-declare-example').innerHTML = command_header + as3_declare_command + command_footer;
     document.getElementById('as3-remove-example').innerHTML = command_header + as3_remove_command + command_footer;
 
@@ -483,30 +481,6 @@ f5admin@containerhost:~$ &lt;-- Notice no response output!</code></pre></div>
 
 <p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> status code in your response.</p>
 <p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code>,<code>targetPort</code>, and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
-<p>As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get status code <code>404</code> response, not the <code>204</code> response returned when using AS3 in the container.</p>
-<p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
-<div id='get-as3-existing-declaration-post-to-remote-bigip'>
-
-<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare -d &#39;{
-&gt;     &quot;class&quot;: &quot;AS3&quot;,
-&gt;     &quot;action&quot;: &quot;retrieve&quot;
-&gt; }&#39;|json_pp
-{
-    &quot;statusCode&quot;: 404,
-    &quot;message&quot;: &quot;declaration 0 not found&quot;,
-    &quot;code&quot;: 404
-}</code></pre></div>
-
-<p>Note the response issuing a <code>GET</code> request on AS3 installed on your remote BIG-IP:</p>
-<div id='get-as3-existing-declaration-get-to-remote-bigip'>
-
-<pre><code>f5admin@containerhost:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare|json_pp
-{
-    &quot;statusCode&quot;: 404,
-    &quot;message&quot;: &quot;declaration 0 not found&quot;,
-    &quot;code&quot;: 404
-}</code></pre></div>
-
 <p><strong>Step 3. Issue an AS3 declaration to the a remote BIG-IP</strong></p>
 <p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -638,7 +612,8 @@ f5admin@containerhost:~$</code></pre><p>The same declaration can be issued to mu
             &quot;archiveTimestamp&quot;: &quot;2018-10-06T21:25:14.496Z&quot;
         }
     }
-}</code></pre><p><strong>Step 5. Stop the AS3 Container</strong></p>
+}</code></pre><p><strong>Note:</strong> When the API Services Gateway looses connection to the remote BIG-IP while AS3 is validating the configuration, the API Services Gateway will issue an HTTP <code>422 (Unprocessable Entity)</code> error. By itself, AS3 does not retry the declaration request when receiving a 422 error. AS3 was initially designed to declare a configuration to a local BIG-IP, where requests are handled without network latency or connection failures. We are still working through some issues running AS3 remotely. If you received a 422 error when removing the declaration, please retry your removal request until it returns properly.</p>
+<p><strong>Step 5. Stop the AS3 Container</strong></p>
 <p>To stop the AS3 Container on our F5 Container Demonstration Virtual Device issue the following <code>docker</code> command.</p>
 <p><strong><code>docker stop as3_container</code></strong></p>
 <pre><code>f5admin@containerhost:~$ docker stop as3_container </code></pre><hr>
@@ -1074,9 +1049,9 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
             &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainers&quot;
         },
         {
-            &quot;groupName&quot;: &quot;dockerContainersLegacy116&quot;,
+            &quot;groupName&quot;: &quot;dockerContainersLegacyXXX&quot;,
             &quot;devicesReference&quot;: {
-                &quot;link&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacy116/devices&quot;
+                &quot;link&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacyXXX/devices&quot;
             },
             &quot;description&quot;: &quot;Docker Containers Group for legacy BIG-IP devices&quot;,
             &quot;displayName&quot;: &quot;Docker Containers Group for legacy BIG-IP devices&quot;,
@@ -1085,14 +1060,14 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
             &quot;generation&quot;: 1,
             &quot;lastUpdateMicros&quot;: 1539009502371285,
             &quot;kind&quot;: &quot;shared:resolver:device-groups:devicegroupstate&quot;,
-            &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacy116&quot;
+            &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacyXXX&quot;
         }
     ],
     &quot;generation&quot;: 2,
     &quot;kind&quot;: &quot;shared:resolver:device-groups:devicegroupcollectionstate&quot;,
     &quot;lastUpdateMicros&quot;: 1539009502372133,
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups&quot;
-}</code></pre><p><strong>Note:</strong> The API Services Gateway automatically creates two device groups <code>dockerContainers</code> and <code>dockerCOntainersLegacy116</code>. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for <code>docker</code>) <code>BIGIP_LIST</code>. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the <code>BIGIP_LIST</code> ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the <code>dockerContainers</code> device group. If the BIG-IP device is running TMOS v11.6, it will create a trust for the device by adding it to the <code>dockerContainers116</code> device group. </p>
+}</code></pre><p><strong>Note:</strong> The API Services Gateway automatically creates two device groups <code>dockerContainers</code> and <code>dockerCOntainersLegacyXXX</code>. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for <code>docker</code>) <code>BIGIP_LIST</code>. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the <code>BIGIP_LIST</code> ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the <code>dockerContainers</code> device group. If the BIG-IP device is running TMOS prior to 12.0, it will create a trust for the device by adding it to the <code>dockerContainersLegacyXXX</code> device group. </p>
 <p><strong>Note:</strong> <em>It is not recommended that you use the API Services Gateway with TMOS versions less than 13.1.</em></p>
 <hr>
 <p><strong><em>STOP! - MAKE SURE YOUR TARGET BIG-IPS HAVE A CONFIG SYNC INTERFACE CONFIGURED. EVEN IF IT IS STANDALONE, THE API SERVICES GATEWAY REQUIRES IT TO CREATE A TRUST! READ BELOW</em></strong></p>
