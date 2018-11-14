@@ -1551,6 +1551,8 @@ Upon creation, our new task has a status of `CREATED`. The API Service Gateway i
 
 We can query its status by extracting the task `id` from our creation response, appending the id to the URL, and issuing a `GET` request.
 
+MAKE SURE TO REPLACE **[replace with your task id]** in your URI with your task id! 
+
 <div id='asg-install-query-trust-proxy-command'>
 
 </div>
@@ -1626,6 +1628,8 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
 **Use curl in the F5 Container Demonstration Device SSH session**
 
 Pulling the `id` attribute from the returned task, append the task id to your URL and issue a `GET` request to return your inventory report. 
+
+MAKE SURE TO REPLACE **[replace with your task id]** in your URI with your task id!
 
 <div id='asg-query-installed-task-extensions-id-command' >
 
