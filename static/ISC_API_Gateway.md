@@ -423,6 +423,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 
 </div>
 
+Clicking on the button above will update all the different commands you need to run through this lab based on your environment. Required if you don't run the ISC - UDF Lab environment
 
 Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device
 
