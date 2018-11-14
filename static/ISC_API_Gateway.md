@@ -1168,7 +1168,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://loc
 }
 ```
 
-**Note:** The API Services Gateway automatically creates two device groups `dockerContainers` and `dockerCOntainersLegacyXXX`. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for `docker`) `BIGIP_LIST`. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the `BIGIP_LIST` ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the `dockerContainers` device group. If the BIG-IP device is running TMOS prior to 12.0, it will create a trust for the device by adding it to the `dockerContainersLegacyXXX` device group. 
+**Note:** The API Services Gateway automatically creates two device groups `dockerContainers` and `dockerCOntainersLegacyXXX`. In the API Services Gateway documentation, it states that trusted devices can be added by populating the ENV (environment variable for `docker`) `BIGIP_LIST`. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the `BIGIP_LIST` ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the `dockerContainers` device group. If the BIG-IP device is running TMOS prior to 12.0, it will create a trust for the device by adding it to the `dockerContainersLegacyXXX` device group. 
 
 **Note:** *It is not recommended that you use the API Services Gateway with TMOS versions less than 13.1.*
 
@@ -1344,7 +1344,7 @@ If your remote BIG-IP does not reach the `ACTIVE` state, you likely have one of 
 1. The API Services Gateway can not reach the address and port issued in the `POST` request to add the device.
 2. You did not assure your remote BIG-IP device has its `configsync-ip` set to a non-floating SelfIP. Without this, the remote device can not discover its own certificate to exchange with the API Services Gateway.
 
-If your remote BIG-IP did not reach the `ACTIVE` state, remove the errant device by issue `DELETE` requests to the device link in the device group, and then re-populate the device entry in the device group by issuing a `POST` request providing the appropriate request body. 
+If your remote BIG-IP did not reach the `ACTIVE` state, remove the errant device by issuing `DELETE` requests to the device link in the device group, and then re-populate the device entry in the device group by issuing a `POST` request providing the appropriate request body. 
 
 ### Exercise #5 - Installing the TrustedProxy iControl LX Extension on the API Services Gateway
 
@@ -1356,7 +1356,7 @@ Our new proxy iControl LX extension will accept only POST requests. The body of 
 
 Most of this process is actually done as part of the iControl REST service. This is how our Enterprise Manager, BIG-IQ, and iWorkflow all securely communicated with TMOS since iControl REST was introduced. By adding the iControl REST framework to the API Services Gateway, we gain this secured communication service.
 
-Fortunately, the iControl REST framework has made this whole process very simple to use within iControl LX extensions. The key iControl LX framework component which enables us to issued signed requests for members of our trusted device group is the `RestOperation` eventChannel object class. There are two methods which enable the use of signed requests.
+Fortunately, the iControl REST framework has made this whole process very simple to use within iControl LX extensions. The key iControl LX framework component which enables us to issue signed requests for members of our trusted device group is the `RestOperation` eventChannel object class. There are two methods which enable the use of signed requests.
 
 ---
 | RestOperation method                                      | Explanation                                                              |
@@ -1457,7 +1457,7 @@ There are several steps involved in publishing an iControl LX extension via the 
 
 **Note:** Just like it did for device group trust building, the API Services Gateway has an iControl LX extension pre-installed which will look for iControl LX extension source code or RPM files copied into the container's `/root/lx` directory. You can use `Dockerfile` `COPY` directives to copy your extensions into the base API Services Gateway container. 
 
-Because we educating you on how to utilize the API Services Gateway, we will show you the steps involved in publishing iControl LX extensions through iControl REST. It is a valuable thing to learn as this is the same process to follow for iControl LX extensions publishing across all F5 platforms which support iControl LX.
+Because we are educating you on how to utilize the API Services Gateway, we will show you the steps involved in publishing iControl LX extensions through iControl REST. It is a valuable thing to learn as this is the same process to follow for iControl LX extensions publishing across all F5 platforms which support iControl LX.
 
 **Step 1. Upload the TustedProxy iControl LX extension RPM file to the API Services Gateway Container**
 
@@ -1504,7 +1504,7 @@ You can examine what the script above is doing. It is uploading our RPM file to 
 
 **Step 2. Make a request to initiate an install task for the TrustedProxy iControl LX Extension in the API Services Gateway Container**
 
-iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the `rpm` utilities and libraries to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install *'task'* in your behalf. While this breaks our ability to use standard RPM publishing (RPM repository downloads, cloud-init installation, ansible package modules, etc), it does some very micro service friendly things for us. 
+iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the `rpm` utilities and libraries to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install *'task'* on your behalf. While this breaks our ability to use standard RPM publishing (RPM repository downloads, cloud-init installation, ansible package modules, etc), it does some very micro service friendly things for us. 
 
 The use of iControl REST extension install tasks accomplishes two things. 
 
