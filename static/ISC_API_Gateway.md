@@ -1015,7 +1015,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     var app_docker_compose_down = `docker-compose down`;
     var app_openapi_url = `<a href='http://${deviceIp}:3000/api-docs' target='_blank'>http://${deviceIp}:3000/api-docs</a>`;
 
-    var command_header = `<h4>cut-n-pase command:</h4><code>
+    var command_header = `<h4>cut-n-paste command:</h4><code>
     <div style='white-space: pre-wrap; word-wrap: break-word; font-weight: bold; display: block; border: 1px solid #ccc; border-radius: 0; margin: 0 0 11px; padding: 10.5px;background-color: #f5f5f5;'>`;
     var command_footer = `</div></code>`;
     var sample_header = `<pre>`;
