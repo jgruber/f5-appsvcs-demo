@@ -95,11 +95,11 @@ For the most part, we have successfully migrated our customers and partners who 
 
 As BIG-IP administration increasingly becomes the job of automation, rather than human administrator interaction, focusing our efforts on simple declarative API interfaces will help our customers standardize their BIG-IP services, increases the agility of operations, and open the orchestration of the TMOS platform to a much larger ecosystem of external cloud services.
 
-For human administrator's, F5 has augmented the ease of use of TMOS devices in many ways. The XUI Web Graphical Interface performs complex provisioning workflows in behalf of the administrator. The TMSH CLI client uses smart tab completion to assist the administrator with available options for provisioning tasks.
+For human administrator's, F5 has augmented the ease of use of TMOS devices in many ways. The XUI Web Graphical Interface performs complex provisioning workflows on behalf of the administrator. The TMSH CLI client uses smart tab completion to assist the administrator with available options for provisioning tasks.
 
 ![ease of use measures for TMOS administrators](./assets/images/ease_of_use_for_administrators.png)
 
-The complexities of remote provisioning BIG-IP services through iControl REST APIs has been a major hurdle for our customers in their efforts to automated. In our traditional 'programmable' fashion, F5 introduced a scriptable framework allowing BIG-IP experts to take very complex provisioning interactions, or workflows, and expose them to non-F5 expert API tenants in a simplified way. The scripting language chosen was javascript. The scriptable APIs are made available as URL namespace *'extensions'* to the existing iControl REST URL schemas, which start with `/mgmt/` on every TMOS device.
+The complexities of remote provisioning BIG-IP services through iControl REST APIs has been a major hurdle for our customers in their efforts to automate. In our traditional 'programmable' fashion, F5 introduced a scriptable framework allowing BIG-IP experts to take very complex provisioning interactions, or workflows, and expose them to non-F5 expert API tenants in a simplified way. The scripting language chosen was javascript. The scriptable APIs are made available as URL namespace *'extensions'* to the existing iControl REST URL schemas, which start with `/mgmt/` on every TMOS device.
 
 ```
 /mgmt/{{simplified API namespace}}
@@ -186,7 +186,7 @@ All of our declarative APIs and micro service container builds follow the same a
 Deep Integration into an Orchestration Ecosystem
 -------------------
 
-When declarative iControl LX services are deployed on existing TMOS platforms, they inherit TMOS' system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS' lack of support for cloud native identity systems, TMOS' notions of roles, and the inflexibility of TMOs' tenancy model make integration in the increasingly opinionated world of cloud orchestration extremely cumbersome.
+When declarative iControl LX services are deployed on existing TMOS platforms, they inherit TMOS' system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS' lack of support for cloud native identity systems, TMOS' notions of roles, and the inflexibility of TMOS' tenancy model make integration in the increasingly opinionated world of cloud orchestration extremely cumbersome.
 
 ![BIG-IP does not support customers identity or roles services](./assets/images/bigip_no_oauth_support.png)
 
