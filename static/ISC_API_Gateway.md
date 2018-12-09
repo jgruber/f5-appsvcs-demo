@@ -95,11 +95,11 @@ For the most part, we have successfully migrated our customers and partners who 
 
 As BIG-IP administration increasingly becomes the job of automation, rather than human administrator interaction, focusing our efforts on simple declarative API interfaces will help our customers standardize their BIG-IP services, increases the agility of operations, and open the orchestration of the TMOS platform to a much larger ecosystem of external cloud services.
 
-For human administrator's, F5 has augmented the ease of use of TMOS devices in many ways. The XUI Web Graphical Interface performs complex provisioning workflows in behalf of the administrator. The TMSH CLI client uses smart tab completion to assist the administrator with available options for provisioning tasks.
+For human administrator's, F5 has augmented the ease of use of TMOS devices in many ways. The XUI Web Graphical Interface performs complex provisioning workflows on behalf of the administrator. The TMSH CLI client uses smart tab completion to assist the administrator with available options for provisioning tasks.
 
 ![ease of use measures for TMOS administrators](./assets/images/ease_of_use_for_administrators.png)
 
-The complexities of remote provisioning BIG-IP services through iControl REST APIs has been a major hurdle for our customers in their efforts to automated. In our traditional 'programmable' fashion, F5 introduced a scriptable framework allowing BIG-IP experts to take very complex provisioning interactions, or workflows, and expose them to non-F5 expert API tenants in a simplified way. The scripting language chosen was javascript. The scriptable APIs are made available as URL namespace *'extensions'* to the existing iControl REST URL schemas, which start with `/mgmt/` on every TMOS device.
+The complexities of remote provisioning BIG-IP services through iControl REST APIs has been a major hurdle for our customers in their efforts to automate. In our traditional 'programmable' fashion, F5 introduced a scriptable framework allowing BIG-IP experts to take very complex provisioning interactions, or workflows, and expose them to non-F5 expert API tenants in a simplified way. The scripting language chosen was javascript. The scriptable APIs are made available as URL namespace *'extensions'* to the existing iControl REST URL schemas, which start with `/mgmt/` on every TMOS device.
 
 ```
 /mgmt/{{simplified API namespace}}
@@ -186,7 +186,7 @@ All of our declarative APIs and micro service container builds follow the same a
 Deep Integration into an Orchestration Ecosystem
 -------------------
 
-When declarative iControl LX services are deployed on existing TMOS platforms, they inherit TMOS' system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS' lack of support for cloud native identity systems, TMOS' notions of roles, and the inflexibility of TMOs' tenancy model make integration in the increasingly opinionated world of cloud orchestration extremely cumbersome.
+When declarative iControl LX services are deployed on existing TMOS platforms, they inherit TMOS' system level services, including network access, authentication services, and defined role based authorization. This works well where existing TMOS configurations for corporate identity, like active directory, and network access systems, like established network firewall policies, are already available. However, TMOS' lack of support for cloud native identity systems, TMOS' notions of roles, and the inflexibility of TMOS' tenancy model make integration in the increasingly opinionated world of cloud orchestration extremely cumbersome.
 
 ![BIG-IP does not support customers identity or roles services](./assets/images/bigip_no_oauth_support.png)
 
@@ -403,8 +403,6 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     document.getElementById('get-as3-version-output').innerHTML = sample_header + as3_version_command_output + sample_footer;
     document.getElementById('get-as3-existing-declaration-command').innerHTML = command_header + as3_retrieve_command + command_footer;
     document.getElementById('get-as3-existing-declaration-command-output').innerHTML = sample_header +as3_retrieve_command_output + sample_footer;
-    document.getElementById('get-as3-existing-declaration-post-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_post_to_remote_bigip + sample_footer;
-    document.getElementById('get-as3-existing-declaration-get-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_get_to_remote_bigip + sample_footer;
     document.getElementById('as3-declare-example').innerHTML = command_header + as3_declare_command + command_footer;
     document.getElementById('as3-remove-example').innerHTML = command_header + as3_remove_command + command_footer;
 
@@ -425,6 +423,7 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 
 </div>
 
+Clicking on the button above will update all the different commands you need to run through this lab based on your environment. Required if you don't run the ISC - UDF Lab environment
 
 Step 1. Create a SSH connection to the F5 Container Demonstration Virtual Device
 
@@ -554,41 +553,6 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
 you likely don't have a previously deployed AS3 declaration. In fact if you add the `--version` flag to your `curl` command, you will see you got a `204` status code in your response.
 
 **NOTE:** AS3 Container `POST` requests with defined `targetHost`:`targetPort` and `actions` attributes *do not* always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.
-
-As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the `POST` and `GET` requests to `/mgmt/shared/appsvcs/declare` without a deployed declaration you'll get status code `404` response, not the `204` response returned when using AS3 in the container.
-
-Note the response issuing a `POST` request and the `retrieve` action on AS3 installed on your remote BIG-IP:
-
-<div id='get-as3-existing-declaration-post-to-remote-bigip'>
-
-```
-ubuntu@ip-10-1-1-8:~$ curl -u 'admin:admin' -k -s -H 'Content-Type: application/json' -X POST https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare -d '{
-     "class": "AS3",
-     "action": "retrieve"
- }'|json_pp
-{
-	"statusCode": 404,
-	"message": "declaration 0 not found",
-	"code": 404
-}
-```
-
-</div>
-
-Note the response issuing a `GET` request on AS3 installed on your remote BIG-IP:
-
-<div id='get-as3-existing-declaration-get-to-remote-bigip'>
-
-```
-ubuntu@ip-10-1-1-8:~$ curl -u 'admin:admin' -k -s -H 'Content-Type: application/json' https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare|json_pp
-{
-	"statusCode": 404,
-	"message": "declaration 0 not found",
-	"code": 404
-}
-```
-
-</div>
 
 **Step 3. Issue an AS3 declaration to the a remote BIG-IP**
 
@@ -739,6 +703,9 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
 }
 ```
 
+**Note:** When the API Services Gateway looses connection to the remote BIG-IP while AS3 is validating the configuration, the API Services Gateway will issue an HTTP `422 (Unprocessable Entity)` error. By itself, AS3 does not retry the declaration request when receiving a 422 error. AS3 was initially designed to declare a configuration to a local BIG-IP, where requests are handled without network latency or connection failures. We are still working through some issues running AS3 remotely. If you received a 422 error when removing the declaration, please retry your removal request until it returns properly.
+
+
 **Step 5. Stop the AS3 Container**
 
 To stop the AS3 Container on our F5 Container Demonstration Virtual Device issue the following `docker` command.
@@ -843,7 +810,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     var asg_upload_trust_proxy_command = `filepath='/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -870,7 +837,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
    "operation" : "INSTALL"
 }`;
 
-    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]`;
+    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]|json_pp`;
 
     var asg_install_query_trust_proxy_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/9a559504-f1a2-4dca-a8d6-32ce48f2f896
 
@@ -1010,7 +977,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     var asg_upload_trust_device_command = `filepath='/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -1035,7 +1002,7 @@ curl -k -s -H 'Content-Type: application/json' https://${targetHost}:${targetPor
     var asg_upload_trust_extension_command = `filepath='/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
 
     var asg_install_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
     "operation":"INSTALL",
@@ -1048,7 +1015,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     var app_docker_compose_down = `docker-compose down`;
     var app_openapi_url = `<a href='http://${deviceIp}:3000/api-docs' target='_blank'>http://${deviceIp}:3000/api-docs</a>`;
 
-    var command_header = `<h4>cut-n-pase command:</h4><code>
+    var command_header = `<h4>cut-n-paste command:</h4><code>
     <div style='white-space: pre-wrap; word-wrap: break-word; font-weight: bold; display: block; border: 1px solid #ccc; border-radius: 0; margin: 0 0 11px; padding: 10.5px;background-color: #f5f5f5;'>`;
     var command_footer = `</div></code>`;
     var sample_header = `<pre>`;
@@ -1180,9 +1147,9 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://loc
             "selfLink": "https://localhost/mgmt/shared/resolver/device-groups/dockerContainers"
         },
         {
-            "groupName": "dockerContainersLegacy116",
+            "groupName": "dockerContainersLegacyXXX",
             "devicesReference": {
-                "link": "https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacy116/devices"
+                "link": "https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacyXXX/devices"
             },
             "description": "Docker Containers Group for legacy BIG-IP devices",
             "displayName": "Docker Containers Group for legacy BIG-IP devices",
@@ -1191,7 +1158,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://loc
             "generation": 1,
             "lastUpdateMicros": 1539009502371285,
             "kind": "shared:resolver:device-groups:devicegroupstate",
-            "selfLink": "https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacy116"
+            "selfLink": "https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacyXXX"
         }
     ],
     "generation": 2,
@@ -1201,7 +1168,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://loc
 }
 ```
 
-**Note:** The API Services Gateway automatically creates two device groups `dockerContainers` and `dockerCOntainersLegacy116`. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for `docker`) `BIGIP_LIST`. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the `BIGIP_LIST` ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the `dockerContainers` device group. If the BIG-IP device is running TMOS v11.6, it will create a trust for the device by adding it to the `dockerContainers116` device group. 
+**Note:** The API Services Gateway automatically creates two device groups `dockerContainers` and `dockerCOntainersLegacyXXX`. In the API Services Gateway documentation, it states that trusted devices can be added by populating the ENV (environment variable for `docker`) `BIGIP_LIST`. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the `BIGIP_LIST` ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the `dockerContainers` device group. If the BIG-IP device is running TMOS prior to 12.0, it will create a trust for the device by adding it to the `dockerContainersLegacyXXX` device group. 
 
 **Note:** *It is not recommended that you use the API Services Gateway with TMOS versions less than 13.1.*
 
@@ -1220,7 +1187,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://loc
 
 ---
 
-To illustrate every step needed to create device trusts, we will ignore the `BIGIP_LIST` ENV variable and the pre-installed `dockerContainers` and `dockerContainersLegacy116` device groups which the API Services Gateway team added to ease this concern.  We will create a new device group and establish trust step by step. We do this so you can learn not only how it works, but understand how to troubleshoot any problems you experence. 
+To illustrate every step needed to create device trusts, we will ignore the `BIGIP_LIST` ENV variable and the pre-installed `dockerContainers` and `dockerContainersLegacyXXX` device groups which the API Services Gateway team added to ease this concern.  We will create a new device group and establish trust step by step. We do this so you can learn not only how it works, but understand how to troubleshoot any problems you experence. 
 
 Later we will create an iControl LX extension to allow the addition of trusted devices dynamically through a declarative interface!
 
@@ -1377,7 +1344,7 @@ If your remote BIG-IP does not reach the `ACTIVE` state, you likely have one of 
 1. The API Services Gateway can not reach the address and port issued in the `POST` request to add the device.
 2. You did not assure your remote BIG-IP device has its `configsync-ip` set to a non-floating SelfIP. Without this, the remote device can not discover its own certificate to exchange with the API Services Gateway.
 
-If your remote BIG-IP did not reach the `ACTIVE` state, remove the errant device by issue `DELETE` requests to the device link in the device group, and then re-populate the device entry in the device group by issuing a `POST` request providing the appropriate request body. 
+If your remote BIG-IP did not reach the `ACTIVE` state, remove the errant device by issuing `DELETE` requests to the device link in the device group, and then re-populate the device entry in the device group by issuing a `POST` request providing the appropriate request body. 
 
 ### Exercise #5 - Installing the TrustedProxy iControl LX Extension on the API Services Gateway
 
@@ -1389,7 +1356,7 @@ Our new proxy iControl LX extension will accept only POST requests. The body of 
 
 Most of this process is actually done as part of the iControl REST service. This is how our Enterprise Manager, BIG-IQ, and iWorkflow all securely communicated with TMOS since iControl REST was introduced. By adding the iControl REST framework to the API Services Gateway, we gain this secured communication service.
 
-Fortunately, the iControl REST framework has made this whole process very simple to use within iControl LX extensions. The key iControl LX framework component which enables us to issued signed requests for members of our trusted device group is the `RestOperation` eventChannel object class. There are two methods which enable the use of signed requests.
+Fortunately, the iControl REST framework has made this whole process very simple to use within iControl LX extensions. The key iControl LX framework component which enables us to issue signed requests for members of our trusted device group is the `RestOperation` eventChannel object class. There are two methods which enable the use of signed requests.
 
 ---
 | RestOperation method                                      | Explanation                                                              |
@@ -1490,7 +1457,7 @@ There are several steps involved in publishing an iControl LX extension via the 
 
 **Note:** Just like it did for device group trust building, the API Services Gateway has an iControl LX extension pre-installed which will look for iControl LX extension source code or RPM files copied into the container's `/root/lx` directory. You can use `Dockerfile` `COPY` directives to copy your extensions into the base API Services Gateway container. 
 
-Because we educating you on how to utilize the API Services Gateway, we will show you the steps involved in publishing iControl LX extensions through iControl REST. It is a valuable thing to learn as this is the same process to follow for iControl LX extensions publishing across all F5 platforms which support iControl LX.
+Because we are educating you on how to utilize the API Services Gateway, we will show you the steps involved in publishing iControl LX extensions through iControl REST. It is a valuable thing to learn as this is the same process to follow for iControl LX extensions publishing across all F5 platforms which support iControl LX.
 
 **Step 1. Upload the TustedProxy iControl LX extension RPM file to the API Services Gateway Container**
 
@@ -1526,7 +1493,7 @@ Set the following bash variables and run the following `curl` command to upload 
 ubuntu@ip-10-1-1-8:~$ filepath='/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm'
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+ubuntu@ip-10-1-1-8:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 
 {"remainingByteCount":0,"usedChunks":{"0":7728},"totalByteCount":7728,"localFilePath":"/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm","temporaryFilePath":"/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm","generation":0,"lastUpdateMicros":1539099747522073}
 ```
@@ -1537,7 +1504,7 @@ You can examine what the script above is doing. It is uploading our RPM file to 
 
 **Step 2. Make a request to initiate an install task for the TrustedProxy iControl LX Extension in the API Services Gateway Container**
 
-iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the `rpm` utilities and libraries to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install *'task'* in your behalf. While this breaks our ability to use standard RPM publishing (RPM repository downloads, cloud-init installation, ansible package modules, etc), it does some very micro service friendly things for us. 
+iControl LX extension RPMs are not like standard Red Hat RPM files. You can not simply use the `rpm` utilities and libraries to install iControl LX extensions. The installation of an iControl LX extension requires the iControl REST framework to run an install *'task'* on your behalf. While this breaks our ability to use standard RPM publishing (RPM repository downloads, cloud-init installation, ansible package modules, etc), it does some very micro service friendly things for us. 
 
 The use of iControl REST extension install tasks accomplishes two things. 
 
@@ -1583,6 +1550,8 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
 Upon creation, our new task has a status of `CREATED`. The API Service Gateway is now trying to install the TrustedProxy iControl LX extension from the uploaded RPM file.
 
 We can query its status by extracting the task `id` from our creation response, appending the id to the URL, and issuing a `GET` request.
+
+MAKE SURE TO REPLACE **[replace with your task id]** in your URI with your task id! 
 
 <div id='asg-install-query-trust-proxy-command'>
 
@@ -1659,6 +1628,8 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
 **Use curl in the F5 Container Demonstration Device SSH session**
 
 Pulling the `id` attribute from the returned task, append the task id to your URL and issue a `GET` request to return your inventory report. 
+
+MAKE SURE TO REPLACE **[replace with your task id]** in your URI with your task id!
 
 <div id='asg-query-installed-task-extensions-id-command' >
 
@@ -2281,7 +2252,7 @@ ubuntu@ip-10-1-1-8:~$ curl -O http://localhost/icontrollx/TrustedDevices/build/R
 ubuntu@ip-10-1-1-8:~$ filepath='/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm'
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+ubuntu@ip-10-1-1-8:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 ```
 
 **Step 3. Install the TrustedDevices iControl LX extension**
@@ -2350,7 +2321,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST -d 
 }
 ```
 
-Add a deivce trust.
+Add a device trust.
 
 <div id='asg-add-trust-device-command'>
 
@@ -2605,7 +2576,7 @@ ubuntu@ip-10-1-1-8:~$ curl -O http://localhost/icontrollx/TrustedExtensions/buil
 ubuntu@ip-10-1-1-8:~$ filepath='/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm'
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+ubuntu@ip-10-1-1-8:~$ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 ```
 
 **Step 3. Install the TrustedDevices iControl LX extension**
@@ -2702,6 +2673,25 @@ You've had your basic introduction to the F5 components in an orchestration ecos
 
 Now, let's move into the real world. Let's examine and use a simplified micro services framework which wraps in everything we've learned so far and puts it to use within a standards based OpenAPI application.
 
+**Step 5. - Clean Up Your BIG-IP and Stop the API Services Gateway Container**
+
+Let's remove the device trusts we created on our BIG-IPs
+
+**`curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp`**
+
+```
+ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST -d '{"devices": []}' https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
+```
+
+To stop the API Services Gateway Container on our F5 Container Demonstration Virtual Device issue the following `docker` command.
+
+**`docker stop asg_container`**
+
+```
+ubuntu@ip-10-1-1-8:~$ docker stop asg_container 
+```
+
+
 ---
 
 Demonstration Integration Exercises
@@ -2763,7 +2753,9 @@ Only our `f5-appsvcs-demo` container will have inbound access via an exposed TCP
 
 Our `f5-appsvcs-demo` application implements our OpenAPI schema in the `/api` namespace. The schema derived user interface can be reached at `/api-docs/`.
 
-Open a web browser and navigate to:
+Since we will be using the OpenAPI UI web interface, you will need access the Linux Jumphost via RDP. 
+
+In your RDP session, open a web browser and navigate to:
 
 <div id='app-openapi-url'>
 

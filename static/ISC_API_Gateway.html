@@ -377,8 +377,6 @@ ubuntu@ip-10-1-1-8:~$ <-- Notice no response output!
     document.getElementById('get-as3-version-output').innerHTML = sample_header + as3_version_command_output + sample_footer;
     document.getElementById('get-as3-existing-declaration-command').innerHTML = command_header + as3_retrieve_command + command_footer;
     document.getElementById('get-as3-existing-declaration-command-output').innerHTML = sample_header +as3_retrieve_command_output + sample_footer;
-    document.getElementById('get-as3-existing-declaration-post-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_post_to_remote_bigip + sample_footer;
-    document.getElementById('get-as3-existing-declaration-get-to-remote-bigip').innerHTML = sample_header + as3_retrieve_command_output_get_to_remote_bigip + sample_footer;
     document.getElementById('as3-declare-example').innerHTML = command_header + as3_declare_command + command_footer;
     document.getElementById('as3-remove-example').innerHTML = command_header + as3_remove_command + command_footer;
 
@@ -427,8 +425,11 @@ Status: Downloaded newer image for f5devcentral/f5-as3-container:latest
 478d06836ee38fdd48f89e267d7b91c9d3bfb9538c0602e3fdb444062e2f3e54</code></pre><p>List the running containers.</p>
 <p><strong><code>docker ps</code></strong></p>
 <pre><code>ubuntu@ip-10-1-1-8:~$ docker ps
-CONTAINER ID        IMAGE                                  COMMAND             CREATED             STATUS              PORTS                                         NAMES
-478d06836ee3        f5devcentral/f5-as3-container:latest   &quot;/etc/runit/boot&quot;   8 seconds ago       Up 7 seconds        0.0.0.0:8080-&gt;80/tcp, 0.0.0.0:8443-&gt;443/tcp   as3_container
+CONTAINER ID        IMAGE                                  COMMAND                  CREATED             STATUS              PORTS                                         NAMES
+abeefbf9bbd8        f5devcentral/f5-as3-container:latest   &quot;/etc/runit/boot&quot;        2 minutes ago       Up 2 minutes        0.0.0.0:8080-&gt;80/tcp, 0.0.0.0:8443-&gt;443/tcp   as3_container
+f6f0b0dc99a2        jgruber/f5-appsvcs-demo-web:udf        &quot;nginx -g &#39;daemon of…&quot;   4 minutes ago       Up 4 minutes        0.0.0.0:80-&gt;80/tcp                            f5-appsvcs-demo-web
+0526bcfb67bb        v2tec/watchtower                       &quot;/watchtower&quot;            About an hour ago   Up About an hour                                                  watchtower
+0304edda0fc7        jgruber/as3validatortool               &quot;/bin/sh -c &#39;serve b…&quot;   About an hour ago   Up About an hour    0.0.0.0:5000-&gt;3000/tcp                        as3validator
 </code></pre><h3 id="exercise-2-declaring-big-ip-services-through-the-as3-container">Exercise #2 - Declaring BIG-IP Services through the AS3 Container</h3>
 <p><strong>Step 1. Validate the version of the AS3 iControl Extension in the AS3 Container</strong></p>
 <p>Issue an iControl REST GET request to the AS3 Container with URL ```/mgmt/shared/appsvcs/info``</p>
@@ -478,30 +479,6 @@ ubuntu@ip-10-1-1-8:~$ &lt;-- Notice no response output!</code></pre></div>
 
 <p>you likely don&#39;t have a previously deployed AS3 declaration. In fact if you add the <code>--version</code> flag to your <code>curl</code> command, you will see you got a <code>204</code> status code in your response.</p>
 <p><strong>NOTE:</strong> AS3 Container <code>POST</code> requests with defined <code>targetHost</code>:<code>targetPort</code> and <code>actions</code> attributes <em>do not</em> always mirror the responses of an AS3 iControl LX extension installed on a BIG-IP. This is important to note when testing your orchestrations. You will want to validate your requests against the AS3 container, not just AS3 iControl LX extensions installed locally on BIG-IPs.</p>
-<p>As an example, assuming you have the AS3 iControl LX extension installed on your remote BIG-IP, when you place both the <code>POST</code> and <code>GET</code> requests to <code>/mgmt/shared/appsvcs/declare</code> without a deployed declaration you&#39;ll get status code <code>404</code> response, not the <code>204</code> response returned when using AS3 in the container.</p>
-<p>Note the response issuing a <code>POST</code> request and the <code>retrieve</code> action on AS3 installed on your remote BIG-IP:</p>
-<div id='get-as3-existing-declaration-post-to-remote-bigip'>
-
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; -X POST https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare -d &#39;{
-&gt;     &quot;class&quot;: &quot;AS3&quot;,
-&gt;     &quot;action&quot;: &quot;retrieve&quot;
-&gt; }&#39;|json_pp
-{
-    &quot;statusCode&quot;: 404,
-    &quot;message&quot;: &quot;declaration 0 not found&quot;,
-    &quot;code&quot;: 404
-}</code></pre></div>
-
-<p>Note the response issuing a <code>GET</code> request on AS3 installed on your remote BIG-IP:</p>
-<div id='get-as3-existing-declaration-get-to-remote-bigip'>
-
-<pre><code>ubuntu@ip-10-1-1-8:~$ curl -u &#39;admin:admin&#39; -k -s -H &#39;Content-Type: application/json&#39; https://[Your targetHost]:[Your targetPort]/mgmt/shared/appsvcs/declare|json_pp
-{
-    &quot;statusCode&quot;: 404,
-    &quot;message&quot;: &quot;declaration 0 not found&quot;,
-    &quot;code&quot;: 404
-}</code></pre></div>
-
 <p><strong>Step 3. Issue an AS3 declaration to the a remote BIG-IP</strong></p>
 <p>Issue the sample declaration from the AS3 clouddocs documentation to the AS3 Container endpoint. We will add the <code>targetHost</code>, <code>targetPort</code>, <code>targetUsername</code>, and <code>targetPassphrase</code> attributes in the declaration, thus deploying the declaration to your remote BIG-IP.</p>
 <p><strong>Use curl in the F5 Container Demonstration Device SSH session</strong></p>
@@ -633,7 +610,8 @@ ubuntu@ip-10-1-1-8:~$</code></pre><p>The same declaration can be issued to multi
             &quot;archiveTimestamp&quot;: &quot;2018-10-06T21:25:14.496Z&quot;
         }
     }
-}</code></pre><p><strong>Step 5. Stop the AS3 Container</strong></p>
+}</code></pre><p><strong>Note:</strong> When the API Services Gateway looses connection to the remote BIG-IP while AS3 is validating the configuration, the API Services Gateway will issue an HTTP <code>422 (Unprocessable Entity)</code> error. By itself, AS3 does not retry the declaration request when receiving a 422 error. AS3 was initially designed to declare a configuration to a local BIG-IP, where requests are handled without network latency or connection failures. We are still working through some issues running AS3 remotely. If you received a 422 error when removing the declaration, please retry your removal request until it returns properly.</p>
+<p><strong>Step 5. Stop the AS3 Container</strong></p>
 <p>To stop the AS3 Container on our F5 Container Demonstration Virtual Device issue the following <code>docker</code> command.</p>
 <p><strong><code>docker stop as3_container</code></strong></p>
 <pre><code>ubuntu@ip-10-1-1-8:~$ docker stop as3_container </code></pre><hr>
@@ -745,7 +723,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' -X POST htt
     var asg_upload_trust_proxy_command = `filepath='/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -772,7 +750,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
    "operation" : "INSTALL"
 }`;
 
-    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]`;
+    var asg_install_query_trust_proxy_command = `curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/[replace with your task id]|json_pp`;
 
     var asg_install_query_trust_proxy_response = `ubuntu@ip-10-1-1-8:~$ curl -k -s -H 'Content-Type: application/json' https://localhost:8443/mgmt/shared/iapp/package-management-tasks/9a559504-f1a2-4dca-a8d6-32ce48f2f896
 
@@ -912,7 +890,7 @@ curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -
     var asg_upload_trust_device_command = `filepath='/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}
 `;
 
     var asg_install_trust_device_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '
@@ -937,7 +915,7 @@ curl -k -s -H 'Content-Type: application/json' https://${targetHost}:${targetPor
     var asg_upload_trust_extension_command = `filepath='/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm'
 filename=$(basename $filepath)
 rangeheader="Content-Range:0-"$(expr $(stat -c '%s' $filename) - 1)"/"$(stat -c '%s' $filename)
-curl -k --header "Content-Type:application/octet-stream" --header $rangeheader -v --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
+curl -k --header "Content-Type:application/octet-stream" --header $rangeheader --data-binary @\${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/\${filename}`;
 
     var asg_install_trust_extension_command = `curl -k -s -H 'Content-Type: application/json' -X POST https://localhost:8443/mgmt/shared/iapp/package-management-tasks -d '{ 
     "operation":"INSTALL",
@@ -1059,9 +1037,9 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
             &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainers&quot;
         },
         {
-            &quot;groupName&quot;: &quot;dockerContainersLegacy116&quot;,
+            &quot;groupName&quot;: &quot;dockerContainersLegacyXXX&quot;,
             &quot;devicesReference&quot;: {
-                &quot;link&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacy116/devices&quot;
+                &quot;link&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacyXXX/devices&quot;
             },
             &quot;description&quot;: &quot;Docker Containers Group for legacy BIG-IP devices&quot;,
             &quot;displayName&quot;: &quot;Docker Containers Group for legacy BIG-IP devices&quot;,
@@ -1070,14 +1048,14 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
             &quot;generation&quot;: 1,
             &quot;lastUpdateMicros&quot;: 1539009502371285,
             &quot;kind&quot;: &quot;shared:resolver:device-groups:devicegroupstate&quot;,
-            &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacy116&quot;
+            &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups/dockerContainersLegacyXXX&quot;
         }
     ],
     &quot;generation&quot;: 2,
     &quot;kind&quot;: &quot;shared:resolver:device-groups:devicegroupcollectionstate&quot;,
     &quot;lastUpdateMicros&quot;: 1539009502372133,
     &quot;selfLink&quot;: &quot;https://localhost/mgmt/shared/resolver/device-groups&quot;
-}</code></pre><p><strong>Note:</strong> The API Services Gateway automatically creates two device groups <code>dockerContainers</code> and <code>dockerCOntainersLegacy116</code>. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for <code>docker</code>) <code>BIGIP_LIST</code>. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the <code>BIGIP_LIST</code> ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the <code>dockerContainers</code> device group. If the BIG-IP device is running TMOS v11.6, it will create a trust for the device by adding it to the <code>dockerContainers116</code> device group. </p>
+}</code></pre><p><strong>Note:</strong> The API Services Gateway automatically creates two device groups <code>dockerContainers</code> and <code>dockerCOntainersLegacyXXX</code>. In the API Services Gateway documentation is states that trusted devices can be added by populating the ENV (environment variable for <code>docker</code>) <code>BIGIP_LIST</code>. There is an iControl LX extension pre-installed on the API Services Gateway which will attempt to query the <code>BIGIP_LIST</code> ENV variable and then populate these pre-installed device groups with specified BIG-IPs. If the queried BIG-IP device is running TMOS v12 or higher, it will create a trust for the device by adding it to the <code>dockerContainers</code> device group. If the BIG-IP device is running TMOS prior to 12.0, it will create a trust for the device by adding it to the <code>dockerContainersLegacyXXX</code> device group. </p>
 <p><strong>Note:</strong> <em>It is not recommended that you use the API Services Gateway with TMOS versions less than 13.1.</em></p>
 <hr>
 <p><strong><em>STOP! - MAKE SURE YOUR TARGET BIG-IPS HAVE A CONFIG SYNC INTERFACE CONFIGURED. EVEN IF IT IS STANDALONE, THE API SERVICES GATEWAY REQUIRES IT TO CREATE A TRUST! READ BELOW</em></strong></p>
@@ -1087,7 +1065,7 @@ Status: Downloaded newer image for f5devcentral/f5-api-services-gateway:latest</
 <p><em>While the trusted queries can be issued to your remote BIG-IP&#39;s management IP address, if your remote BIG-IP does not have its <code>configsync-ip</code> populated, it will not be able to discover its own device certificate, which is used to sign responses to your queries. This design limitation is slated to be removed in a future release of TMOS.</em></p>
 <p><em>If your remote BIG-IP does not have a <code>configsync-ip</code> set, please configure this before you continue.</em></p>
 <hr>
-<p>To illustrate every step needed to create device trusts, we will ignore the <code>BIGIP_LIST</code> ENV variable and the pre-installed <code>dockerContainers</code> and <code>dockerContainersLegacy116</code> device groups which the API Services Gateway team added to ease this concern.  We will create a new device group and establish trust step by step. We do this so you can learn not only how it works, but understand how to troubleshoot any problems you experence. </p>
+<p>To illustrate every step needed to create device trusts, we will ignore the <code>BIGIP_LIST</code> ENV variable and the pre-installed <code>dockerContainers</code> and <code>dockerContainersLegacyXXX</code> device groups which the API Services Gateway team added to ease this concern.  We will create a new device group and establish trust step by step. We do this so you can learn not only how it works, but understand how to troubleshoot any problems you experence. </p>
 <p>Later we will create an iControl LX extension to allow the addition of trusted devices dynamically through a declarative interface!</p>
 <p><strong>Step 2. Make a iControl REST POST request to add a tusted remote BIG-IP</strong></p>
 <p>You can name your device group any valid TMOS name. We will add a device group named <code>app1</code>.</p>
@@ -1364,7 +1342,7 @@ ubuntu@ip-10-1-1-8:~$ ls -l /home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm
 <pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedProxy-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}
 
 {&quot;remainingByteCount&quot;:0,&quot;usedChunks&quot;:{&quot;0&quot;:7728},&quot;totalByteCount&quot;:7728,&quot;localFilePath&quot;:&quot;/var/config/rest/downloads/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;temporaryFilePath&quot;:&quot;/var/config/rest/downloads/tmp/TrustedProxy-1.0.0-0001.noarch.rpm&quot;,&quot;generation&quot;:0,&quot;lastUpdateMicros&quot;:1539099747522073}</code></pre></div>
 
@@ -1954,7 +1932,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedDevices-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
 <div id='asg-install-trust-device-command'>
 
 </div>
@@ -2003,7 +1981,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{ &quot;devices&quot;: [] }&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp
 {
     &quot;devices&quot;: []
-}</code></pre><p>Add a deivce trust.</p>
+}</code></pre><p>Add a device trust.</p>
 <div id='asg-add-trust-device-command'>
 
 </div> 
@@ -2211,7 +2189,7 @@ ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; htt
 <pre><code>ubuntu@ip-10-1-1-8:~$ filepath=&#39;/home/ubuntu/TrustedExtensions-1.0.0-0001.noarch.rpm&#39;
 ubuntu@ip-10-1-1-8:~$ filename=$(basename $filepath)
 ubuntu@ip-10-1-1-8:~$ rangeheader=&quot;Content-Range:0-&quot;$(expr $(stat -c &#39;%s&#39; $filename) - 1)&quot;/&quot;$(stat -c &#39;%s&#39; $filename)
-ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader -v --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
+ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stream&quot; --header $rangeheader --data-binary @${filepath} https://localhost:8443/mgmt/shared/file-transfer/uploads/${filename}</code></pre><p><strong>Step 3. Install the TrustedDevices iControl LX extension</strong></p>
 <div id='asg-install-trust-extension-command'>
 
 </div>
@@ -2286,7 +2264,12 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <li>Simplifying a complex task to make it as easy possible on the end user</li>
 </ul>
 <p>Now, let&#39;s move into the real world. Let&#39;s examine and use a simplified micro services framework which wraps in everything we&#39;ve learned so far and puts it to use within a standards based OpenAPI application.</p>
-<hr>
+<p><strong>Step 5. - Clean Up Your BIG-IP and Stop the API Services Gateway Container</strong></p>
+<p>Let&#39;s remove the device trusts we created on our BIG-IPs</p>
+<p><strong><code>curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{&quot;devices&quot;: []}&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp</code></strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ curl -k -s -H &#39;Content-Type: application/json&#39; -X POST -d &#39;{&quot;devices&quot;: []}&#39; https://localhost:8443/mgmt/shared/TrustedDevices|json_pp</code></pre><p>To stop the API Services Gateway Container on our F5 Container Demonstration Virtual Device issue the following <code>docker</code> command.</p>
+<p><strong><code>docker stop asg_container</code></strong></p>
+<pre><code>ubuntu@ip-10-1-1-8:~$ docker stop asg_container </code></pre><hr>
 <h2 id="demonstration-integration-exercises">Demonstration Integration Exercises</h2>
 <p>In the following exercises we are going to illustrate the use of the API Services Gateway as part of an orchestration application. The orchestration application is made up of multiple micro services. We are going to launch all of these micro services as a single deployment using <code>docker-compose</code></p>
 <p>In these exercises you will need:</p>
@@ -2322,7 +2305,8 @@ ubuntu@ip-10-1-1-8:~$ curl -k --header &quot;Content-Type:application/octet-stre
 <p><strong>Note:</strong> This is a very simple example. Our customers have Kubernetes orchestrated deployments which can be auto-scaled to load. It is not uncommon for a micro services architecture to be comprised of dozens of containerized services, each dynamically provised by a container orchestrator. We&#39;re just using <code>docker-compose</code> to aquaint you with the concepts and where the F5 API Services Gateway fits into a micro services deployment.</p>
 <p><strong>Step 2. Validate the Demonstration app is running querying the OpenAPI Documentation user interface</strong></p>
 <p>Our <code>f5-appsvcs-demo</code> application implements our OpenAPI schema in the <code>/api</code> namespace. The schema derived user interface can be reached at <code>/api-docs/</code>.</p>
-<p>Open a web browser and navigate to:</p>
+<p>Since we will be using the OpenAPI UI web interface, you will need access the Linux Jumphost via RDP. </p>
+<p>In your RDP session, open a web browser and navigate to:</p>
 <div id='app-openapi-url'>
 
 <p><code>http://[Your F5 Container Demonstration Device IP]:3000/api-docs</code></p>
