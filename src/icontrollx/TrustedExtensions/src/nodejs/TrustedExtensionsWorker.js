@@ -21,6 +21,8 @@ let targetHost = 'localhost';
 let targetPort = '443';
 let name;
 
+let inFlight = {};
+
 /**
  * Upload Worker
  *
@@ -63,6 +65,7 @@ class TrustedExtensionsWorker {
                             extensions.map((extension) => {
                                 if (extension.name == name) {
                                     restOperation.statusCode = 200;
+                                    restOperation.setContentType('application/json');
                                     restOperation.body = extension;
                                     this.completeRestOperation(restOperation);
                                     return;
@@ -73,6 +76,7 @@ class TrustedExtensionsWorker {
                             restOperation.fail(err);
                         } else {
                             restOperation.statusCode = 200;
+                            restOperation.setContentType('application/json');
                             restOperation.body = extensions;
                             this.completeRestOperation(restOperation);
                         }
@@ -131,6 +135,13 @@ class TrustedExtensionsWorker {
 
         rpmFile = path.basename(downloadUrl);
 
+        const inFlightIndex = `${targetHost}:${targetPort}:${rpmFile}`;
+        if (Object.keys(inFlight).includes(inFlightIndex)) {
+            const err = Error(`package with rpmFile ${rpmFile} is already installing with state ${inFlight[inFlightIndex].state} on target ${targetHost}:${targetPort}`);
+            err.httpStatusCode = 500;
+            restOperation.fail(err);
+            return;
+        }
         this.validateTarget()
             .then(() => {
                 this.getPackageName()
@@ -140,24 +151,38 @@ class TrustedExtensionsWorker {
                             err.httpStatusCode = 409;
                             restOperation.fail(err);
                         } else {
-                            this.installExtensionToTarget()
+                            let returnExtension = {
+                                rpmFile: rpmFile,
+                                downloadUrl: downloadUrl,
+                                state: "REQUESTED",
+                                name: "",
+                                version: "",
+                                release: "",
+                                arch: "",
+                                packageName: "",
+                                tags: []
+                            };
+                            inFlight[inFlightIndex] = returnExtension;
+                            this.installExtensionToTarget(targetHost, targetPort, downloadUrl, rpmFile)
                                 .then((success) => {
                                     if (success) {
-                                        restOperation.statusCode = 200;
-                                        restOperation.body = {
-                                            msg: `package in rpmFile ${rpmFile} installed on target ${targetHost}:${targetPort}`
-                                        };
-                                        this.completeRestOperation(restOperation);
+                                        delete inFlight[inFlightIndex];
                                     } else {
                                         const err = new Error(`package with rpmFile ${rpmFile} was not installed on target ${targetHost}:${targetPort}`);
-                                        err.httpStatusCode = 409;
-                                        restOperation.fail(err);
+                                        returnExtension = inFlight[inFlightIndex];
+                                        returnExtension.state = 'ERROR';
+                                        returnExtension.tags.push('err: ' + err.message);
                                     }
                                 })
                                 .catch((err) => {
-                                    err.httpStatusCode = 500;
-                                    restOperation.fail(err);
+                                    returnExtension = inFlight[inFlightIndex];
+                                    returnExtension.state = 'ERROR';
+                                    returnExtension.tags.push('err: ' + err.message);
                                 });
+                            restOperation.statusCode = 202;
+                            restOperation.setContentType('application/json');
+                            restOperation.body = returnExtension;
+                            this.completeRestOperation(restOperation);
                         }
                     })
                     .catch((err) => {
@@ -214,6 +239,8 @@ class TrustedExtensionsWorker {
 
         rpmFile = path.basename(downloadUrl);
 
+        const inFlightIndex = `${targetHost}:${targetPort}:${rpmFile}`;
+
         this.validateTarget()
             .then(() => {
                 this.getPackageName()
@@ -222,21 +249,38 @@ class TrustedExtensionsWorker {
                             this.uninstallExtension(packageName)
                                 .then((success) => {
                                     if (success) {
-                                        this.installExtensionToTarget()
+                                        let returnExtension = {
+                                            rpmFile: rpmFile,
+                                            downloadUrl: downloadUrl,
+                                            state: "REQUESTED",
+                                            name: "",
+                                            version: "",
+                                            release: "",
+                                            arch: "",
+                                            packageName: "",
+                                            tags: []
+                                        };
+                                        inFlight[inFlightIndex] = returnExtension;
+                                        this.installExtensionToTarget(targetHost, targetPort, downloadUrl, rpmFile)
                                             .then((success) => {
                                                 if (success) {
-                                                    restOperation.statusCode = 200;
-                                                    restOperation.body = {
-                                                        msg: `package in rpmFile ${rpmFile} updated on target ${targetHost}:${targetPort}`
-                                                    };
-                                                    this.completeRestOperation(restOperation);
+                                                    delete inFlight[inFlightIndex];
+                                                } else {
+                                                    const err = new Error(`package with rpmFile ${rpmFile} was not installed on target ${targetHost}:${targetPort}`);
+                                                    returnExtension = inFlight[inFlightIndex];
+                                                    returnExtension.state = 'ERROR';
+                                                    returnExtension.tags.push('err: ' + err.message);
                                                 }
                                             })
                                             .catch((err) => {
-                                                const error = new Error(`package in ${rpmFile} could not be reinstalled to update on target ${targetHost}:${targetPort} - ${err.message}`);
-                                                error.httpStatusCode = 500;
-                                                restOperation.fail(error);
+                                                returnExtension = inFlight[inFlightIndex];
+                                                returnExtension.state = 'ERROR';
+                                                returnExtension.tags.push('err: ' + err.message);
                                             });
+                                        restOperation.statusCode = 202;
+                                        restOperation.setContentType('application/json');
+                                        restOperation.body = returnExtension;
+                                        this.completeRestOperation(restOperation);
                                     } else {
                                         const err = new Error(`package in ${rpmFile} could not be uninstalled to update on target ${targetHost}:${targetPort}`);
                                         err.httpStatusCode = 500;
@@ -249,25 +293,38 @@ class TrustedExtensionsWorker {
                                     restOperation.fail(error);
                                 });
                         } else {
-                            this.installExtensionToTarget()
+                            let returnExtension = {
+                                rpmFile: rpmFile,
+                                downloadUrl: downloadUrl,
+                                state: "REQUESTED",
+                                name: "",
+                                version: "",
+                                release: "",
+                                arch: "",
+                                packageName: "",
+                                tags: []
+                            };
+                            inFlight[inFlightIndex] = returnExtension;
+                            this.installExtensionToTarget(targetHost, targetPort, downloadUrl, rpmFile)
                                 .then((success) => {
                                     if (success) {
-                                        restOperation.statusCode = 200;
-                                        restOperation.body = {
-                                            msg: `package in rpmFile ${rpmFile} installed on target ${targetHost}:${targetPort}`
-                                        };
-                                        this.completeRestOperation(restOperation);
+                                        delete inFlight[inFlightIndex];
                                     } else {
-                                        const err = new Error(`package in ${rpmFile} could not be installed on target ${targetHost}:${targetPort}`);
-                                        err.httpStatusCode = 500;
-                                        restOperation.fail(err);
+                                        const err = new Error(`package with rpmFile ${rpmFile} was not installed on target ${targetHost}:${targetPort}`);
+                                        returnExtension = inFlight[inFlightIndex];
+                                        returnExtension.state = 'ERROR';
+                                        returnExtension.tags.push('err: ' + err.message);
                                     }
                                 })
                                 .catch((err) => {
-                                    const error = new Error(`package in ${rpmFile} could not be uninstalled to update on target ${targetHost}:${targetPort} - ${err.message}`);
-                                    error.httpStatusCode = 500;
-                                    restOperation.fail(error);
+                                    returnExtension = inFlight[inFlightIndex];
+                                    returnExtension.state = 'ERROR';
+                                    returnExtension.tags.push('err: ' + err.message);
                                 });
+                            restOperation.statusCode = 202;
+                            restOperation.setContentType('application/json');
+                            restOperation.body = returnExtension;
+                            this.completeRestOperation(restOperation);
                         }
                     })
                     .catch((err) => {
@@ -312,6 +369,15 @@ class TrustedExtensionsWorker {
 
         rpmFile = path.basename(downloadUrl);
 
+        const inFlightIndex = `${targetHost}:${targetPort}:${rpmFile}`;
+
+        let deletedInFlight = false;
+
+        if (Object.keys(inFlight).includes(inFlightIndex)) {
+            delete inFlight[inFlightIndex];
+            deletedInFlight = true;
+        }
+
         this.validateTarget()
             .then(() => {
                 this.getPackageName()
@@ -337,9 +403,17 @@ class TrustedExtensionsWorker {
                                     restOperation.fail(error);
                                 });
                         } else {
-                            const err = new Error(`package in ${rpmFile} not installed on target ${targetHost}:${targetPort}`);
-                            err.httpStatusCode = 404;
-                            restOperation.fail(err);
+                            if (!deletedInFlight) {
+                                const err = new Error(`package in ${rpmFile} not installed on target ${targetHost}:${targetPort}`);
+                                err.httpStatusCode = 404;
+                                restOperation.fail(err);
+                            } else {
+                                restOperation.statusCode = 200;
+                                restOperation.body = {
+                                    msg: `package in rpmFile ${rpmFile} uninstalled on target ${targetHost}:${targetPort}`
+                                };
+                                this.completeRestOperation(restOperation);
+                            }
                         }
                     })
                     .catch((err) => {
@@ -355,6 +429,10 @@ class TrustedExtensionsWorker {
 
     getExtensions() {
         return new Promise((resolve, reject) => {
+            let returnExtensions = [];
+            Object.keys(inFlight).map((extension) => {
+                returnExtensions.push(inFlight[extension]);
+            });
             this.restRequestSender.sendPost(this.getQueryRestOp())
                 .then((response) => {
                     let task = response.getBody();
@@ -362,7 +440,14 @@ class TrustedExtensionsWorker {
                         this.logger.info('query extension task is:' + task.id);
                         this.pollTaskUntilFinishedAndDelete(task.id, 10000)
                             .then((extensions) => {
-                                resolve(extensions);
+                                extensions.map((extension) => {
+                                    const rpmFile = extension.packageName + '.rpm';
+                                    extension.rpmFile = rpmFile;
+                                    extension.downloadUrl = 'https://' + targetHost + ':' + targetPort + '/mgmt/shared/file-transfer/downloads/' + rpmFile;
+                                    extension.state = 'AVAILABLE';
+                                    returnExtensions.push(extension);
+                                });
+                                resolve(returnExtensions);
                             })
                             .catch((err) => {
                                 throw err;
@@ -396,24 +481,59 @@ class TrustedExtensionsWorker {
     /* jshint ignore:end */
 
     /* jshint ignore:start */
-    installExtensionToTarget() {
+    installExtensionToTarget(targetHost, targetPort, downloadUrl, rpmFile) {
         return new Promise(async (resolve, reject) => {
             this.logger.info('installing extension ' + rpmFile);
-            const filename = await this.downloadFileToGateway(rpmFile, downloadUrl)
-            if (filename) {
-                const uploaded = await this.uploadToDevice(filename, targetHost, targetPort);
-                if (uploaded) {
-                    const installed = await this.installExtension()
-                    if (installed) {
-                        resolve(true);
-                    } else {
-                        reject(new Error(`package in ${rpmFile} could not be installed to target ${targetHost}:${targetPort}`))
+            const inFlightIndex = `${targetHost}:${targetPort}:${rpmFile}`;
+            let returnExtension = inFlight[inFlightIndex]
+            returnExtension.state = 'DOWNLOADING';
+            try {
+                const filename = await this.downloadFileToGateway(rpmFile, downloadUrl)
+                if (filename) {
+                    if (Object.keys(inFlight).includes(inFlightIndex)) {
+                        returnExtension.state = 'UPLOADING';
+                        const uploaded = await this.uploadToDevice(filename, targetHost, targetPort);
+                        if (uploaded) {
+                            if (Object.keys(inFlight).includes(inFlightIndex)) {
+                                returnExtension.state = 'INSTALLING';
+                                const installed = await this.installExtension()
+                                if (installed) {
+                                    if (Object.keys(inFlight).includes(inFlightIndex)) {
+                                        returnExtension.state = 'AVAILABLE';
+                                        resolve(true);
+                                    }
+                                } else {
+                                    if (Object.keys(inFlight).includes(inFlightIndex)) {
+                                        const err = new Error(`package in ${rpmFile} could not be installed to target ${targetHost}:${targetPort}`);
+                                        returnExtension.state = 'ERROR';
+                                        returnExtension.tags['err: ' + err.message];
+                                        reject(err);
+                                    }
+                                }
+                            }
+                        } else {
+                            if (Object.keys(inFlight).includes(inFlightIndex)) {
+                                const err = new Error(`could not upload rpmFile ${rpmFile} to target ${targetHost}:${targetPort}`);
+                                returnExtension.state = 'ERROR';
+                                returnExtension.tags['err: ' + err.message];
+                                reject(err);
+                            }
+                        }
                     }
                 } else {
-                    reject(new Error(`could not upload rpmFile ${rpmFile} to target ${targetHost}:${targetPort}`))
+                    if (Object.keys(inFlight).includes(inFlightIndex)) {
+                        const err = new Error(`could not download rpmFile to gateway`);
+                        returnExtension.state = 'ERROR';
+                        returnExtension.tags['err: ' + err.message];
+                        reject(err);
+                    }
                 }
-            } else {
-                reject(new Error(`could not download rpmFile to gateway`))
+            } catch (err) {
+                if (Object.keys(inFlight).includes(inFlightIndex)) {
+                    returnExtension.state = 'ERROR';
+                    returnExtension.tags['err: ' + err.message];
+                    reject(err);
+                }
             }
         });
     }
@@ -788,7 +908,7 @@ class TrustedExtensionsWorker {
                 let req
                 if (targetHost == 'localhost') {
                     const postOptions = {
-                        hostname: 'localhost', 
+                        hostname: 'localhost',
                         port: 8100,
                         path: `/mgmt/shared/file-transfer/uploads/${rpmFile}`,
                         method: 'POST',
